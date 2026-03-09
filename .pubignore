@@ -1,0 +1,36 @@
+# FVM
+.fvm/
+.fvmrc
+
+# Flutter/Dart build
+.dart_tool/
+build/
+coverage/
+*.g.dart
+*.freezed.dart
+
+# Rust build artifacts (ALL target directories excluded)
+rust/target/
+**/target/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# GitHub
+.github/
+
+# Logs and secrets
+*.log
+.env
+
+# Documentation (project-specific)
+QWEN.md
+taskchampion_client_rust.iml
+.metadata

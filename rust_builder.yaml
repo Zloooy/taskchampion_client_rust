@@ -1,0 +1,24 @@
+# Rust FFI Bridge Configuration for TaskChampion Client
+# This file configures the flutter_rust_bridge code generation
+
+# Input Rust API module
+rust_input: crate::lib
+
+# Output Dart file location  
+dart_output: lib/src/rust_bridge/frb_generated.dart
+
+# Rust root directory
+rust_root: rust/
+
+# Enable extra features
+extra_features:
+  - experimental
+
+# Generate C bindings if needed
+# c_output: rust/src/frb_generated.h
+
+# Dart format line length
+dart_format_line_length: 80
+
+# Enable web support (optional)
+# web: true

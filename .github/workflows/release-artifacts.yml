@@ -1,0 +1,218 @@
+# Workflow for building and publishing artifacts on GitHub Release
+# Triggered when a GitHub Release is created
+# Builds and attaches Rust libraries for all platforms
+
+name: Build Release Artifacts
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., 0.1.0)'
+        required: true
+        default: '0.1.0'
+
+jobs:
+  # ==================== Android Build ====================
+  android-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.3'
+          channel: 'stable'
+          cache: true
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          cache: true
+
+      - name: Setup Android NDK
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r26
+          add-to-path: true
+
+      - name: Install cargo-ndk
+        run: cargo install cargo-ndk
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust
+
+      - name: Build Rust libraries for Android
+        run: |
+          cd rust
+          mkdir -p ../android-libs
+          
+          cargo ndk \
+            -t arm64-v8a \
+            -t armeabi-v7a \
+            -t x86_64 \
+            -t x86 \
+            -o ../android-libs \
+            build --release
+
+      - name: Create Android archive
+        run: |
+          cd android-libs
+          zip -r ../taskchampion_client_rust-android-${{ github.event.release.tag_name || inputs.version }}.zip .
+
+      - name: Upload Android artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-libs
+          path: taskchampion_client_rust-android-*.zip
+          retention-days: 7
+
+  # ==================== iOS Build ====================
+  ios-build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.3'
+          channel: 'stable'
+          cache: true
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          cache: true
+
+      - name: Add iOS targets
+        run: |
+          rustup target add aarch64-apple-ios
+          rustup target add aarch64-apple-ios-sim
+          rustup target add x86_64-apple-ios
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust
+
+      - name: Build Rust libraries for iOS
+        run: |
+          cd rust
+
+          # Build for all iOS targets
+          cargo build --release --target aarch64-apple-ios
+          cargo build --release --target aarch64-apple-ios-sim
+          cargo build --release --target x86_64-apple-ios
+
+          # Create universal binary for simulators
+          mkdir -p target/ios-release
+          lipo -create \
+            target/aarch64-apple-ios-sim/release/libtc_helper.a \
+            target/x86_64-apple-ios/release/libtc_helper.a \
+            -output target/ios-release/libtc_helper_simulator.a
+
+          # Copy binary for devices
+          cp target/aarch64-apple-ios/release/libtc_helper.a target/ios-release/
+
+      - name: Create iOS archive
+        run: |
+          cd rust/target/ios-release
+          zip -r ../../../taskchampion_client_rust-ios-${{ github.event.release.tag_name || inputs.version }}.zip .
+
+      - name: Upload iOS artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ios-libs
+          path: taskchampion_client_rust-ios-*.zip
+          retention-days: 7
+
+  # ==================== macOS Build ====================
+  macos-build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.3'
+          channel: 'stable'
+          cache: true
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          cache: true
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust
+
+      - name: Build Rust libraries for macOS
+        run: |
+          cd rust
+          
+          cargo build --release --target aarch64-apple-darwin
+          cargo build --release --target x86_64-apple-darwin
+          
+          mkdir -p target/macos-release
+          lipo -create \
+            target/aarch64-apple-darwin/release/libtc_helper.dylib \
+            target/x86_64-apple-darwin/release/libtc_helper.dylib \
+            -output target/macos-release/libtc_helper.dylib
+
+      - name: Create macOS archive
+        run: |
+          cd rust/target/macos-release
+          zip -r ../../../taskchampion_client_rust-macos-${{ github.event.release.tag_name || inputs.version }}.zip .
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: macos-libs
+          path: taskchampion_client_rust-macos-*.zip
+          retention-days: 7
+
+  # ==================== Upload to GitHub Release ====================
+  upload-to-release:
+    runs-on: ubuntu-latest
+    needs: [android-build, ios-build, macos-build]
+    if: github.event_name == 'release'
+    steps:
+      - name: Download Android artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: android-libs
+
+      - name: Download iOS artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: ios-libs
+
+      - name: Download macOS artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: macos-libs
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            taskchampion_client_rust-android-*.zip
+            taskchampion_client_rust-ios-*.zip
+            taskchampion_client_rust-macos-*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
