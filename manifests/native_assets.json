@@ -1,0 +1,42 @@
+{
+  "version": "0.1.0",
+  "generated_at": "2026-04-19T17:51:25Z",
+  "assets": {
+    "android-arm64-v8a": {
+      "url": "https://github.com/Zloooy/taskchampion_client_rust/releases/download/v0.1.0/libtc_helper-android-arm64-v8a.so",
+      "sha256": "458bde2c575066de22d2de87d0ccc9a6461c1e82adc4db7d20748d5c8355bff6"
+    },
+    "android-armeabi-v7a": {
+      "url": "https://github.com/Zloooy/taskchampion_client_rust/releases/download/v0.1.0/libtc_helper-android-armeabi-v7a.so",
+      "sha256": "b2f92d47955f59ed33316cc9f1e849563a0af5e8b80dad269b8babac79c2c1ce"
+    },
+    "android-x86_64": {
+      "url": "https://github.com/Zloooy/taskchampion_client_rust/releases/download/v0.1.0/libtc_helper-android-x86_64.so",
+      "sha256": "1218182add621fdf4d565cc84ddb78445ada092b60994431cdbf08dc5e4dce06"
+    },
+    "ios-aarch64": {
+      "url": "https://github.com/Zloooy/taskchampion_client_rust/releases/download/v0.1.0/libtc_helper-ios-aarch64.a",
+      "sha256": "f7ef5b77d1ec4a432dfa30b23c8d5cb12d4eb186bf8744e0723eb9c56b995796"
+    },
+    "ios-simulator-aarch64": {
+      "url": "https://github.com/Zloooy/taskchampion_client_rust/releases/download/v0.1.0/libtc_helper-ios-simulator-aarch64.a",
+      "sha256": "2a285951c94c14bc999b1363a6889d6b8974139cf7e8438875191ea0cc03707e"
+    },
+    "ios-simulator-x86_64": {
+      "url": "https://github.com/Zloooy/taskchampion_client_rust/releases/download/v0.1.0/libtc_helper-ios-simulator-x86_64.a",
+      "sha256": "0372705a2c916c7e1b19022107609151796226d80ba610bc3b525523e656adaa"
+    },
+    "macos-aarch64": {
+      "url": "https://github.com/Zloooy/taskchampion_client_rust/releases/download/v0.1.0/libtc_helper-macos-aarch64.dylib",
+      "sha256": "a572a35d4a4fd3a49cab13a78212e62988b9dabf8b3849d7ba0fd50aadaa7ff4"
+    },
+    "macos-x86_64": {
+      "url": "https://github.com/Zloooy/taskchampion_client_rust/releases/download/v0.1.0/libtc_helper-macos-x86_64.dylib",
+      "sha256": "d635a887ca984110481ed2b59f821e62bcc17f8c348d6e793992dcd459db7a8d"
+    },
+    "linux-x86_64": {
+      "url": "https://github.com/Zloooy/taskchampion_client_rust/releases/download/v0.1.0/libtc_helper-linux-x86_64.so",
+      "sha256": "fa548bc2e60fd353dcdfd26f5a4a82e457337fdc9f1ecf19bcc15e794bf26553"
+    }
+  }
+}

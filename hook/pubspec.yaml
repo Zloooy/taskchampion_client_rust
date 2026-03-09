@@ -1,0 +1,15 @@
+name: taskchampion_client_rust_hooks
+description: Build hooks for taskchampion_client_rust native assets
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.6.0
+
+dependencies:
+  hooks: ^1.0.2
+  code_assets: ^1.0.0
+  native_toolchain_rust: ^1.0.3
+  crypto: ^3.0.3
+  http: ^1.1.0
+  flutter_rust_bridge: ^2.12.0
