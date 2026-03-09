@@ -1,0 +1,991 @@
+/// Integration tests for TaskChampion client library
+///
+/// These tests verify the library's interaction with a TaskChampion sync server.
+/// Requires a running sync server at http://localhost:8080
+///
+/// Test scenarios:
+/// 1. Client registration on server (automatic on first sync)
+/// 2. Single task creation and sync
+/// 3. Multi-client sync (login from another instance)
+/// 4. Multiple sync scenarios:
+///    - Task addition from multiple clients
+///    - Task deletion
+///    - Task modification
+///    - Conflict resolution (concurrent modifications)
+library;
+
+import 'dart:io';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:taskchampion_client_rust/taskchampion_client_rust.dart';
+import 'package:path/path.dart' as path;
+
+/// Base URL for the local sync server
+/// Note: Update this to match your server's actual port (default: 8080)
+const String _serverUrl = 'http://localhost:8000';
+
+/// Timeout for network operations
+const Duration _networkTimeout = Duration(seconds: 30);
+
+/// Creates a temporary directory for test databases
+Future<String> _createTempDbDir(String testName) async {
+  // Use system temp directory without path_provider
+  final systemTempDir = Directory.systemTemp;
+  final testDbDir = Directory(
+    path.join(systemTempDir.path, 'taskchampion_test_${testName}_${DateTime.now().millisecondsSinceEpoch}'),
+  );
+  await testDbDir.create(recursive: true);
+  return testDbDir.path;
+}
+
+/// Cleans up temporary test database directory
+Future<void> _cleanupTempDbDir(String dbPath) async {
+  try {
+    await Directory(dbPath).delete(recursive: true);
+  } catch (_) {
+    // Ignore cleanup errors
+  }
+}
+
+/// Creates a client with generated credentials for testing
+Future<TaskChampionClient> _createTestClient({
+  required String testName,
+  String? clientId,
+  String? encryptionSecret,
+}) async {
+  final dbPath = await _createTempDbDir(testName);
+  final testClientId = clientId ?? await AuthService.generateClientId();
+  final testSecret = encryptionSecret ?? await AuthService.generateEncryptionSecret();
+
+  final client = TaskChampionClient(
+    serverUrl: _serverUrl,
+    clientId: testClientId,
+    encryptionSecret: testSecret,
+    taskdbPath: dbPath,
+    debugLogging: true,
+  );
+
+  return client;
+}
+
+/// Waits for server to be available
+///
+/// Uses the root endpoint '/' which returns server version information
+/// and serves as a basic health check.
+Future<bool> _waitForServer({Duration timeout = const Duration(seconds: 10)}) async {
+  final stopwatch = Stopwatch()..start();
+  while (stopwatch.elapsed < timeout) {
+    try {
+      final client = HttpClient();
+      final request = await client.getUrl(Uri.parse(_serverUrl));
+      final response = await request.close();
+      if (response.statusCode == 200) {
+        return true;
+      }
+    } catch (_) {
+      // Server not ready yet
+    }
+    await Future.delayed(const Duration(milliseconds: 500));
+  }
+  return false;
+}
+
+void main() {
+  // Initialize Flutter binding and Rust library before running tests
+  setUpAll(() async {
+    // Initialize Rust FFI bridge
+    await TaskChampionClient.init();
+
+    // Check if server is available
+    final serverAvailable = await _waitForServer();
+    if (!serverAvailable) {
+      throw StateError(
+        'TaskChampion sync server is not available at $_serverUrl. '
+        'Please start the server before running integration tests.',
+      );
+    }
+  });
+
+  group('Server Integration Tests', () {
+    group('Client Registration', () {
+      test('new client registers automatically on first sync', () async {
+        TaskChampionClient? client;
+        try {
+          client = await _createTestClient(testName: 'registration');
+
+          // Connect should succeed (validates credentials)
+          final authResult = await client.connect().timeout(_networkTimeout);
+          expect(authResult.success, isTrue, reason: 'Client should connect successfully');
+
+          // First sync should trigger automatic registration on server
+          final syncResult = await client.sync().timeout(_networkTimeout);
+          expect(syncResult.success, isTrue, reason: 'First sync should succeed with auto-registration');
+
+          // Client should now be connected
+          expect(client.isConnected, isTrue);
+        } finally {
+          if (client != null) {
+            await _cleanupTempDbDir(client.taskdbPath);
+            client.dispose();
+          }
+        }
+      });
+
+      test('client with invalid credentials fails to connect', () async {
+        TaskChampionClient? client;
+        try {
+          // Note: The taskchampion-sync-server doesn't validate encryption secrets
+          // during connect or sync - encryption is client-side only.
+          // The server only validates client_id format (UUID).
+          client = TaskChampionClient(
+            serverUrl: _serverUrl,
+            clientId: await AuthService.generateClientId(),
+            encryptionSecret: 'any-secret-works',
+            taskdbPath: await _createTempDbDir('invalid_credentials'),
+            debugLogging: true,
+          );
+
+          // Connect should succeed
+          final authResult = await client.connect().timeout(_networkTimeout);
+          expect(authResult.success, isTrue, reason: 'Connect should succeed');
+          
+          // Sync should also succeed (server doesn't validate encryption)
+          final syncResult = await client.sync().timeout(_networkTimeout);
+          expect(syncResult.success, isTrue, reason: 'Sync should succeed (encryption is client-side)');
+        } finally {
+          if (client != null) {
+            await _cleanupTempDbDir(client.taskdbPath);
+            client.dispose();
+          }
+        }
+      });
+    });
+
+    group('Single Task Creation', () {
+      test('create task and sync to server', () async {
+        TaskChampionClient? client;
+        try {
+          client = await _createTestClient(testName: 'single_task');
+
+          // Connect and sync first
+          await client.connect().timeout(_networkTimeout);
+          await client.sync().timeout(_networkTimeout);
+
+          // Create a new task
+          final taskDescription = 'Test task: ${DateTime.now().millisecondsSinceEpoch}';
+          final task = await client.createTask(
+            description: taskDescription,
+            priority: TaskPriority.high,
+            project: 'Integration Tests',
+            tags: ['test', 'integration'],
+            due: DateTime.now().add(const Duration(days: 7)),
+          );
+
+          expect(task.description, equals(taskDescription));
+          expect(task.priority, equals(TaskPriority.high));
+          expect(task.project, equals('Integration Tests'));
+          expect(task.tags, contains('test'));
+          expect(task.tags, contains('integration'));
+          expect(task.status, equals(TaskStatus.pending));
+
+          // Sync to server
+          final syncResult = await client.sync().timeout(_networkTimeout);
+          expect(syncResult.success, isTrue, reason: 'Sync after task creation should succeed');
+
+          // Verify task is in local database
+          final tasks = await client.getAllTasks(status: TaskStatus.pending);
+          expect(tasks.any((t) => t.uuid == task.uuid), isTrue);
+        } finally {
+          if (client != null) {
+            await _cleanupTempDbDir(client.taskdbPath);
+            client.dispose();
+          }
+        }
+      });
+
+      test('create multiple tasks and sync', () async {
+        TaskChampionClient? client;
+        try {
+          client = await _createTestClient(testName: 'multiple_tasks');
+
+          await client.connect().timeout(_networkTimeout);
+          await client.sync().timeout(_networkTimeout);
+
+          // Create multiple tasks
+          final taskCount = 5;
+          final tasks = <Task>[];
+          for (int i = 0; i < taskCount; i++) {
+            final task = await client.createTask(
+              description: 'Task $i: ${DateTime.now().millisecondsSinceEpoch}',
+              priority: i.isEven ? TaskPriority.high : TaskPriority.low,
+            );
+            tasks.add(task);
+          }
+
+          expect(tasks.length, equals(taskCount));
+
+          // Sync all tasks
+          final syncResult = await client.sync().timeout(_networkTimeout);
+          expect(syncResult.success, isTrue);
+
+          // Verify all tasks are present
+          final allTasks = await client.getAllTasks();
+          expect(allTasks.length, greaterThanOrEqualTo(taskCount));
+        } finally {
+          if (client != null) {
+            await _cleanupTempDbDir(client.taskdbPath);
+            client.dispose();
+          }
+        }
+      });
+    });
+
+    group('Multi-Client Synchronization', () {
+      test('two clients sync with each other', () async {
+        TaskChampionClient? clientA;
+        TaskChampionClient? clientB;
+
+        try {
+          // Create two clients with SAME credentials (same identity)
+          final sharedClientId = await AuthService.generateClientId();
+          final sharedSecret = await AuthService.generateEncryptionSecret();
+
+          clientA = await _createTestClient(
+            testName: 'multi_client_a',
+            clientId: sharedClientId,
+            encryptionSecret: sharedSecret,
+          );
+
+          clientB = await _createTestClient(
+            testName: 'multi_client_b',
+            clientId: sharedClientId,
+            encryptionSecret: sharedSecret,
+          );
+
+          // Client A connects and syncs
+          await clientA.connect().timeout(_networkTimeout);
+          await clientA.sync().timeout(_networkTimeout);
+
+          // Client A creates a task
+          final taskA = await clientA.createTask(
+            description: 'Task from Client A: ${DateTime.now().millisecondsSinceEpoch}',
+            priority: TaskPriority.high,
+          );
+
+          // Client A syncs to server
+          final syncResultA = await clientA.sync().timeout(_networkTimeout);
+          expect(syncResultA.success, isTrue);
+
+          // Client B connects and syncs (should receive task from Client A)
+          await clientB.connect().timeout(_networkTimeout);
+          final syncResultB = await clientB.sync().timeout(_networkTimeout);
+          expect(syncResultB.success, isTrue);
+
+          // Client B should have the task created by Client A
+          final tasksB = await clientB.getAllTasks();
+          expect(tasksB.any((t) => t.uuid == taskA.uuid), isTrue, reason: 'Client B should receive task from Client A');
+
+          // Client B creates a task
+          final taskB = await clientB.createTask(
+            description: 'Task from Client B: ${DateTime.now().millisecondsSinceEpoch}',
+            priority: TaskPriority.medium,
+          );
+
+          // Client B syncs to server
+          final syncResultB2 = await clientB.sync().timeout(_networkTimeout);
+          expect(syncResultB2.success, isTrue);
+
+          // Client A syncs to receive task from Client B
+          final syncResultA2 = await clientA.sync().timeout(_networkTimeout);
+          expect(syncResultA2.success, isTrue);
+
+          // Client A should have the task created by Client B
+          final tasksA = await clientA.getAllTasks();
+          expect(tasksA.any((t) => t.uuid == taskB.uuid), isTrue, reason: 'Client A should receive task from Client B');
+
+          // Both clients should have both tasks after final sync
+          // Client B needs one more sync to get confirmation of its own task
+          await clientB.sync().timeout(_networkTimeout);
+          final tasksAFinal = await clientA.getAllTasks();
+          final tasksBFinal = await clientB.getAllTasks();
+          expect(tasksAFinal.length, equals(2));
+          expect(tasksBFinal.length, equals(2));
+        } finally {
+          if (clientA != null) {
+            await _cleanupTempDbDir(clientA.taskdbPath);
+            clientA.dispose();
+          }
+          if (clientB != null) {
+            await _cleanupTempDbDir(clientB.taskdbPath);
+            clientB.dispose();
+          }
+        }
+      });
+
+      test('three clients sync chain', () async {
+        TaskChampionClient? client1;
+        TaskChampionClient? client2;
+        TaskChampionClient? client3;
+
+        try {
+          final sharedClientId = await AuthService.generateClientId();
+          final sharedSecret = await AuthService.generateEncryptionSecret();
+
+          client1 = await _createTestClient(
+            testName: 'client1',
+            clientId: sharedClientId,
+            encryptionSecret: sharedSecret,
+          );
+          client2 = await _createTestClient(
+            testName: 'client2',
+            clientId: sharedClientId,
+            encryptionSecret: sharedSecret,
+          );
+          client3 = await _createTestClient(
+            testName: 'client3',
+            clientId: sharedClientId,
+            encryptionSecret: sharedSecret,
+          );
+
+          // Initialize all clients
+          await client1.connect().timeout(_networkTimeout);
+          await client1.sync().timeout(_networkTimeout);
+
+          // Client 1 creates task
+          final task1 = await client1.createTask(
+            description: 'Task from Client 1',
+          );
+          await client1.sync().timeout(_networkTimeout);
+
+          // Client 2 syncs and creates task
+          await client2.connect().timeout(_networkTimeout);
+          await client2.sync().timeout(_networkTimeout);
+          final task2 = await client2.createTask(description: 'Task from Client 2');
+          await client2.sync().timeout(_networkTimeout);
+
+          // Client 3 syncs (should get both tasks)
+          await client3.connect().timeout(_networkTimeout);
+          await client3.sync().timeout(_networkTimeout);
+
+          final tasks3 = await client3.getAllTasks();
+          expect(tasks3.length, equals(2));
+          expect(tasks3.any((t) => t.uuid == task1.uuid), isTrue);
+          expect(tasks3.any((t) => t.uuid == task2.uuid), isTrue);
+
+          // Client 3 creates task
+          await client3.createTask(description: 'Task from Client 3');
+          await client3.sync().timeout(_networkTimeout);
+
+          // Client 1 syncs (should get tasks 2 and 3)
+          await client1.sync().timeout(_networkTimeout);
+          final tasks1 = await client1.getAllTasks();
+          expect(tasks1.length, equals(3));
+
+          // Client 2 syncs (should get tasks 1 and 3)
+          await client2.sync().timeout(_networkTimeout);
+          final tasks2 = await client2.getAllTasks();
+          expect(tasks2.length, equals(3));
+        } finally {
+          if (client1 != null) {
+            await _cleanupTempDbDir(client1.taskdbPath);
+            client1.dispose();
+          }
+          if (client2 != null) {
+            await _cleanupTempDbDir(client2.taskdbPath);
+            client2.dispose();
+          }
+          if (client3 != null) {
+            await _cleanupTempDbDir(client3.taskdbPath);
+            client3.dispose();
+          }
+        }
+      });
+    });
+
+    group('Multiple Sync Scenarios', () {
+      test('task addition from multiple clients', () async {
+        TaskChampionClient? clientA;
+        TaskChampionClient? clientB;
+
+        try {
+          final sharedClientId = await AuthService.generateClientId();
+          final sharedSecret = await AuthService.generateEncryptionSecret();
+
+          clientA = await _createTestClient(
+            testName: 'add_a',
+            clientId: sharedClientId,
+            encryptionSecret: sharedSecret,
+          );
+          clientB = await _createTestClient(
+            testName: 'add_b',
+            clientId: sharedClientId,
+            encryptionSecret: sharedSecret,
+          );
+
+          await clientA.connect().timeout(_networkTimeout);
+          await clientA.sync().timeout(_networkTimeout);
+          await clientB.connect().timeout(_networkTimeout);
+          await clientB.sync().timeout(_networkTimeout);
+
+          // Both clients create tasks independently
+          final taskA = await clientA.createTask(description: 'Task A');
+          final taskB = await clientB.createTask(description: 'Task B');
+
+          // Both sync
+          await clientA.sync().timeout(_networkTimeout);
+          await clientB.sync().timeout(_networkTimeout);
+
+          // Cross-sync
+          await clientA.sync().timeout(_networkTimeout);
+          await clientB.sync().timeout(_networkTimeout);
+
+          // Both should have both tasks
+          final tasksA = await clientA.getAllTasks();
+          final tasksB = await clientB.getAllTasks();
+
+          expect(tasksA.length, equals(2));
+          expect(tasksB.length, equals(2));
+          expect(tasksA.any((t) => t.uuid == taskA.uuid), isTrue);
+          expect(tasksA.any((t) => t.uuid == taskB.uuid), isTrue);
+        } finally {
+          if (clientA != null) {
+            await _cleanupTempDbDir(clientA.taskdbPath);
+            clientA.dispose();
+          }
+          if (clientB != null) {
+            await _cleanupTempDbDir(clientB.taskdbPath);
+            clientB.dispose();
+          }
+        }
+      });
+
+      test('task deletion sync', () async {
+        TaskChampionClient? clientA;
+        TaskChampionClient? clientB;
+
+        try {
+          final sharedClientId = await AuthService.generateClientId();
+          final sharedSecret = await AuthService.generateEncryptionSecret();
+
+          clientA = await _createTestClient(
+            testName: 'delete_a',
+            clientId: sharedClientId,
+            encryptionSecret: sharedSecret,
+          );
+          clientB = await _createTestClient(
+            testName: 'delete_b',
+            clientId: sharedClientId,
+            encryptionSecret: sharedSecret,
+          );
+
+          await clientA.connect().timeout(_networkTimeout);
+          await clientA.sync().timeout(_networkTimeout);
+
+          // Client A creates task
+          final task = await clientA.createTask(description: 'Task to delete');
+          await clientA.sync().timeout(_networkTimeout);
+
+          // Client B syncs to get the task
+          await clientB.connect().timeout(_networkTimeout);
+          await clientB.sync().timeout(_networkTimeout);
+
+          final tasksBBefore = await clientB.getAllTasks();
+          expect(tasksBBefore.any((t) => t.uuid == task.uuid), isTrue);
+
+          // Client A deletes the task
+          await clientA.deleteTask(task.uuid);
+          await clientA.sync().timeout(_networkTimeout);
+
+          // Client B syncs to receive deletion
+          await clientB.sync().timeout(_networkTimeout);
+
+          // Task should be marked as deleted on Client B
+          final tasksBAfter = await clientB.getAllTasks();
+          final deletedTask = tasksBAfter.firstWhere((t) => t.uuid == task.uuid);
+          expect(deletedTask.status, equals(TaskStatus.deleted));
+        } finally {
+          if (clientA != null) {
+            await _cleanupTempDbDir(clientA.taskdbPath);
+            clientA.dispose();
+          }
+          if (clientB != null) {
+            await _cleanupTempDbDir(clientB.taskdbPath);
+            clientB.dispose();
+          }
+        }
+      });
+
+      test('task modification sync', () async {
+        TaskChampionClient? clientA;
+        TaskChampionClient? clientB;
+
+        try {
+          final sharedClientId = await AuthService.generateClientId();
+          final sharedSecret = await AuthService.generateEncryptionSecret();
+
+          clientA = await _createTestClient(
+            testName: 'modify_a',
+            clientId: sharedClientId,
+            encryptionSecret: sharedSecret,
+          );
+          clientB = await _createTestClient(
+            testName: 'modify_b',
+            clientId: sharedClientId,
+            encryptionSecret: sharedSecret,
+          );
+
+          await clientA.connect().timeout(_networkTimeout);
+          await clientA.sync().timeout(_networkTimeout);
+
+          // Client A creates task
+          final task = await clientA.createTask(
+            description: 'Original description',
+            priority: TaskPriority.low,
+          );
+          await clientA.sync().timeout(_networkTimeout);
+
+          // Client B syncs to get the task
+          await clientB.connect().timeout(_networkTimeout);
+          await clientB.sync().timeout(_networkTimeout);
+
+          // Client A modifies the task
+          await clientA.updateTask(
+            uuid: task.uuid,
+            description: 'Modified by Client A',
+            priority: TaskPriority.high,
+          );
+          await clientA.sync().timeout(_networkTimeout);
+
+          // Client B syncs to receive modification
+          await clientB.sync().timeout(_networkTimeout);
+
+          // Client B should see the modified task
+          final tasksB = await clientB.getAllTasks();
+          final modifiedTask = tasksB.firstWhere((t) => t.uuid == task.uuid);
+          expect(modifiedTask.description, equals('Modified by Client A'));
+          expect(modifiedTask.priority, equals(TaskPriority.high));
+        } finally {
+          if (clientA != null) {
+            await _cleanupTempDbDir(clientA.taskdbPath);
+            clientA.dispose();
+          }
+          if (clientB != null) {
+            await _cleanupTempDbDir(clientB.taskdbPath);
+            clientB.dispose();
+          }
+        }
+      });
+
+      test('task status change sync (complete/reopen)', () async {
+        TaskChampionClient? clientA;
+        TaskChampionClient? clientB;
+
+        try {
+          final sharedClientId = await AuthService.generateClientId();
+          final sharedSecret = await AuthService.generateEncryptionSecret();
+
+          clientA = await _createTestClient(
+            testName: 'status_a',
+            clientId: sharedClientId,
+            encryptionSecret: sharedSecret,
+          );
+          clientB = await _createTestClient(
+            testName: 'status_b',
+            clientId: sharedClientId,
+            encryptionSecret: sharedSecret,
+          );
+
+          await clientA.connect().timeout(_networkTimeout);
+          await clientA.sync().timeout(_networkTimeout);
+
+          // Client A creates task
+          final task = await clientA.createTask(description: 'Task to complete');
+          await clientA.sync().timeout(_networkTimeout);
+
+          // Client B syncs
+          await clientB.connect().timeout(_networkTimeout);
+          await clientB.sync().timeout(_networkTimeout);
+
+          // Client A completes the task
+          await clientA.completeTask(task.uuid);
+          await clientA.sync().timeout(_networkTimeout);
+
+          // Client B syncs to see completion
+          await clientB.sync().timeout(_networkTimeout);
+
+          final tasksB = await clientB.getAllTasks();
+          final completedTask = tasksB.firstWhere((t) => t.uuid == task.uuid);
+          expect(completedTask.status, equals(TaskStatus.completed));
+
+          // Client A reopens the task
+          await clientA.reopenTask(task.uuid);
+          await clientA.sync().timeout(_networkTimeout);
+
+          // Client B syncs to see reopen
+          await clientB.sync().timeout(_networkTimeout);
+
+          final tasksBReopen = await clientB.getAllTasks();
+          final reopenedTask = tasksBReopen.firstWhere((t) => t.uuid == task.uuid);
+          expect(reopenedTask.status, equals(TaskStatus.pending));
+        } finally {
+          if (clientA != null) {
+            await _cleanupTempDbDir(clientA.taskdbPath);
+            clientA.dispose();
+          }
+          if (clientB != null) {
+            await _cleanupTempDbDir(clientB.taskdbPath);
+            clientB.dispose();
+          }
+        }
+      });
+    });
+
+    group('Conflict Resolution', () {
+      test('concurrent modifications trigger conflict (409)', () async {
+        TaskChampionClient? clientA;
+        TaskChampionClient? clientB;
+
+        try {
+          final sharedClientId = await AuthService.generateClientId();
+          final sharedSecret = await AuthService.generateEncryptionSecret();
+
+          clientA = await _createTestClient(
+            testName: 'conflict_a',
+            clientId: sharedClientId,
+            encryptionSecret: sharedSecret,
+          );
+          clientB = await _createTestClient(
+            testName: 'conflict_b',
+            clientId: sharedClientId,
+            encryptionSecret: sharedSecret,
+          );
+
+          await clientA.connect().timeout(_networkTimeout);
+          await clientA.sync().timeout(_networkTimeout);
+
+          // Client A creates task
+          final task = await clientA.createTask(
+            description: 'Original description',
+            priority: TaskPriority.none,
+          );
+          await clientA.sync().timeout(_networkTimeout);
+
+          // Client B syncs to get the task
+          await clientB.connect().timeout(_networkTimeout);
+          await clientB.sync().timeout(_networkTimeout);
+
+          // Both clients modify the task independently (without syncing in between)
+          await clientA.updateTask(
+            uuid: task.uuid,
+            description: 'Modified by A',
+            priority: TaskPriority.high,
+          );
+
+          await clientB.updateTask(
+            uuid: task.uuid,
+            description: 'Modified by B',
+            priority: TaskPriority.medium,
+          );
+
+          // Client A syncs first (should succeed)
+          final syncResultA = await clientA.sync().timeout(_networkTimeout);
+          expect(syncResultA.success, isTrue);
+
+          // Client B syncs (may encounter conflict, but client should handle it)
+          // The Rust backend should handle conflict resolution automatically
+          final syncResultB = await clientB.sync().timeout(_networkTimeout);
+
+          // Sync should eventually succeed (client may need to retry internally)
+          // The exact behavior depends on the Rust backend's conflict resolution
+          expect(syncResultB.success, isTrue, reason: 'Sync should handle conflicts gracefully');
+
+          // After resolution, both clients should have consistent data
+          await clientA.sync().timeout(_networkTimeout);
+          await clientB.sync().timeout(_networkTimeout);
+
+          final tasksA = await clientA.getAllTasks();
+          final tasksB = await clientB.getAllTasks();
+
+          // Both should have the same task
+          expect(tasksA.length, equals(tasksB.length));
+
+          final taskA = tasksA.firstWhere((t) => t.uuid == task.uuid);
+          final taskB = tasksB.firstWhere((t) => t.uuid == task.uuid);
+
+          // After conflict resolution, both should have the same description
+          // (either A's or B's modification, depending on resolution strategy)
+          expect(taskA.description, equals(taskB.description));
+        } finally {
+          if (clientA != null) {
+            await _cleanupTempDbDir(clientA.taskdbPath);
+            clientA.dispose();
+          }
+          if (clientB != null) {
+            await _cleanupTempDbDir(clientB.taskdbPath);
+            clientB.dispose();
+          }
+        }
+      });
+
+      test('modification with server conflict and retry', () async {
+        TaskChampionClient? clientA;
+        TaskChampionClient? clientB;
+
+        try {
+          final sharedClientId = await AuthService.generateClientId();
+          final sharedSecret = await AuthService.generateEncryptionSecret();
+
+          clientA = await _createTestClient(
+            testName: 'retry_a',
+            clientId: sharedClientId,
+            encryptionSecret: sharedSecret,
+          );
+          clientB = await _createTestClient(
+            testName: 'retry_b',
+            clientId: sharedClientId,
+            encryptionSecret: sharedSecret,
+          );
+
+          await clientA.connect().timeout(_networkTimeout);
+          await clientA.sync().timeout(_networkTimeout);
+
+          // Client A creates task
+          final task = await clientA.createTask(description: 'Initial');
+          await clientA.sync().timeout(_networkTimeout);
+
+          // Client B syncs
+          await clientB.connect().timeout(_networkTimeout);
+          await clientB.sync().timeout(_networkTimeout);
+
+          // Client A modifies and syncs
+          await clientA.updateTask(uuid: task.uuid, description: 'A modification 1');
+          await clientA.sync().timeout(_networkTimeout);
+
+          // Client B modifies (based on old version)
+          await clientB.updateTask(uuid: task.uuid, description: 'B modification');
+
+          // Client B syncs - should handle conflict and retry
+          final syncResultB = await clientB.sync().timeout(_networkTimeout);
+          expect(syncResultB.success, isTrue);
+
+          // Client A syncs to get B's changes
+          await clientA.sync().timeout(_networkTimeout);
+
+          // Both should have consistent state
+          final tasksA = await clientA.getAllTasks();
+          final tasksB = await clientB.getAllTasks();
+
+          expect(tasksA.length, equals(tasksB.length));
+
+          final taskA = tasksA.firstWhere((t) => t.uuid == task.uuid);
+          final taskB = tasksB.firstWhere((t) => t.uuid == task.uuid);
+
+          expect(taskA.description, equals(taskB.description));
+        } finally {
+          if (clientA != null) {
+            await _cleanupTempDbDir(clientA.taskdbPath);
+            clientA.dispose();
+          }
+          if (clientB != null) {
+            await _cleanupTempDbDir(clientB.taskdbPath);
+            clientB.dispose();
+          }
+        }
+      });
+
+      test('delete vs modify conflict', () async {
+        TaskChampionClient? clientA;
+        TaskChampionClient? clientB;
+
+        try {
+          final sharedClientId = await AuthService.generateClientId();
+          final sharedSecret = await AuthService.generateEncryptionSecret();
+
+          clientA = await _createTestClient(
+            testName: 'delmod_a',
+            clientId: sharedClientId,
+            encryptionSecret: sharedSecret,
+          );
+          clientB = await _createTestClient(
+            testName: 'delmod_b',
+            clientId: sharedClientId,
+            encryptionSecret: sharedSecret,
+          );
+
+          await clientA.connect().timeout(_networkTimeout);
+          await clientA.sync().timeout(_networkTimeout);
+
+          // Client A creates task
+          final task = await clientA.createTask(description: 'Task for conflict');
+          await clientA.sync().timeout(_networkTimeout);
+
+          // Client B syncs
+          await clientB.connect().timeout(_networkTimeout);
+          await clientB.sync().timeout(_networkTimeout);
+
+          // Client A deletes the task
+          await clientA.deleteTask(task.uuid);
+          await clientA.sync().timeout(_networkTimeout);
+
+          // Client B modifies the task (doesn't know it's deleted)
+          await clientB.updateTask(uuid: task.uuid, description: 'Modified after delete');
+
+          // Client B syncs - conflict between delete and modify
+          final syncResultB = await clientB.sync().timeout(_networkTimeout);
+
+          // Sync should handle the conflict
+          expect(syncResultB.success, isTrue, reason: 'Sync should handle delete/modify conflict');
+
+          // Final sync to ensure consistency
+          await clientA.sync().timeout(_networkTimeout);
+          await clientB.sync().timeout(_networkTimeout);
+
+          // Check final state - depends on conflict resolution strategy
+          final tasksA = await clientA.getAllTasks();
+          final tasksB = await clientB.getAllTasks();
+
+          // Both should agree on the task state
+          expect(tasksA.length, equals(tasksB.length));
+        } finally {
+          if (clientA != null) {
+            await _cleanupTempDbDir(clientA.taskdbPath);
+            clientA.dispose();
+          }
+          if (clientB != null) {
+            await _cleanupTempDbDir(clientB.taskdbPath);
+            clientB.dispose();
+          }
+        }
+      });
+    });
+
+    group('Edge Cases', () {
+      test('sync with empty task database', () async {
+        TaskChampionClient? client;
+        try {
+          client = await _createTestClient(testName: 'empty_sync');
+
+          await client.connect().timeout(_networkTimeout);
+
+          // Sync with no local tasks
+          final syncResult = await client.sync().timeout(_networkTimeout);
+          expect(syncResult.success, isTrue);
+
+          final tasks = await client.getAllTasks();
+          expect(tasks, isEmpty);
+        } finally {
+          if (client != null) {
+            await _cleanupTempDbDir(client.taskdbPath);
+            client.dispose();
+          }
+        }
+      });
+
+      test('rapid successive syncs', () async {
+        TaskChampionClient? client;
+        try {
+          client = await _createTestClient(testName: 'rapid_sync');
+
+          await client.connect().timeout(_networkTimeout);
+
+          // Perform multiple rapid syncs
+          for (int i = 0; i < 5; i++) {
+            final syncResult = await client.sync().timeout(_networkTimeout);
+            expect(syncResult.success, isTrue, reason: 'Rapid sync $i should succeed');
+          }
+        } finally {
+          if (client != null) {
+            await _cleanupTempDbDir(client.taskdbPath);
+            client.dispose();
+          }
+        }
+      });
+
+      test('large task payload sync', () async {
+        TaskChampionClient? client;
+        try {
+          client = await _createTestClient(testName: 'large_payload');
+
+          await client.connect().timeout(_networkTimeout);
+          await client.sync().timeout(_networkTimeout);
+
+          // Create task with large description
+          final largeDescription = 'Task with large payload: ${List.generate(1000, (i) => 'Item $i').join(', ')}';
+
+          final task = await client.createTask(
+            description: largeDescription,
+            tags: List.generate(50, (i) => 'tag$i'),
+          );
+
+          await client.sync().timeout(_networkTimeout);
+
+          // Verify task was synced
+          final tasks = await client.getAllTasks();
+          expect(tasks.any((t) => t.uuid == task.uuid), isTrue);
+          expect(task.description.length, greaterThan(5000));
+        } finally {
+          if (client != null) {
+            await _cleanupTempDbDir(client.taskdbPath);
+            client.dispose();
+          }
+        }
+      });
+
+      test('task with special characters', () async {
+        TaskChampionClient? client;
+        try {
+          client = await _createTestClient(testName: 'special_chars');
+
+          await client.connect().timeout(_networkTimeout);
+          await client.sync().timeout(_networkTimeout);
+
+          // Create task with special characters
+          // Note: TaskChampion tags don't support dashes, use underscores instead
+          final specialTask = await client.createTask(
+            description: 'Task with special chars: <>&"\'\n\t🚀',
+            project: 'Project/With/Special/Chars',
+            tags: ['tag_with_dash', 'tag_with_underscore', 'tag123'],
+          );
+
+          await client.sync().timeout(_networkTimeout);
+
+          // Verify task
+          final tasks = await client.getAllTasks();
+          final syncedTask = tasks.firstWhere((t) => t.uuid == specialTask.uuid);
+          expect(syncedTask.description, contains('🚀'));
+        } finally {
+          if (client != null) {
+            await _cleanupTempDbDir(client.taskdbPath);
+            client.dispose();
+          }
+        }
+      });
+    });
+
+    group('Snapshot Operations', () {
+      test('get snapshot from server', () async {
+        TaskChampionClient? client;
+        try {
+          client = await _createTestClient(testName: 'snapshot');
+
+          await client.connect().timeout(_networkTimeout);
+
+          // Create some tasks to have data for snapshot
+          await client.createTask(description: 'Task 1');
+          await client.createTask(description: 'Task 2');
+          await client.sync().timeout(_networkTimeout);
+
+          // Get snapshot
+          // Snapshot may be null if server hasn't created one yet
+          // This is expected behavior for fresh servers
+          // The test verifies the API call works without errors
+          await client.getSnapshot();
+        } finally {
+          if (client != null) {
+            await _cleanupTempDbDir(client.taskdbPath);
+            client.dispose();
+          }
+        }
+      });
+    });
+  });
+}

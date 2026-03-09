@@ -1,0 +1,33 @@
+[toolchain]
+# Use a specific Rust version for reproducible builds
+# Update this version when updating Rust dependencies
+channel = "1.88.0"
+
+# Components to install (clippy for linting, rustfmt for formatting)
+components = ["clippy", "rustfmt"]
+
+# Target platforms for cross-compilation
+# These are automatically detected by native_toolchain_rust
+targets = [
+  # Android
+  "armv7-linux-androideabi",
+  "aarch64-linux-android",
+  "x86_64-linux-android",
+
+  # iOS
+  "aarch64-apple-ios",
+  "aarch64-apple-ios-sim",
+  "x86_64-apple-ios",
+
+  # macOS
+  "aarch64-apple-darwin",
+  "x86_64-apple-darwin",
+
+  # Linux
+  "x86_64-unknown-linux-gnu",
+  "aarch64-unknown-linux-gnu",
+
+  # Windows
+  "x86_64-pc-windows-msvc",
+  "aarch64-pc-windows-msvc",
+]

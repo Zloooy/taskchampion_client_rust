@@ -1,0 +1,43 @@
+
+# FVM Version Cache
+.fvm/
+
+# Flutter/Dart/Pub 
+.dart_tool/
+.packages
+.pub-cache/
+pubspec.lock
+build/
+
+# Android
+/android/.gradle/
+/android/app/build/
+*.keystore
+
+# iOS
+/ios/Flutter/Flutter.framework
+/ios/Flutter/Flutter.podspec
+/ios/Pods/
+/ios/.symlinks/
+
+# Binaries & Libs (exclude prebuilt FFI binaries)
+**/target/
+*.so
+*.dll
+*.dylib
+*.a
+*.lib
+# Allow prebuilt .so in android/ directory for FFI
+!android/**/*.so
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+**/.flutter-plugins-dependencies
+
+# Secrets
+.env
