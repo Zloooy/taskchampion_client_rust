@@ -1,0 +1,36 @@
+// Android build configuration for taskchampion_client_rust
+// This module contains prebuilt native libraries for FFI
+
+plugins {
+    id 'com.android.library'
+}
+
+android {
+    namespace 'com.example.taskchampion_client_rust'
+    compileSdk 34
+
+    defaultConfig {
+        minSdk 21
+        ndk {
+            abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86_64'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+        debug {
+            minifyEnabled false
+        }
+    }
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['src/main/jniLibs']
+        }
+    }
+}
+
+dependencies {
+}

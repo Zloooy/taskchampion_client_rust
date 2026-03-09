@@ -1,0 +1,10 @@
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+pubspec.lock linguist-generated -diff -merge
+rust/Cargo.lock linguist-generated -diff -merge
+lib/**/*.g.dart linguist-generated -diff -merge
+lib/**/*.freezed.dart linguist-generated -diff -merge
+rust/src/frb_generated.rs linguist-generated -diff -merge
+lib/src/rust_bridge/frb_generated.dart linguist-generated -diff -merge
+lib/src/rust_bridge/frb_generated.*.dart linguist-generated -diff -merge

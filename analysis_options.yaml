@@ -1,0 +1,14 @@
+include: package:flutter_lints/flutter.yaml
+
+# Additional information about this file can be found at
+# https://dart.dev/guides/language/analysis-options
+
+analyzer:
+  # exclude:
+  #   - "**/*.freezed.dart"
+  #   - "**/*.g.dart"
+  # errors:
+  #   # Ignore freezed-related errors that are false positives
+  #   non_abstract_class_inherits_abstract_member: ignore
+  #   # This is a false positive for conditional map entries
+  #   use_null_aware_elements: ignore

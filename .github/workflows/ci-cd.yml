@@ -1,0 +1,458 @@
+# Workflow for continuous integration and Rust library builds
+# Triggered on PR, pushes to main branches, and version tags
+# Builds Rust libraries for Android, iOS and macOS
+
+name: CI/CD - Build & Test
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*'  # Supports tags like v0.1.0, v0.1.0+1, etc.
+  pull_request:
+    branches:
+      - main
+      - master
+      - develop
+
+jobs:
+  # ==================== Dart/Flutter Tests ====================
+  flutter-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.3'
+          channel: 'stable'
+          cache: true
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Install flutter_rust_bridge_codegen
+        run: cargo install flutter_rust_bridge_codegen
+
+      - name: Generate FFI bindings
+        run: flutter_rust_bridge_codegen generate
+
+      - name: Run build_runner
+        run: flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Run Flutter analyze
+        run: flutter analyze
+
+      - name: Run Flutter tests with coverage
+        run: flutter test --coverage
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: coverage/lcov.info
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+
+  # ==================== Rust Tests ====================
+  rust-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          cache: true
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust
+
+      - name: Run Rust tests
+        run: |
+          cd rust
+          cargo test --all-features
+
+      - name: Run Rust clippy
+        run: |
+          cd rust
+          cargo clippy --all-features -- -D warnings
+
+      - name: Check Rust formatting
+        run: |
+          cd rust
+          cargo fmt --check
+
+  # ==================== Android Build ====================
+  android-build:
+    runs-on: ubuntu-latest
+    needs: [flutter-test, rust-test]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.3'
+          channel: 'stable'
+          cache: true
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          cache: true
+
+      - name: Setup Android NDK
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r26
+          add-to-path: true
+
+      - name: Install cargo-ndk
+        run: cargo install cargo-ndk
+
+      - name: Add Android targets
+        run: |
+          rustup target add aarch64-linux-android
+          rustup target add armv7-linux-androideabi
+          rustup target add x86_64-linux-android
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust
+
+      - name: Build Rust libraries for Android
+        run: |
+          cd rust
+          # Create directory for jniLibs
+          mkdir -p ../android/app/src/main/jniLibs
+
+          # Build for all Android architectures
+          cargo ndk \
+            -t arm64-v8a \
+            -t armeabi-v7a \
+            -t x86_64 \
+            -o ../android/app/src/main/jniLibs \
+            build --release
+
+      - name: Verify Android binaries
+        run: |
+          echo "=== Android binaries ==="
+          find android/app/src/main/jniLibs -name "*.so" -type f
+          ls -lh android/app/src/main/jniLibs/*/
+
+      - name: Upload Android binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-jni-libs
+          path: android/app/src/main/jniLibs/
+          retention-days: 7
+
+  # ==================== iOS Build ====================
+  ios-build:
+    runs-on: macos-latest
+    needs: [flutter-test, rust-test]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.3'
+          channel: 'stable'
+          cache: true
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          cache: true
+
+      - name: Add iOS targets
+        run: |
+          rustup target add aarch64-apple-ios
+          rustup target add aarch64-apple-ios-sim
+          rustup target add x86_64-apple-ios
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust
+
+      - name: Build Rust libraries for iOS
+        run: |
+          cd rust
+
+          # Create directory for iOS libraries
+          mkdir -p ../ios/Frameworks
+
+          # Build for ARM64 (real devices)
+          cargo build --release --target aarch64-apple-ios
+
+          # Build for ARM64 simulator
+          cargo build --release --target aarch64-apple-ios-sim
+
+          # Build for x86_64 simulator
+          cargo build --release --target x86_64-apple-ios
+
+          # Create directory for universal simulator binary
+          mkdir -p target/ios-simulator-release
+
+          # Create universal binary for simulators (ARM + x86_64)
+          lipo -create \
+            target/aarch64-apple-ios-sim/release/libtc_helper.a \
+            target/x86_64-apple-ios/release/libtc_helper.a \
+            -output target/ios-simulator-release/libtc_helper.a
+          
+          echo "=== iOS binaries ==="
+          ls -lh target/aarch64-apple-ios/release/
+          ls -lh target/aarch64-apple-ios-sim/release/
+          ls -lh target/x86_64-apple-ios/release/
+          ls -lh target/ios-simulator-release/
+
+      - name: Upload iOS binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-static-libs
+          path: |
+            rust/target/aarch64-apple-ios/release/libtc_helper.a
+            rust/target/ios-simulator-release/libtc_helper.a
+          retention-days: 7
+
+  # ==================== Linux Build ====================
+  linux-build:
+    runs-on: ubuntu-latest
+    needs: [flutter-test, rust-test]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.3'
+          channel: 'stable'
+          cache: true
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          cache: true
+
+      - name: Add Linux targets
+        run: |
+          rustup target add x86_64-unknown-linux-gnu
+          rustup target add aarch64-unknown-linux-gnu
+
+      - name: Install Linux ARM64 cross-compiler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust
+
+      - name: Build Rust libraries for Linux
+        run: |
+          cd rust
+
+          # Create directory for Linux libraries
+          mkdir -p ../linux/lib
+
+          # Build for x86_64
+          cargo build --release --target x86_64-unknown-linux-gnu --features experimental
+
+          # Build for ARM64 (cross-compile)
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc \
+            cargo build --release --target aarch64-unknown-linux-gnu --features experimental
+
+          # Copy binaries
+          cp target/x86_64-unknown-linux-gnu/release/libtc_helper.so ../linux/lib/libtc_helper-x86_64.so
+          cp target/aarch64-unknown-linux-gnu/release/libtc_helper.so ../linux/lib/libtc_helper-aarch64.so
+
+          echo "=== Linux binaries ==="
+          ls -lh ../linux/lib/
+          file ../linux/lib/*.so
+
+      - name: Upload Linux binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-shared-libs
+          path: linux/lib/
+          retention-days: 7
+
+  # ==================== macOS Build ====================
+  macos-build:
+    runs-on: macos-latest
+    needs: [flutter-test, rust-test]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.3'
+          channel: 'stable'
+          cache: true
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          cache: true
+
+      - name: Add macOS targets
+        run: |
+          rustup target add aarch64-apple-darwin
+          rustup target add x86_64-apple-darwin
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust
+
+      - name: Build Rust libraries for macOS
+        run: |
+          cd rust
+
+          # Build for macOS
+          cargo build --release --target aarch64-apple-darwin
+          cargo build --release --target x86_64-apple-darwin
+
+          # Create universal binary (Apple Silicon + Intel)
+          mkdir -p target/macos-release
+          lipo -create \
+            target/aarch64-apple-darwin/release/libtc_helper.dylib \
+            target/x86_64-apple-darwin/release/libtc_helper.dylib \
+            -output target/macos-release/libtc_helper.dylib
+
+          echo "=== macOS binaries ==="
+          ls -lh target/aarch64-apple-darwin/release/
+          ls -lh target/x86_64-apple-darwin/release/
+          ls -lh target/macos-release/
+
+          # Check architectures
+          file target/macos-release/libtc_helper.dylib
+
+      - name: Upload macOS binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-dylib
+          path: rust/target/macos-release/libtc_helper.dylib
+          retention-days: 7
+
+  # ==================== Summary ====================
+  build-summary:
+    runs-on: ubuntu-latest
+    needs: [android-build, ios-build, macos-build, linux-build]
+    if: always()
+    steps:
+      - name: Check job statuses
+        run: |
+          echo "## Build Summary"
+          echo ""
+          echo "- Flutter Tests: ${{ needs.flutter-test.result }}"
+          echo "- Rust Tests: ${{ needs.rust-test.result }}"
+          echo "- Android Build: ${{ needs.android-build.result }}"
+          echo "- iOS Build: ${{ needs.ios-build.result }}"
+          echo "- macOS Build: ${{ needs.macos-build.result }}"
+          echo "- Linux Build: ${{ needs.linux-build.result }}"
+          echo ""
+
+          # Check for failures
+          if [[ "${{ needs.android-build.result }}" == "failure" || \
+                "${{ needs.ios-build.result }}" == "failure" || \
+                "${{ needs.macos-build.result }}" == "failure" || \
+                "${{ needs.linux-build.result }}" == "failure" ]]; then
+            echo "⚠️ Some builds failed"
+            exit 1
+          else
+            echo "✅ All builds completed successfully"
+          fi
+
+  # ==================== Publish to GitHub Releases ====================
+  publish-release:
+    runs-on: ubuntu-latest
+    needs: [android-build, ios-build, macos-build, linux-build]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Download Android artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: android-jni-libs
+          path: android-libs
+
+      - name: Download iOS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ios-static-libs
+          path: ios-libs
+
+      - name: Download macOS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-dylib
+          path: macos-libs
+
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-shared-libs
+          path: linux-libs
+
+      - name: Create release archives
+        run: |
+          # Create Android archive
+          cd android-libs
+          zip -r ../taskchampion_client_rust-android-${{ github.ref_name }}.zip .
+          cd ..
+
+          # Create iOS archive
+          cd ios-libs
+          zip -r ../taskchampion_client_rust-ios-${{ github.ref_name }}.zip .
+          cd ..
+
+          # Create macOS archive
+          cd macos-libs
+          zip -r ../taskchampion_client_rust-macos-${{ github.ref_name }}.zip .
+          cd ..
+
+          # Create Linux archive
+          cd linux-libs
+          zip -r ../taskchampion_client_rust-linux-${{ github.ref_name }}.zip .
+          cd ..
+
+          ls -la *.zip
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            taskchampion_client_rust-android-*.zip
+            taskchampion_client_rust-ios-*.zip
+            taskchampion_client_rust-macos-*.zip
+            taskchampion_client_rust-linux-*.zip
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
