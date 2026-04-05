@@ -1,45 +1,42 @@
 {
   "version": "0.1.0",
+  "generated_at": "2026-04-05T16:53:47Z",
   "assets": {
     "android-arm64-v8a": {
       "url": "https://github.com/Zloooy/taskchampion_client_rust/releases/download/v0.1.0/libtc_helper-android-arm64-v8a.so",
-      "sha256": "PLACEHOLDER_HASH_ANDROID_ARM64"
+      "sha256": "9f4ae138000beb5fd463f3e1cb6cc153cdf370a7ed08de2b6eb22a110399bcff"
     },
     "android-armeabi-v7a": {
       "url": "https://github.com/Zloooy/taskchampion_client_rust/releases/download/v0.1.0/libtc_helper-android-armeabi-v7a.so",
-      "sha256": "PLACEHOLDER_HASH_ANDROID_ARM"
+      "sha256": "bec1e43053e13e9ce7ae56d8548b328e34eb85b4ddd2a9ef6b8b9224571c12e4"
     },
     "android-x86_64": {
       "url": "https://github.com/Zloooy/taskchampion_client_rust/releases/download/v0.1.0/libtc_helper-android-x86_64.so",
-      "sha256": "PLACEHOLDER_HASH_ANDROID_X86_64"
+      "sha256": "e9c0251aec75c5260e976dbc215a1f5e4e3077ea8bfd4e6c86b392cf24e154c4"
     },
     "ios-aarch64": {
       "url": "https://github.com/Zloooy/taskchampion_client_rust/releases/download/v0.1.0/libtc_helper-ios-aarch64.a",
-      "sha256": "PLACEHOLDER_HASH_IOS_ARM64"
+      "sha256": "d1a23ddd876ba881c60db32f8df1d31156b8ccbfd0b27ae8cfd24990858ebd4c"
     },
     "ios-simulator-aarch64": {
       "url": "https://github.com/Zloooy/taskchampion_client_rust/releases/download/v0.1.0/libtc_helper-ios-simulator-aarch64.a",
-      "sha256": "PLACEHOLDER_HASH_IOS_SIM_ARM64"
+      "sha256": "76eaa5dc88a4b07b5d0492b209219b81ebb9467d8bbda7a310f623923be40645"
     },
     "ios-simulator-x86_64": {
       "url": "https://github.com/Zloooy/taskchampion_client_rust/releases/download/v0.1.0/libtc_helper-ios-simulator-x86_64.a",
-      "sha256": "PLACEHOLDER_HASH_IOS_SIM_X86_64"
+      "sha256": "7c410491e9eceeb26d48bcb612794393991d1a0439bd1340062c651197d61ad7"
     },
     "macos-aarch64": {
       "url": "https://github.com/Zloooy/taskchampion_client_rust/releases/download/v0.1.0/libtc_helper-macos-aarch64.dylib",
-      "sha256": "PLACEHOLDER_HASH_MACOS_ARM64"
+      "sha256": "dee2003af541b96662efc6214bf8eafe15ae050c92c067fde748fa040e9bb5a7"
     },
     "macos-x86_64": {
       "url": "https://github.com/Zloooy/taskchampion_client_rust/releases/download/v0.1.0/libtc_helper-macos-x86_64.dylib",
-      "sha256": "PLACEHOLDER_HASH_MACOS_X86_64"
-    },
-    "linux-aarch64": {
-      "url": "https://github.com/Zloooy/taskchampion_client_rust/releases/download/v0.1.0/libtc_helper-linux-aarch64.so",
-      "sha256": "PLACEHOLDER_HASH_LINUX_ARM64"
+      "sha256": "676f81165d3c66d08ce1c7202c6f2f294da7c36260413c40d1ed809cc883abb7"
     },
     "linux-x86_64": {
       "url": "https://github.com/Zloooy/taskchampion_client_rust/releases/download/v0.1.0/libtc_helper-linux-x86_64.so",
-      "sha256": "PLACEHOLDER_HASH_LINUX_X86_64"
+      "sha256": "b7c03deba3897d2b0e543943be8426a24df36794fd084364687ca02988015b8b"
     }
   }
 }
