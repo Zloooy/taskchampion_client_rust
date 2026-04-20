@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "generated_at": "2026-04-19T17:51:25Z",
+  "generated_at": "2026-04-20T15:17:56Z",
   "assets": {
     "android-arm64-v8a": {
       "url": "https://github.com/Zloooy/taskchampion_client_rust/releases/download/v0.1.0/libtc_helper-android-arm64-v8a.so",
