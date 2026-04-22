@@ -34,7 +34,11 @@ class TaskService {
   /// Get all tasks from the database
   Future<List<Task>> filterTasks(TaskFilter filter, {TaskSort? sort}) async {
     try {
-      final jsonStr = await RustBridge.getTasksWithFilterAndSortJson(taskdbPath, filter, sort);
+      final jsonStr = await RustBridge.getTasksWithFilterAndSortJson(
+        taskdbPath,
+        filter,
+        sort,
+      );
       final List<dynamic> jsonList = json.decode(jsonStr);
 
       return jsonList
@@ -155,8 +159,7 @@ class TaskService {
     try {
       final jsonStr = await RustBridge.getTaskdbStats(taskdbPath);
       final Map<String, dynamic> jsonData = json.decode(jsonStr);
-      
-      
+
       return TaskStats(
         total: jsonData['total_tasks'],
         pending: jsonData['pending'],

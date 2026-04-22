@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'models/models.dart';
 import 'services/services.dart';
 import 'rust_bridge/frb_generated.dart';
-import 'utils/native_assets.dart';
 
 /// TaskChampion Client - Main public API for TaskChampion operations
 ///
@@ -77,18 +76,10 @@ class TaskChampionClient {
   /// This must be called before creating any TaskChampionClient instances.
   /// It initializes the Rust FFI bridge and sets up necessary platform bindings.
   ///
-  /// The initialization process:
-  /// 1. Loads native assets from GitHub Releases or local build
-  /// 2. Initializes the Rust FFI bridge
-  /// 3. Sets up platform-specific bindings
+  /// The native library is loaded automatically via flutter_rust_bridge's
   static Future<void> init() async {
-    // Initialize native assets loader
-    await NativeAssetsLoader.init();
-
-    // Initialize Rust FFI bridge
     await RustLib.init();
-
-    debugPrint('TaskChampionClient initialized with Native Assets');
+    debugPrint('TaskChampionClient initialized');
   }
 
   /// Create a new TaskChampionClient instance
@@ -242,7 +233,7 @@ class TaskChampionClient {
   /// Get all tasks from the local database
   ///
   /// Optionally filter by status and sort by a property.
-  /// 
+  ///
   /// [sort] - Optional [TaskSort] to sort the results.
   ///          If not provided, tasks are returned in their natural order.
   Future<List<Task>> getAllTasks({TaskStatus? status, TaskSort? sort}) async {

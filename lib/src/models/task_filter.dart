@@ -12,10 +12,12 @@ class TaskFilter {
   static const TaskFilter matchAll = TaskFilter(AndFilterGroup([]));
 
   /// Create a filter that matches tasks with a specific tag
-  static TaskFilter hasTag(String tag) => TaskFilter(TagFilter(tag: tag, exclude: false));
+  static TaskFilter hasTag(String tag) =>
+      TaskFilter(TagFilter(tag: tag, exclude: false));
 
   /// Create a filter that excludes tasks with a specific tag
-  static TaskFilter excludeTag(String tag) => TaskFilter(TagFilter(tag: tag, exclude: true));
+  static TaskFilter excludeTag(String tag) =>
+      TaskFilter(TagFilter(tag: tag, exclude: true));
 
   /// Create a filter for virtual tags (e.g., ACTIVE, PENDING, BLOCKED)
   static TaskFilter virtualTag(String tag, {bool exclude = false}) =>
@@ -51,9 +53,9 @@ final class AndFilterGroup extends FilterGroup {
 
   @override
   Map<String, dynamic> toJson() => {
-        'type': 'AndGroup',
-        'filters': filters.map((f) => f.toJson()).toList(),
-      };
+    'type': 'AndGroup',
+    'filters': filters.map((f) => f.toJson()).toList(),
+  };
 }
 
 /// Combines all contained filters with logical OR
@@ -62,9 +64,9 @@ final class OrFilterGroup extends FilterGroup {
 
   @override
   Map<String, dynamic> toJson() => {
-        'type': 'OrGroup',
-        'filters': filters.map((f) => f.toJson()).toList(),
-      };
+    'type': 'OrGroup',
+    'filters': filters.map((f) => f.toJson()).toList(),
+  };
 }
 
 /// Combines all contained filters with logical XOR
@@ -74,9 +76,9 @@ final class XorFilterGroup extends FilterGroup {
 
   @override
   Map<String, dynamic> toJson() => {
-        'type': 'XorGroup',
-        'filters': filters.map((f) => f.toJson()).toList(),
-      };
+    'type': 'XorGroup',
+    'filters': filters.map((f) => f.toJson()).toList(),
+  };
 }
 
 /// Negates a single filter expression
@@ -86,10 +88,7 @@ final class NotFilter extends FilterExpression {
   const NotFilter(this.inner);
 
   @override
-  Map<String, dynamic> toJson() => {
-        'type': 'Not',
-        'inner': inner.toJson(),
-      };
+  Map<String, dynamic> toJson() => {'type': 'Not', 'inner': inner.toJson()};
 }
 
 /// Base class for filters on a property of type T
@@ -134,10 +133,10 @@ final class EqualsFilter<T> extends PropertyFilter<T> {
 
   @override
   Map<String, dynamic> toJson() => {
-        'type': 'EqualsFilter',
-        'property': property.toJson(),
-        'value': value is DateTime ? (value as DateTime).toIso8601String() : value,
-      };
+    'type': 'EqualsFilter',
+    'property': property.toJson(),
+    'value': value is DateTime ? (value as DateTime).toIso8601String() : value,
+  };
 }
 
 /// Matches if the property value is NOT equal to [value] (!=)
@@ -152,29 +151,27 @@ final class NotEqualsFilter<T> extends PropertyFilter<T> {
 
   @override
   Map<String, dynamic> toJson() => {
-        'type': 'NotEqualsFilter',
-        'property': property.toJson(),
-        'value': value is DateTime ? (value as DateTime).toIso8601String() : value,
-      };
+    'type': 'NotEqualsFilter',
+    'property': property.toJson(),
+    'value': value is DateTime ? (value as DateTime).toIso8601String() : value,
+  };
 }
 
 /// Matches if the property value is in the set [values]
 final class InFilter<T> extends PropertyFilter<T> {
   final Set<T> values;
 
-  const InFilter({
-    required TaskPropertyRef<T> property,
-    required this.values,
-  }) : super(property);
+  const InFilter({required TaskPropertyRef<T> property, required this.values})
+    : super(property);
 
   @override
   Map<String, dynamic> toJson() => {
-        'type': 'InFilter',
-        'property': property.toJson(),
-        'values': values
-            .map((v) => v is DateTime ? (v as DateTime).toIso8601String() : v)
-            .toList(),
-      };
+    'type': 'InFilter',
+    'property': property.toJson(),
+    'values': values
+        .map((v) => v is DateTime ? (v as DateTime).toIso8601String() : v)
+        .toList(),
+  };
 }
 
 /// Matches if the property value is NOT in the set [values]
@@ -188,12 +185,12 @@ final class NotInFilter<T> extends PropertyFilter<T> {
 
   @override
   Map<String, dynamic> toJson() => {
-        'type': 'NotInFilter',
-        'property': property.toJson(),
-        'values': values
-            .map((v) => v is DateTime ? (v as DateTime).toIso8601String() : v)
-            .toList(),
-      };
+    'type': 'NotInFilter',
+    'property': property.toJson(),
+    'values': values
+        .map((v) => v is DateTime ? (v as DateTime).toIso8601String() : v)
+        .toList(),
+  };
 }
 
 // ============================================================================
@@ -214,11 +211,11 @@ final class ContainsFilter extends PropertyFilter<String> {
 
   @override
   Map<String, dynamic> toJson() => {
-        'type': 'ContainsFilter',
-        'property': property.toJson(),
-        'value': value,
-        'case_sensitive': caseSensitive,
-      };
+    'type': 'ContainsFilter',
+    'property': property.toJson(),
+    'value': value,
+    'case_sensitive': caseSensitive,
+  };
 }
 
 /// Matches if the string value does NOT contain [value] as a substring
@@ -235,11 +232,11 @@ final class NotContainsFilter extends PropertyFilter<String> {
 
   @override
   Map<String, dynamic> toJson() => {
-        'type': 'NotContainsFilter',
-        'property': property.toJson(),
-        'value': value,
-        'case_sensitive': caseSensitive,
-      };
+    'type': 'NotContainsFilter',
+    'property': property.toJson(),
+    'value': value,
+    'case_sensitive': caseSensitive,
+  };
 }
 
 /// Matches if the string value starts with [value]
@@ -256,11 +253,11 @@ final class StartsWithFilter extends PropertyFilter<String> {
 
   @override
   Map<String, dynamic> toJson() => {
-        'type': 'StartsWithFilter',
-        'property': property.toJson(),
-        'value': value,
-        'case_sensitive': caseSensitive,
-      };
+    'type': 'StartsWithFilter',
+    'property': property.toJson(),
+    'value': value,
+    'case_sensitive': caseSensitive,
+  };
 }
 
 /// Matches if the string value ends with [value]
@@ -277,11 +274,11 @@ final class EndsWithFilter extends PropertyFilter<String> {
 
   @override
   Map<String, dynamic> toJson() => {
-        'type': 'EndsWithFilter',
-        'property': property.toJson(),
-        'value': value,
-        'case_sensitive': caseSensitive,
-      };
+    'type': 'EndsWithFilter',
+    'property': property.toJson(),
+    'value': value,
+    'case_sensitive': caseSensitive,
+  };
 }
 
 /// Matches if the string value contains [value] as a whole word
@@ -298,11 +295,11 @@ final class WordFilter extends PropertyFilter<String> {
 
   @override
   Map<String, dynamic> toJson() => {
-        'type': 'WordFilter',
-        'property': property.toJson(),
-        'value': value,
-        'case_sensitive': caseSensitive,
-      };
+    'type': 'WordFilter',
+    'property': property.toJson(),
+    'value': value,
+    'case_sensitive': caseSensitive,
+  };
 }
 
 /// Matches if the string value does NOT contain [value] as a whole word
@@ -319,11 +316,11 @@ final class NoWordFilter extends PropertyFilter<String> {
 
   @override
   Map<String, dynamic> toJson() => {
-        'type': 'NoWordFilter',
-        'property': property.toJson(),
-        'value': value,
-        'case_sensitive': caseSensitive,
-      };
+    'type': 'NoWordFilter',
+    'property': property.toJson(),
+    'value': value,
+    'case_sensitive': caseSensitive,
+  };
 }
 
 // ============================================================================
@@ -333,29 +330,25 @@ final class NoWordFilter extends PropertyFilter<String> {
 /// Matches if the property has NO value (is empty/null)
 /// Equivalent to `.none:` modifier in taskwarrior
 final class NoneFilter<T> extends PropertyFilter<T> {
-  const NoneFilter({
-    required TaskPropertyRef<T> property,
-  }) : super(property);
+  const NoneFilter({required TaskPropertyRef<T> property}) : super(property);
 
   @override
   Map<String, dynamic> toJson() => {
-        'type': 'NoneFilter',
-        'property': property.toJson(),
-      };
+    'type': 'NoneFilter',
+    'property': property.toJson(),
+  };
 }
 
 /// Matches if the property has ANY value (is not empty/null)
 /// Equivalent to `.any:` modifier in taskwarrior
 final class AnyFilter<T> extends PropertyFilter<T> {
-  const AnyFilter({
-    required TaskPropertyRef<T> property,
-  }) : super(property);
+  const AnyFilter({required TaskPropertyRef<T> property}) : super(property);
 
   @override
   Map<String, dynamic> toJson() => {
-        'type': 'AnyFilter',
-        'property': property.toJson(),
-      };
+    'type': 'AnyFilter',
+    'property': property.toJson(),
+  };
 }
 
 // ============================================================================
@@ -374,10 +367,10 @@ final class DateBeforeFilter extends PropertyFilter<DateTime> {
 
   @override
   Map<String, dynamic> toJson() => {
-        'type': 'DateBeforeFilter',
-        'property': property.toJson(),
-        'date': date.toIso8601String(),
-      };
+    'type': 'DateBeforeFilter',
+    'property': property.toJson(),
+    'date': date.toIso8601String(),
+  };
 }
 
 /// Matches if the date property is after [date] (>)
@@ -392,10 +385,10 @@ final class DateAfterFilter extends PropertyFilter<DateTime> {
 
   @override
   Map<String, dynamic> toJson() => {
-        'type': 'DateAfterFilter',
-        'property': property.toJson(),
-        'date': date.toIso8601String(),
-      };
+    'type': 'DateAfterFilter',
+    'property': property.toJson(),
+    'date': date.toIso8601String(),
+  };
 }
 
 /// Matches if the date property is on or before [date] (<=)
@@ -410,10 +403,10 @@ final class DateByFilter extends PropertyFilter<DateTime> {
 
   @override
   Map<String, dynamic> toJson() => {
-        'type': 'DateByFilter',
-        'property': property.toJson(),
-        'date': date.toIso8601String(),
-      };
+    'type': 'DateByFilter',
+    'property': property.toJson(),
+    'date': date.toIso8601String(),
+  };
 }
 
 /// Matches tasks where the property value is greater than or equal to [date]
@@ -427,10 +420,10 @@ final class DateFromFilter extends PropertyFilter<DateTime> {
 
   @override
   Map<String, dynamic> toJson() => {
-        'type': 'DateFromFilter',
-        'property': property.toJson(),
-        'from': from.toIso8601String(),
-      };
+    'type': 'DateFromFilter',
+    'property': property.toJson(),
+    'from': from.toIso8601String(),
+  };
 }
 
 /// Matches tasks where the property value is less than or equal to [date]
@@ -444,10 +437,10 @@ final class DateToFilter extends PropertyFilter<DateTime> {
 
   @override
   Map<String, dynamic> toJson() => {
-        'type': 'DateToFilter',
-        'property': property.toJson(),
-        'to': to.toIso8601String(),
-      };
+    'type': 'DateToFilter',
+    'property': property.toJson(),
+    'to': to.toIso8601String(),
+  };
 }
 
 // ============================================================================
@@ -465,10 +458,10 @@ final class LessThanFilter extends PropertyFilter<num> {
 
   @override
   Map<String, dynamic> toJson() => {
-        'type': 'LessThanFilter',
-        'property': property.toJson(),
-        'value': value,
-      };
+    'type': 'LessThanFilter',
+    'property': property.toJson(),
+    'value': value,
+  };
 }
 
 /// Matches if the numeric property is less than or equal to [value] (<=)
@@ -482,10 +475,10 @@ final class LessThanOrEqualFilter extends PropertyFilter<num> {
 
   @override
   Map<String, dynamic> toJson() => {
-        'type': 'LessThanOrEqualFilter',
-        'property': property.toJson(),
-        'value': value,
-      };
+    'type': 'LessThanOrEqualFilter',
+    'property': property.toJson(),
+    'value': value,
+  };
 }
 
 /// Matches if the numeric property is greater than [value] (>)
@@ -499,10 +492,10 @@ final class GreaterThanFilter extends PropertyFilter<num> {
 
   @override
   Map<String, dynamic> toJson() => {
-        'type': 'GreaterThanFilter',
-        'property': property.toJson(),
-        'value': value,
-      };
+    'type': 'GreaterThanFilter',
+    'property': property.toJson(),
+    'value': value,
+  };
 }
 
 /// Matches if the numeric property is greater than or equal to [value] (>=)
@@ -516,10 +509,10 @@ final class GreaterThanOrEqualFilter extends PropertyFilter<num> {
 
   @override
   Map<String, dynamic> toJson() => {
-        'type': 'GreaterThanOrEqualFilter',
-        'property': property.toJson(),
-        'value': value,
-      };
+    'type': 'GreaterThanOrEqualFilter',
+    'property': property.toJson(),
+    'value': value,
+  };
 }
 
 // ============================================================================
@@ -531,17 +524,14 @@ final class TagFilter extends FilterExpression {
   final String tag;
   final bool exclude;
 
-  const TagFilter({
-    required this.tag,
-    this.exclude = false,
-  });
+  const TagFilter({required this.tag, this.exclude = false});
 
   @override
   Map<String, dynamic> toJson() => {
-        'type': 'Tag',
-        'tag': tag,
-        'exclude': exclude,
-      };
+    'type': 'Tag',
+    'tag': tag,
+    'exclude': exclude,
+  };
 }
 
 // ============================================================================
@@ -557,17 +547,14 @@ final class VirtualTagFilter extends FilterExpression {
   final String tag;
   final bool exclude;
 
-  const VirtualTagFilter({
-    required this.tag,
-    this.exclude = false,
-  });
+  const VirtualTagFilter({required this.tag, this.exclude = false});
 
   @override
   Map<String, dynamic> toJson() => {
-        'type': 'VirtualTag',
-        'tag': tag.toUpperCase(),
-        'exclude': exclude,
-      };
+    'type': 'VirtualTag',
+    'tag': tag.toUpperCase(),
+    'exclude': exclude,
+  };
 }
 
 // ============================================================================
@@ -587,9 +574,9 @@ final class RegexFilter extends PropertyFilter<String> {
 
   @override
   Map<String, dynamic> toJson() => {
-        'type': 'RegexFilter',
-        'property': property.toJson(),
-        'pattern': pattern,
-        'case_sensitive': caseSensitive,
-      };
+    'type': 'RegexFilter',
+    'property': property.toJson(),
+    'pattern': pattern,
+    'case_sensitive': caseSensitive,
+  };
 }

@@ -47,6 +47,13 @@ jobs:
       - name: Run build_runner
         run: flutter pub run build_runner build --delete-conflicting-outputs
 
+      - name: Build Rust library
+        run: |
+          cd rust
+          cargo build --release
+          echo "=== Built library ==="
+          ls -lh target/release/libtc_helper.so
+
       - name: Run Flutter analyze
         run: flutter analyze
 

@@ -21,29 +21,41 @@ sealed class TaskSort {
 
   /// Create JSON representation for Rust FFI
   Map<String, dynamic> toJson() => {
-        'property': {'name': propertyName},
-        'direction': direction.name,
-      };
+    'property': {'name': propertyName},
+    'direction': direction.name,
+  };
 }
 
 /// Sort by string property (e.g., description, project)
 final class StringPropertySort extends TaskSort {
-  const StringPropertySort(super.propertyName, [super.direction = SortDirection.ascending]);
+  const StringPropertySort(
+    super.propertyName, [
+    super.direction = SortDirection.ascending,
+  ]);
 }
 
 /// Sort by DateTime property (e.g., due, entry, modified)
 final class DateTimePropertySort extends TaskSort {
-  const DateTimePropertySort(super.propertyName, [super.direction = SortDirection.ascending]);
+  const DateTimePropertySort(
+    super.propertyName, [
+    super.direction = SortDirection.ascending,
+  ]);
 }
 
 /// Sort by integer property (e.g., id)
 final class IntPropertySort extends TaskSort {
-  const IntPropertySort(super.propertyName, [super.direction = SortDirection.ascending]);
+  const IntPropertySort(
+    super.propertyName, [
+    super.direction = SortDirection.ascending,
+  ]);
 }
 
 /// Sort by double property (e.g., urgency)
 final class DoublePropertySort extends TaskSort {
-  const DoublePropertySort(super.propertyName, [super.direction = SortDirection.ascending]);
+  const DoublePropertySort(
+    super.propertyName, [
+    super.direction = SortDirection.ascending,
+  ]);
 }
 
 /// Extension methods for creating common sorts from property refs

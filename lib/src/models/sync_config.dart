@@ -40,7 +40,8 @@ extension SyncConfigExtensions on SyncConfig {
   bool get isValidServerUrl {
     try {
       final uri = Uri.parse(serverUrl);
-      return uri.host.isNotEmpty && (uri.scheme == 'http' || uri.scheme == 'https');
+      return uri.host.isNotEmpty &&
+          (uri.scheme == 'http' || uri.scheme == 'https');
     } catch (e) {
       return false;
     }

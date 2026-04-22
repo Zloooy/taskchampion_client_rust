@@ -1,6 +1,6 @@
 name: taskchampion_client_rust
 description: "A Flutter/Dart client library for TaskChampion with Rust FFI bindings. Provides task storage, synchronization, and authentication capabilities."
-version: 0.1.0
+version: 0.1.1
 homepage: "https://github.com/Zloooy/taskchampion_client_rust"
 repository: "https://github.com/Zloooy/taskchampion_client_rust"
 issue_tracker: "https://github.com/Zloooy/taskchampion_client_rust/issues"

@@ -12,13 +12,11 @@ enum TaskPriority {
   low,
 
   /// No priority set (default)
-  none;
-
+  none,
 }
 
 /// Extension methods for TaskPriority
 extension TaskPriorityExtensions on TaskPriority {
-
   /// Check if priority is set (not none)
   bool get isSet => this != TaskPriority.none;
 }

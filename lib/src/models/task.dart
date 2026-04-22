@@ -21,12 +21,14 @@ abstract class Task with _$Task {
     /// Current task status
     /// All unknown values fallback to pending
     @JsonKey(unknownEnumValue: TaskStatus.pending)
-    @Default(TaskStatus.pending) TaskStatus status,
+    @Default(TaskStatus.pending)
+    TaskStatus status,
 
     /// Task priority (high, medium, low, or none)
     /// All unknown values fallback to none
     @JsonKey(unknownEnumValue: TaskPriority.none)
-    @Default(TaskPriority.none) TaskPriority priority,
+    @Default(TaskPriority.none)
+    TaskPriority priority,
 
     /// Project name (optional) - stored as UDA in TaskChampion
     String? project,
@@ -74,29 +76,49 @@ abstract class Task with _$Task {
   factory Task.fromJson(Map<String, dynamic> json) => _$TaskFromJson(json);
 
   /// Create a Task from raw JSON returned by Rust FFI
-  /// 
+  ///
   /// This handles the flat structure where UDAs are returned as top-level keys
   /// alongside standard task properties.
   factory Task.fromRawJson(Map<String, dynamic> json) {
     // Known task properties that should be extracted
     const knownKeys = [
-      'uuid', 'description', 'status', 'priority', 'project',
-      'tags', 'due', 'wait', 'scheduled', 'until', 'entry',
-      'modified', 'end', 'urgency', 'parent', 'depends', 'annotations'
+      'uuid',
+      'description',
+      'status',
+      'priority',
+      'project',
+      'tags',
+      'due',
+      'wait',
+      'scheduled',
+      'until',
+      'entry',
+      'modified',
+      'end',
+      'urgency',
+      'parent',
+      'depends',
+      'annotations',
     ];
-    
+
     // Extract known properties
     final knownProps = <String, dynamic>{};
     // Extract UDAs (everything else)
     final udas = <String, String>{};
-    
+
     // Properties that should be in udas map but also exposed as task properties
-    const udaPropertyKeys = ['project', 'scheduled', 'until', 'parent', 'urgency'];
-    
+    const udaPropertyKeys = [
+      'project',
+      'scheduled',
+      'until',
+      'parent',
+      'urgency',
+    ];
+
     for (final entry in json.entries) {
       final key = entry.key;
       final value = entry.value;
-      
+
       if (key.startsWith('annotation_')) {
         // Skip annotations - they're handled separately (stored in Rust only)
         continue;
@@ -113,11 +135,12 @@ abstract class Task with _$Task {
         }
       }
     }
-    
+
     // Convert scheduled and until to DateTime if present
     // Note: Task.fromJson expects these as ISO8601 strings for parsing
     if (knownProps['scheduled'] is DateTime) {
-      knownProps['scheduled'] = (knownProps['scheduled'] as DateTime).toIso8601String();
+      knownProps['scheduled'] = (knownProps['scheduled'] as DateTime)
+          .toIso8601String();
     } else if (knownProps['scheduled'] is String) {
       try {
         // Validate it's a valid datetime string
@@ -126,7 +149,7 @@ abstract class Task with _$Task {
         knownProps.remove('scheduled');
       }
     }
-    
+
     if (knownProps['until'] is DateTime) {
       knownProps['until'] = (knownProps['until'] as DateTime).toIso8601String();
     } else if (knownProps['until'] is String) {
@@ -136,7 +159,7 @@ abstract class Task with _$Task {
         knownProps.remove('until');
       }
     }
-    
+
     // Convert urgency to double if present
     if (knownProps['urgency'] is String) {
       try {
@@ -145,16 +168,22 @@ abstract class Task with _$Task {
         knownProps.remove('urgency');
       }
     }
-    
+
     // Convert tags and depends to List<String> if they're strings
     if (knownProps['tags'] is String) {
       final tagsStr = knownProps['tags'] as String;
-      knownProps['tags'] = tagsStr.split(' ').where((t) => t.isNotEmpty).toList();
+      knownProps['tags'] = tagsStr
+          .split(' ')
+          .where((t) => t.isNotEmpty)
+          .toList();
     }
 
     if (knownProps['depends'] is String) {
       final dependsStr = knownProps['depends'] as String;
-      knownProps['depends'] = dependsStr.split(' ').where((d) => d.isNotEmpty).toList();
+      knownProps['depends'] = dependsStr
+          .split(' ')
+          .where((d) => d.isNotEmpty)
+          .toList();
     }
 
     // Handle missing priority - default to 'none'
@@ -189,9 +218,7 @@ abstract class Task with _$Task {
 
     // If there are additional UDAs, merge them
     if (udas.isNotEmpty) {
-      return task.copyWith(
-        udas: {...task.udas, ...udas},
-      );
+      return task.copyWith(udas: {...task.udas, ...udas});
     }
 
     return task;

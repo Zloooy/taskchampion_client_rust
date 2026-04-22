@@ -13,6 +13,7 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use taskchampion::storage::AccessMode;
 use taskchampion::{utc_timestamp, Operations, Replica, ServerConfig, SqliteStorage, Status, Tag};
+
 use uuid::Uuid;
 
 use std::sync::OnceLock;
@@ -354,7 +355,17 @@ fn task_to_map(task: &taskchampion::Task) -> HashMap<String, String> {
     }
 
     // Handle tags
-    let tags: Vec<String> = task.get_tags().map(|t| t.to_string()).collect();
+    let tags: Vec<String> = task
+        .get_tags()
+        .filter_map(|t| {
+            let tag_str = t.to_string();
+            if has_virtual_tag(task, &tag_str) {
+                None
+            } else {
+                Some(tag_str)
+            }
+        })
+        .collect();
     map.insert("tags".to_string(), tags.join(" "));
 
     // Handle dependencies
@@ -1060,12 +1071,17 @@ fn get_datetime_property(task: &taskchampion::Task, property_name: &str) -> Opti
 /// Check if a task has a virtual tag
 fn has_virtual_tag(task: &taskchampion::Task, tag: &str) -> bool {
     match tag.to_uppercase().as_str() {
-        "ACTIVE" => task.get_value("start").is_some(),
+        // Synthetic tags handled via task.has_tag with SyntheticTag parsing
+        "ACTIVE" | "BLOCKED" | "BLOCKING" | "COMPLETED" | "DELETED" | "PENDING" | "UNBLOCKED"
+        | "WAITING" => {
+            // Convert the string to a Tag (which knows how to handle synthetic tags)
+            if let Ok(tag_obj) = Tag::from_str(tag) {
+                return task.has_tag(&tag_obj);
+            }
+            false
+        }
+        // Existing manual checks for other virtual tags
         "ANNOTATED" => task.get_annotations().count() > 0,
-        "BLOCKED" => task.get_dependencies().count() > 0,
-        "BLOCKING" => task.is_blocking(),
-        "COMPLETED" => task.get_status() == taskchampion::Status::Completed,
-        "DELETED" => task.get_status() == taskchampion::Status::Deleted,
         "DUE" => {
             if let Some(due) = task.get_due() {
                 let now = Utc::now();
@@ -1102,7 +1118,6 @@ fn has_virtual_tag(task: &taskchampion::Task, tag: &str) -> bool {
             }
         }
         "PARENT" => task.get_value("last").is_some() || task.get_value("mask").is_some(),
-        "PENDING" => task.get_status() == taskchampion::Status::Pending,
         "PRIORITY" => !task.get_priority().is_empty(),
         "PROJECT" => task.get_value("project").is_some(),
         "QUARTER" => {
@@ -1131,9 +1146,7 @@ fn has_virtual_tag(task: &taskchampion::Task, tag: &str) -> bool {
             }
         }
         "UDA" => false, // Would need UDA check
-        "UNBLOCKED" => task.get_dependencies().count() == 0,
         "UNTIL" => task.get_value("until").is_some(),
-        "WAITING" => task.get_wait().is_some_and(|w| w > Utc::now()),
         "WEEK" => {
             if let Some(due) = task.get_due() {
                 let now_iso = Utc::now().iso_week();

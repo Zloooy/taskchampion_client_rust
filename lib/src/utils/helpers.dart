@@ -30,10 +30,10 @@ class TaskChampionHelpers {
   static bool isValidUrl(String url) {
     try {
       final uri = Uri.parse(url);
-      return uri.host.isNotEmpty && (uri.scheme == 'http' || uri.scheme == 'https');
+      return uri.host.isNotEmpty &&
+          (uri.scheme == 'http' || uri.scheme == 'https');
     } catch (e) {
       return false;
     }
   }
-
 }
