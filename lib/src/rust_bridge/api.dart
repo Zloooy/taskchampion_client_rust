@@ -4,11 +4,8 @@
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
 import 'frb_generated.dart';
+import 'models.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
-
-// These functions are ignored because they are not marked as `pub`: `compare_tasks`, `create_storage_async`, `create_task_from_map`, `evaluate_filter_expression`, `get_datetime_property`, `get_runtime`, `get_string_property`, `has_virtual_tag`, `parse_datetime`, `task_to_map`, `update_task_in_replica`
-// These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `DateTimePropertyFilter`, `FilterGroup`, `NumericPropertyFilter`, `PropertyFilter`, `PropertyRef`, `SortDirection`, `SortProperty`, `StringPropertyFilter`, `TagFilter`, `TaskSort`, `VirtualTagFilter`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_receiver_is_total_eq`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
 /// Get all tasks from the local TaskChampion replica as a JSON array
 ///
@@ -268,56 +265,46 @@ Future<int> importTasks({
   importFilePath: importFilePath,
 );
 
-// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<FilterExpression>>
-abstract class FilterExpression implements RustOpaqueInterface {}
+/// Retrieve distinct values for a given task property
+///
+/// # Arguments
+/// * `taskdb_dir_path` - Path to the directory containing the task database
+/// * `property` - Name of the property to query (e.g. "description", "due")
+/// * `filter_json` - Optional JSON describing a TaskFilter to limit the tasks
+/// * `sort_json` - Optional JSON describing a TaskSort that may affect the order of the returned list
+///
+/// # Returns
+/// JSON string containing an array of distinct property values
+Future<List<String>> getTaskPropertyValues({
+  required String taskdbDirPath,
+  required String property,
+  String? filterJson,
+  String? sortJson,
+}) => RustLib.instance.api.crateApiGetTaskPropertyValues(
+  taskdbDirPath: taskdbDirPath,
+  property: property,
+  filterJson: filterJson,
+  sortJson: sortJson,
+);
 
-// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<TaskFilter>>
-abstract class TaskFilter implements RustOpaqueInterface {
-  FilterExpression get filter;
-
-  set filter(FilterExpression filter);
-}
-
-/// Sync result structure for returning sync statistics
-class SyncResultData {
-  final bool success;
-  final BigInt versionsSynced;
-  final BigInt tasksAdded;
-  final BigInt tasksUpdated;
-  final BigInt tasksDeleted;
-  final String? errorMessage;
-  final BigInt? durationMs;
-
-  const SyncResultData({
-    required this.success,
-    required this.versionsSynced,
-    required this.tasksAdded,
-    required this.tasksUpdated,
-    required this.tasksDeleted,
-    this.errorMessage,
-    this.durationMs,
-  });
-
-  @override
-  int get hashCode =>
-      success.hashCode ^
-      versionsSynced.hashCode ^
-      tasksAdded.hashCode ^
-      tasksUpdated.hashCode ^
-      tasksDeleted.hashCode ^
-      errorMessage.hashCode ^
-      durationMs.hashCode;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is SyncResultData &&
-          runtimeType == other.runtimeType &&
-          success == other.success &&
-          versionsSynced == other.versionsSynced &&
-          tasksAdded == other.tasksAdded &&
-          tasksUpdated == other.tasksUpdated &&
-          tasksDeleted == other.tasksDeleted &&
-          errorMessage == other.errorMessage &&
-          durationMs == other.durationMs;
-}
+/// Retrieve distinct tag values from tasks, with optional virtual tag inclusion and pattern filtering.
+///
+/// # Arguments
+/// * `taskdb_dir_path` - Path to the directory containing the task database
+/// * `filter_json` - Optional JSON describing a TaskFilter to limit the tasks
+/// * `include_virtual_tags` - When true, include virtual tags (tags starting with '+' or '-')
+/// * `pattern` - Optional case-insensitive substring that a tag must contain
+///
+/// # Returns
+/// JSON string containing an array of distinct tag values
+Future<List<String>> getTags({
+  required String taskdbDirPath,
+  String? filterJson,
+  required bool includeVirtualTags,
+  String? pattern,
+}) => RustLib.instance.api.crateApiGetTags(
+  taskdbDirPath: taskdbDirPath,
+  filterJson: filterJson,
+  includeVirtualTags: includeVirtualTags,
+  pattern: pattern,
+);

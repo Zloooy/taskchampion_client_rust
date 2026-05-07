@@ -1,8 +1,12 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'models/models.dart';
-import 'services/services.dart';
 import 'rust_bridge/frb_generated.dart';
+import 'services/task_service.dart';
+import 'services/task_property_service.dart';
+import 'services/task_tag_service.dart';
+import 'services/sync_service.dart';
+import 'services/auth_service.dart';
 
 /// TaskChampion Client - Main public API for TaskChampion operations
 ///
@@ -55,6 +59,12 @@ class TaskChampionClient {
 
   /// Task service for managing tasks
   late final TaskService _taskService;
+
+  /// Task property service for retrieving property values
+  late final TaskPropertyService _taskPropertyService;
+
+  /// Task tag service for retrieving tag values
+  late final TaskTagService _taskTagService;
 
   /// Sync service for synchronization
   late final SyncService _syncService;
@@ -112,6 +122,8 @@ class TaskChampionClient {
   /// Initialize internal services
   void _initializeServices() {
     _taskService = TaskService(config.taskdbPath);
+    _taskPropertyService = TaskPropertyService(config.taskdbPath);
+    _taskTagService = TaskTagService(config.taskdbPath);
     _syncService = SyncService(config.taskdbPath, config.syncConfig);
     _authService = AuthService(config.authConfig);
 
@@ -289,6 +301,44 @@ class TaskChampionClient {
   /// - [TaskFilter.modified] - Last modified date
   Future<List<Task>> filterTasks(TaskFilter filter, {TaskSort? sort}) async {
     return _taskService.filterTasks(filter, sort: sort);
+  }
+
+  /// Get distinct property values for a given property name.
+  ///
+  /// [property] – name of the property to query (e.g. "description", "due").
+  /// [filter] – optional [TaskFilter] to limit the tasks considered.
+  /// [sort] – optional [TaskSort] that may affect the order of the returned list.
+  ///
+  /// Returns a sorted list of distinct string values, or an empty list on failure.
+  Future<List<String>> getPropertyValues({
+    required String property,
+    TaskFilter? filter,
+    TaskSort? sort,
+  }) async {
+    return await _taskPropertyService.getPropertyValues(
+      property: property,
+      filter: filter,
+      sort: sort,
+    );
+  }
+
+  /// Get distinct tag values from tasks.
+  ///
+  /// [filter] – optional [TaskFilter] to limit the tasks considered.
+  /// [includeVirtualTags] – when true, include virtual tags in the results.
+  /// [pattern] – optional case‑insensitive substring that a tag must contain.
+  ///
+  /// Returns a sorted list of distinct tag strings, or an empty list on failure.
+  Future<List<String>> getTags({
+    TaskFilter? filter,
+    bool includeVirtualTags = false,
+    String? pattern,
+  }) async {
+    return await _taskTagService.getTags(
+      filter: filter,
+      includeVirtualTags: includeVirtualTags,
+      pattern: pattern,
+    );
   }
 
   /// Get a single task by UUID

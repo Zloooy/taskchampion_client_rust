@@ -160,6 +160,8 @@ TaskChampionClient({
 | `searchTasks(query)` | Search tasks by description |
 | `getTasksByProject(project)` | Get tasks by project |
 | `getTasksByTag(tag)` | Get tasks by tag |
+| `getPropertyValues({property, filter, sort})` | Get distinct values for a task property (description, due, project, etc.) |
+| `getTags({filter, includeVirtualTags, pattern})` | Get distinct tags with optional virtual tag inclusion and pattern filtering |
 | `getStats()` | Get task statistics |
 | `validateCredentials()` | Validate current credentials |
 | `exportTasks(filePath)` | Export tasks to a JSON file |
@@ -467,6 +469,31 @@ final filter = TaskFilter(
 
 > **Note:** The advanced `TaskFilter` API is available for complex queries. Use `client.filterTasks(filter)` to apply custom filters. See the [API Reference](#taskchampionclient) for more details.
 
+### Get Property Values and Tags
+
+Retrieve distinct values for any task property, or get filtered lists of tags:
+
+```dart
+// Get distinct descriptions
+final descriptions = await client.getPropertyValues(property: 'description');
+
+// Get distinct due dates
+final dueDates = await client.getPropertyValues(
+  property: 'due',
+  filter: TaskFilter.matchAll,
+  sort: TaskFilter.due.asc(),
+);
+
+// Get all tags (without virtual tags like PENDING, OVERDUE)
+final tags = await client.getTags();
+
+// Get tags matching a pattern, including virtual tags
+final allTags = await client.getTags(
+  includeVirtualTags: true,
+  pattern: 'urgent',
+);
+```
+
 ### Import/Export
 
 ```dart
@@ -490,91 +517,37 @@ The library uses a Rust backend (`tc_helper`) that provides:
 
 ### Building the Rust Library
 
-To build the Rust library and keep the generated code up‑to‑date, follow the steps used in the CI pipelines:
+The library is built automatically when you run `flutter pub get`. The build process:
+
+1. Installs `flutter_rust_bridge_codegen` via Cargo
+2. Generates FFI bindings (Dart + Rust)
+3. Runs `build_runner` for Dart code generation
+4. Compiles the Rust library (`cargo build --release`)
+
+For Linux/macOS development, a single `flutter pub get` is enough. For cross-platform builds (Android, iOS, multi-arch Linux), the CI workflow in `.github/workflows/` handles building for each platform separately.
+
+#### Manual regeneration only
+
+If you modify the Rust FFI interface (`rust/src/api.rs`), regenerate bindings:
 
 ```bash
-# 1. Install the flutter_rust_bridge code generator
-# (the package is called flutter_rust_bridge_codegen)
-cargo install flutter_rust_bridge_codegen
-
-# 2. Install Dart/Flutter dependencies
-flutter pub get
-
-# 3. Generate the FFI bindings
+cargo install flutter_rust_bridge_codegen  # once
 flutter_rust_bridge_codegen generate
-
-# 4. Run build_runner to generate freezed / json_serializable code
 flutter pub run build_runner build --delete-conflicting-outputs
-
-# 5. (Optional) Watch mode – auto‑regenerate on Rust changes
-# flutter_rust_bridge_codegen generate --watch
-
-# 6. Build native libraries for each platform
-# Android (multiple ABIs)
-cargo ndk -t arm64-v8a -t armeabi-v7a -t x86_64 \
-  -o android/app/src/main/jniLibs build --release
-
-# iOS (device)
-cargo build --release --target aarch64-apple-ios
-
-# macOS (universal binary)
-cargo build --release --target aarch64-apple-darwin
-cargo build --release --target x86_64-apple-darwin
-lipo -create \
-  target/aarch64-apple-darwin/release/libtc_helper.dylib \
-  target/x86_64-apple-darwin/release/libtc_helper.dylib \
-  -output target/macos-release/libtc_helper.dylib
-
-# Linux (native)
-cargo build --release
 ```
 
 ### Running Tests
 
-The CI workflow runs a comprehensive test suite. To reproduce locally, follow these steps:
-
 ```bash
-# 1. Build the Rust library for your platform (or all target platforms you need)
-# Linux (native)
-cargo build --release
-# Android (all ABIs)
-cargo ndk -t arm64-v8a -t armeabi-v7a -t x86_64 \
-  -o android/app/src/main/jniLibs build --release
-# iOS (device)
-cargo build --release --target aarch64-apple-ios
-# macOS (universal)
-cargo build --release --target aarch64-apple-darwin
-cargo build --release --target x86_64-apple-darwin
+flutter pub get          # builds the Rust library automatically
+flutter analyze          # static analysis
+cargo clippy --all-features -- -D warnings  # Rust linting
+cargo fmt --check        # Rust formatting check
+cargo test --all-features # Rust unit tests
+flutter test --coverage   # Dart/Flutter tests with coverage
 ```
 
-```bash
-# 2. Generate FFI bindings and Dart code
-flutter_rust_bridge_codegen generate
-flutter pub run build_runner build --delete-conflicting-outputs
-```
-
-```bash
-# 3. Install Dart/Flutter dependencies
-flutter pub get
-```
-
-```bash
-# 4. Run static analysis and linting
-flutter analyze
-cargo clippy --all-features -- -D warnings
-cargo fmt --check
-```
-
-```bash
-# 5. Run the test suites
-# Rust unit/integration tests
-cargo test --all-features
-
-# Flutter/Dart integration tests with coverage
-flutter test --coverage
-```
-
-**Note:** All tests expect the compiled Rust library to be present in `rust/target/release/` (or the appropriate target directory for cross‑compiled libraries). Ensure the builds in step 1 have completed successfully before running the tests.
+No manual `LD_LIBRARY_PATH` setup is needed — the Native Assets system locates the compiled library automatically.
 
 ### Configuration
 

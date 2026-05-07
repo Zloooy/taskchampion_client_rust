@@ -61,5 +61,5 @@ library;
 // Public API exports
 export 'src/taskchampion_client.dart';
 export 'src/models/models.dart';
-export 'src/services/services.dart';
 export 'src/utils/utils.dart';
+export 'src/services/services.dart';

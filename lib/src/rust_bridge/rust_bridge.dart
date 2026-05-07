@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'api.dart' as frb_api;
 import 'frb_generated.dart';
+import 'models.dart';
 import '../models/task_filter.dart';
 import '../models/task_sort.dart';
 
@@ -121,7 +122,7 @@ class RustBridge {
   // ============================================================================
 
   /// Sync with server
-  static Future<frb_api.SyncResultData> syncWithServer(
+  static Future<SyncResultData> syncWithServer(
     String taskdbDirPath,
     String serverUrl,
     String clientId,
@@ -205,6 +206,40 @@ class RustBridge {
     return frb_api.importTasks(
       taskdbDirPath: taskdbDirPath,
       importFilePath: importFilePath,
+    );
+  }
+
+  // ============================================================================
+  // PROPERTY OPERATIONS
+  // ============================================================================
+
+  /// Retrieve distinct values for a given task property
+  static Future<List<String>> getTaskPropertyValues(
+    String taskdbDirPath,
+    String property,
+    TaskFilter? filter,
+    TaskSort? sort,
+  ) async {
+    return frb_api.getTaskPropertyValues(
+      taskdbDirPath: taskdbDirPath,
+      property: property,
+      filterJson: filter?.toJson(),
+      sortJson: sort != null ? json.encode(sort.toJson()) : null,
+    );
+  }
+
+  /// Retrieve distinct tag values from tasks
+  static Future<List<String>> getTags(
+    String taskdbDirPath,
+    TaskFilter? filter,
+    bool includeVirtualTags,
+    String? pattern,
+  ) async {
+    return frb_api.getTags(
+      taskdbDirPath: taskdbDirPath,
+      filterJson: filter?.toJson(),
+      includeVirtualTags: includeVirtualTags,
+      pattern: pattern,
     );
   }
 }

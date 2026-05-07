@@ -42,7 +42,16 @@ jobs:
         run: cargo install flutter_rust_bridge_codegen
 
       - name: Generate FFI bindings
-        run: flutter_rust_bridge_codegen generate
+        run: |
+          flutter_rust_bridge_codegen generate
+          if ! git diff --exit-code --quiet -- lib/src/rust_bridge/frb_generated.dart rust/src/frb_generated.rs; then
+            echo "::error::FFI bindings are out of sync with Rust source code."
+            echo "Please run 'flutter_rust_bridge_codegen generate' and commit the changes."
+            echo ""
+            git diff -- lib/src/rust_bridge/frb_generated.dart rust/src/frb_generated.rs -- lib/src/rust_bridge/frb_generated.dart rust/src/frb_generated.rs
+            exit 1
+          fi
+          echo "FFI bindings are up to date"
 
       - name: Run build_runner
         run: flutter pub run build_runner build --delete-conflicting-outputs

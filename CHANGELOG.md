@@ -10,3 +10,8 @@
 ## 0.1.1
 
 - Removed virtual tags from task instances
+
+## 0.2.0
+
+- Added getPropertyValues and getTags methods
+- Splitted rust code
