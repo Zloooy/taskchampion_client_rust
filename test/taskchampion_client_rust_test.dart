@@ -49,34 +49,40 @@ void main() {
       expect(task.urgency, equals(3.5));
       expect(task.scheduled, isA<DateTime>());
       expect(task.until, isA<DateTime>());
-      
+
       // Custom UDAs should be in udas map
       expect(task.udas['github.id'], equals('12345'));
       expect(task.udas['jira.url'], equals('https://jira.example.com/ISSUE-1'));
       expect(task.udas['custom_field'], equals('custom_value'));
-      
+
       // Special UDAs should also be in udas map for preservation
       expect(task.udas['project'], equals('TestProject'));
-      expect(task.udas['parent'], equals('87654321-4321-4321-4321-210987654321'));
+      expect(
+        task.udas['parent'],
+        equals('87654321-4321-4321-4321-210987654321'),
+      );
       expect(task.udas['urgency'], equals('3.5'));
     });
 
-    test('Task.fromRawJson handles tags and depends as space-separated strings', () {
-      final rawJson = {
-        'uuid': '12345678-1234-1234-1234-123456789012',
-        'description': 'Test task',
-        'status': 'pending',
-        'priority': 'none',
-        'entry': DateTime.now().toIso8601String(),
-        'tags': 'tag1 tag2 tag3',
-        'depends': 'uuid1 uuid2 uuid3',
-      };
+    test(
+      'Task.fromRawJson handles tags and depends as space-separated strings',
+      () {
+        final rawJson = {
+          'uuid': '12345678-1234-1234-1234-123456789012',
+          'description': 'Test task',
+          'status': 'pending',
+          'priority': 'none',
+          'entry': DateTime.now().toIso8601String(),
+          'tags': 'tag1 tag2 tag3',
+          'depends': 'uuid1 uuid2 uuid3',
+        };
 
-      final task = Task.fromRawJson(rawJson);
+        final task = Task.fromRawJson(rawJson);
 
-      expect(task.tags, equals(['tag1', 'tag2', 'tag3']));
-      expect(task.depends, equals(['uuid1', 'uuid2', 'uuid3']));
-    });
+        expect(task.tags, equals(['tag1', 'tag2', 'tag3']));
+        expect(task.depends, equals(['uuid1', 'uuid2', 'uuid3']));
+      },
+    );
 
     test('Task.fromRawJson handles empty tags and depends', () {
       final rawJson = {

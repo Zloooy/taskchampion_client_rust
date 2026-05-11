@@ -53,8 +53,9 @@ class AppConfig extends ChangeNotifier {
   Future<void> _loadCredentials() async {
     final serverUrl = await _storage.read(key: _SecureStorageKeys.serverUrl);
     final clientId = await _storage.read(key: _SecureStorageKeys.clientId);
-    final encryptionSecret =
-        await _storage.read(key: _SecureStorageKeys.encryptionSecret);
+    final encryptionSecret = await _storage.read(
+      key: _SecureStorageKeys.encryptionSecret,
+    );
 
     if (serverUrl != null) _serverUrl = serverUrl;
     if (clientId != null) _clientId = clientId;
@@ -127,8 +128,7 @@ class AppConfig extends ChangeNotifier {
             textColor: Colors.white,
             fontSize: 16.0,
           );
-        }
-        else {
+        } else {
           Fluttertoast.showToast(
             msg: 'No tasks for sync',
             toastLength: Toast.LENGTH_SHORT,

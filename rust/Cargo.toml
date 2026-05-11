@@ -24,6 +24,7 @@ ureq = { version = "2.9", features = ["json"] }
 rand = "0.8"
 hex = "0.4"
 regex = "1.10"
+phf = { version = "0.11", features = ["macros"] }
 
 [features]
 # Experimental features (enabled via rust_builder.yaml configuration)

@@ -17,7 +17,10 @@ pub use filter::{
     evaluate_filter_expression, get_datetime_property, get_string_property, has_virtual_tag,
     FilterExpression, PropertyRef, SortDirection, TaskFilter, TaskSort,
 };
-pub use properties::{get_tags, get_task_property_values};
+pub use properties::{
+    get_all_enum_values, get_tags, get_task_property_values, get_task_property_values_typed,
+    PropertyReturnType,
+};
 pub use runtime::get_runtime;
 pub use storage::create_storage_async;
 

@@ -35,19 +35,23 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // Add status filter if selected
     if (_filterStatus != null) {
-      filters.add(EqualsFilter(
-        property: const StringPropertyRef('status'),
-        value: _filterStatus!.name,
-      ));
+      filters.add(
+        EqualsFilter(
+          property: const StringPropertyRef('status'),
+          value: _filterStatus!.name,
+        ),
+      );
     }
 
     // Add search filter if query is not empty
     if (_searchQuery.isNotEmpty) {
-      filters.add(ContainsFilter(
-        property: const StringPropertyRef('description'),
-        value: _searchQuery,
-        caseSensitive: false,
-      ));
+      filters.add(
+        ContainsFilter(
+          property: const StringPropertyRef('description'),
+          value: _searchQuery,
+          caseSensitive: false,
+        ),
+      );
     }
 
     // Return combined filter
@@ -175,7 +179,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     final tasks = snapshot.data ?? [];
 
                     if (tasks.isEmpty) {
-                      final hasQuery = _searchQuery.isNotEmpty || _filterStatus != null;
+                      final hasQuery =
+                          _searchQuery.isNotEmpty || _filterStatus != null;
                       return Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,

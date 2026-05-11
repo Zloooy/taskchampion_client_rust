@@ -628,6 +628,63 @@ pub fn get_tags(
 }
 
 // ============================================================================
+// TYPED PROPERTY OPERATIONS
+// ============================================================================
+
+// Re-export PropertyReturnType from properties module so FRB picks it up
+pub use crate::properties::PropertyReturnType;
+
+/// Retrieve distinct property values with typed conversion.
+///
+/// This is a typed version of `get_task_property_values` that converts the
+/// returned values to the requested type (String, DateTime, TaskStatus,
+/// or TaskPriority).
+///
+/// # Arguments
+/// * `taskdb_dir_path` - Path to the directory containing the task database
+/// * `property` - Name of the property to query (e.g. "description", "due", "status")
+/// * `return_type` - The type of values expected
+/// * `filter_json` - Optional JSON describing a TaskFilter to limit the tasks
+/// * `sort_json` - Optional JSON describing a TaskSort that may affect the order
+///
+/// # Returns
+/// JSON string containing an array of typed property values
+#[frb]
+pub fn get_task_property_values_typed(
+    taskdb_dir_path: String,
+    property: String,
+    return_type: PropertyReturnType,
+    filter_json: Option<String>,
+    sort_json: Option<String>,
+) -> Result<Vec<String>, anyhow::Error> {
+    get_runtime().block_on(async {
+        crate::properties::get_task_property_values_typed(
+            taskdb_dir_path,
+            property,
+            return_type,
+            filter_json,
+            sort_json,
+        )
+        .await
+    })
+}
+
+/// Retrieve all possible enum values for a given property type.
+///
+/// Only supports `EnumStatus` and `EnumPriority`. For any other return type,
+/// returns an error.
+///
+/// # Arguments
+/// * `return_type` - The type of enum values to return
+///
+/// # Returns
+/// JSON string containing an array of all possible enum values
+#[frb]
+pub fn get_all_enum_values(return_type: PropertyReturnType) -> Result<Vec<String>, anyhow::Error> {
+    crate::properties::get_all_enum_values(return_type)
+}
+
+// ============================================================================
 // TESTS
 // ============================================================================
 

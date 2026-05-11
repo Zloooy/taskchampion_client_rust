@@ -23,7 +23,8 @@ class TaskStorageService {
     }
 
     // Request storage permission
-    final permissionGranted = await PermissionService.requestStoragePermission();
+    final permissionGranted =
+        await PermissionService.requestStoragePermission();
     if (!permissionGranted) {
       throw Exception('Storage permission not granted. Cannot export tasks.');
     }
@@ -46,7 +47,10 @@ class TaskStorageService {
       }
 
       // Create file with timestamp
-      final timestamp = DateTime.now().toIso8601String().replaceAll(RegExp(r'[:.]'), '-');
+      final timestamp = DateTime.now().toIso8601String().replaceAll(
+        RegExp(r'[:.]'),
+        '-',
+      );
       final fileName = 'tasks_export_$timestamp.json';
       final filePath = '${tasksDir.path}/$fileName';
       final file = File(filePath);
@@ -56,7 +60,12 @@ class TaskStorageService {
 
       // Share file via system dialog
       final xFile = XFile(filePath);
-      await SharePlus.instance.share(ShareParams(previewThumbnail: xFile, subject: 'TaskChampion Tasks Export'));
+      await SharePlus.instance.share(
+        ShareParams(
+          previewThumbnail: xFile,
+          subject: 'TaskChampion Tasks Export',
+        ),
+      );
 
       debugPrint('Tasks exported to: $filePath');
       return true;
@@ -73,7 +82,8 @@ class TaskStorageService {
     }
 
     // Request storage permission
-    final permissionGranted = await PermissionService.requestStoragePermission();
+    final permissionGranted =
+        await PermissionService.requestStoragePermission();
     if (!permissionGranted) {
       return ImportResult(
         success: false,

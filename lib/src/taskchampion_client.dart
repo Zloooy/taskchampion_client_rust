@@ -322,6 +322,43 @@ class TaskChampionClient {
     );
   }
 
+  /// Get distinct property values stored in the database with typed conversion.
+  ///
+  /// This is the typed version of [getPropertyValues]. It queries the database
+  /// for distinct values of the given property and converts them to the requested
+  /// type [T].
+  ///
+  /// Supported types:
+  /// - [String] – returns raw string values (description, project, etc.)
+  /// - [DateTime] – returns parsed [DateTime] objects (due, wait, etc.)
+  /// - [TaskStatus] – returns [TaskStatus] enum values
+  /// - [TaskPriority] – returns [TaskPriority] enum values
+  ///
+  /// Throws [ArgumentError] if [T] is not a supported type.
+  Future<List<T>> getStoredPropertyValues<T>({
+    required String property,
+    TaskFilter? filter,
+    TaskSort? sort,
+  }) async {
+    return await _taskPropertyService.getStoredPropertyValues<T>(
+      property: property,
+      filter: filter,
+      sort: sort,
+    );
+  }
+
+  /// Get all possible enum values for a given type, independent of stored data.
+  ///
+  /// This method returns every possible value for the requested type, regardless
+  /// of what's actually stored in the database. It only supports enum types:
+  /// - [TaskStatus] – returns all [TaskStatus] values
+  /// - [TaskPriority] – returns all [TaskPriority] values
+  ///
+  /// Throws [ArgumentError] if [T] is not [TaskStatus] or [TaskPriority].
+  Future<List<T>> getAllPropertyValues<T>() async {
+    return await _taskPropertyService.getAllPropertyValues<T>();
+  }
+
   /// Get distinct tag values from tasks.
   ///
   /// [filter] – optional [TaskFilter] to limit the tasks considered.

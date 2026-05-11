@@ -52,7 +52,8 @@ class PermissionService {
 
       if (status.isDenied) {
         // Request permission
-        final requestStatus = await ph.Permission.manageExternalStorage.request();
+        final requestStatus = await ph.Permission.manageExternalStorage
+            .request();
         if (requestStatus.isGranted) {
           debugPrint('Manage external storage permission granted');
           return true;
@@ -82,7 +83,8 @@ class PermissionService {
         ph.Permission.photos,
       ].request();
 
-      final storageGranted = statuses[ph.Permission.storage]?.isGranted ?? false;
+      final storageGranted =
+          statuses[ph.Permission.storage]?.isGranted ?? false;
       final photosGranted = statuses[ph.Permission.photos]?.isGranted ?? false;
 
       if (storageGranted || photosGranted) {
@@ -129,7 +131,9 @@ class PermissionService {
 
       if (status.isPermanentlyDenied) {
         // Need to open settings manually
-        debugPrint('Permission permanently denied, user needs to enable in settings');
+        debugPrint(
+          'Permission permanently denied, user needs to enable in settings',
+        );
       }
     }
 

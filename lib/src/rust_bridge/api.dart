@@ -6,6 +6,7 @@
 import 'frb_generated.dart';
 import 'models.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
+import 'properties.dart';
 
 /// Get all tasks from the local TaskChampion replica as a JSON array
 ///
@@ -308,3 +309,46 @@ Future<List<String>> getTags({
   includeVirtualTags: includeVirtualTags,
   pattern: pattern,
 );
+
+/// Retrieve distinct property values with typed conversion.
+///
+/// This is a typed version of `get_task_property_values` that converts the
+/// returned values to the requested type (String, DateTime, TaskStatus,
+/// or TaskPriority).
+///
+/// # Arguments
+/// * `taskdb_dir_path` - Path to the directory containing the task database
+/// * `property` - Name of the property to query (e.g. "description", "due", "status")
+/// * `return_type` - The type of values expected
+/// * `filter_json` - Optional JSON describing a TaskFilter to limit the tasks
+/// * `sort_json` - Optional JSON describing a TaskSort that may affect the order
+///
+/// # Returns
+/// JSON string containing an array of typed property values
+Future<List<String>> getTaskPropertyValuesTyped({
+  required String taskdbDirPath,
+  required String property,
+  required PropertyReturnType returnType,
+  String? filterJson,
+  String? sortJson,
+}) => RustLib.instance.api.crateApiGetTaskPropertyValuesTyped(
+  taskdbDirPath: taskdbDirPath,
+  property: property,
+  returnType: returnType,
+  filterJson: filterJson,
+  sortJson: sortJson,
+);
+
+/// Retrieve all possible enum values for a given property type.
+///
+/// Only supports `EnumStatus` and `EnumPriority`. For any other return type,
+/// returns an error.
+///
+/// # Arguments
+/// * `return_type` - The type of enum values to return
+///
+/// # Returns
+/// JSON string containing an array of all possible enum values
+Future<List<String>> getAllEnumValues({
+  required PropertyReturnType returnType,
+}) => RustLib.instance.api.crateApiGetAllEnumValues(returnType: returnType);

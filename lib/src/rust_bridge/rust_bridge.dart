@@ -6,6 +6,7 @@ import 'frb_generated.dart';
 import 'models.dart';
 import '../models/task_filter.dart';
 import '../models/task_sort.dart';
+import 'package:taskchampion_client_rust/src/rust_bridge/properties.dart';
 
 /// Rust Bridge - Wrapper for FFI calls to Rust
 ///
@@ -241,5 +242,33 @@ class RustBridge {
       includeVirtualTags: includeVirtualTags,
       pattern: pattern,
     );
+  }
+
+  // ============================================================================
+  // TYPED PROPERTY OPERATIONS
+  // ============================================================================
+
+  /// Retrieve distinct property values with typed conversion
+  static Future<List<String>> getTaskPropertyValuesTyped(
+    String taskdbDirPath,
+    String property,
+    PropertyReturnType returnType,
+    TaskFilter? filter,
+    TaskSort? sort,
+  ) async {
+    return frb_api.getTaskPropertyValuesTyped(
+      taskdbDirPath: taskdbDirPath,
+      property: property,
+      returnType: returnType,
+      filterJson: filter?.toJson(),
+      sortJson: sort != null ? json.encode(sort.toJson()) : null,
+    );
+  }
+
+  /// Retrieve all possible enum values for a given property type
+  static Future<List<String>> getAllEnumValues(
+    PropertyReturnType returnType,
+  ) async {
+    return frb_api.getAllEnumValues(returnType: returnType);
   }
 }

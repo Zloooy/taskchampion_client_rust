@@ -53,7 +53,8 @@ void main(List<String> args) async {
 /// the Rust API. Configuration is read from pubspec.yaml flutter_rust_bridge
 /// section automatically.
 Future<void> generateFrbBindings() async {
-  developer.log('[hook/build.dart] Generating FFI bindings via flutter_rust_bridge_codegen...');
+  developer.log(
+      '[hook/build.dart] Generating FFI bindings via flutter_rust_bridge_codegen...');
 
   // Determine the package root directory
   // The hook runs from the 'hook/' subdirectory, so we need to go up one level
@@ -73,14 +74,14 @@ Future<void> generateFrbBindings() async {
     developer.log('[hook/build.dart] Warning: FRB code generation failed:');
     developer.log('[hook/build.dart] stdout: ${result.stdout}');
     developer.log('[hook/build.dart] stderr: ${result.stderr}');
-    developer.log('[hook/build.dart] Continuing anyway - bindings may already exist');
+    developer.log(
+        '[hook/build.dart] Continuing anyway - bindings may already exist');
   } else {
     developer.log('[hook/build.dart] FFI bindings generated successfully');
   }
 }
 
 Future<void> buildLocally(BuildInput input, BuildOutputBuilder output) async {
-
   // Use RustBuilder from native_toolchain_rust to build the library
   return RustBuilder(
     // Path to the generated FFI bindings file
@@ -109,7 +110,6 @@ Future<void> downloadPrebuilt(
   final targetOS = input.config.code.targetOS;
   final architecture = _getArchitectureName();
 
-
   // Get the asset key for this platform/architecture
   final assetKey = _getAssetKey(targetOS, architecture);
   if (assetKey == null) {
@@ -137,7 +137,8 @@ Future<void> downloadPrebuilt(
     final existingBytes = await File.fromUri(outputFile).readAsBytes();
     final existingHash = sha256.convert(existingBytes).toString();
     if (existingHash == expectedHash) {
-      developer.log('[hook/build.dart] Prebuilt asset already present and hash matches. Skipping download.');
+      developer.log(
+          '[hook/build.dart] Prebuilt asset already present and hash matches. Skipping download.');
       // Register the existing asset with the build system
       output.assets.code.add(
         CodeAsset(
@@ -185,7 +186,6 @@ Future<void> downloadPrebuilt(
       file: outputFile,
     ),
   );
-
 }
 
 /// Loads the native assets manifest from the package

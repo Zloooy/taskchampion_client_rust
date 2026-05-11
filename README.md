@@ -160,7 +160,9 @@ TaskChampionClient({
 | `searchTasks(query)` | Search tasks by description |
 | `getTasksByProject(project)` | Get tasks by project |
 | `getTasksByTag(tag)` | Get tasks by tag |
-| `getPropertyValues({property, filter, sort})` | Get distinct values for a task property (description, due, project, etc.) |
+| `getPropertyValues({property, filter, sort})` | Get distinct string values for a task property (description, due, project, etc.) |
+| `getStoredPropertyValues<T>({property, filter, sort})` | Get distinct property values with typed conversion (String, DateTime, TaskStatus, TaskPriority) |
+| `getAllPropertyValues<T>()` | Get all possible enum values for a type (TaskStatus, TaskPriority only) |
 | `getTags({filter, includeVirtualTags, pattern})` | Get distinct tags with optional virtual tag inclusion and pattern filtering |
 | `getStats()` | Get task statistics |
 | `validateCredentials()` | Validate current credentials |
@@ -492,6 +494,24 @@ final allTags = await client.getTags(
   includeVirtualTags: true,
   pattern: 'urgent',
 );
+
+// Get distinct descriptions (string values)
+final descriptions = await client.getStoredPropertyValues<String>(property: 'description');
+
+// Get distinct due dates (DateTime objects)
+final dueDates = await client.getStoredPropertyValues<DateTime>(property: 'due');
+
+// Get distinct status values (TaskStatus enum)
+final statuses = await client.getStoredPropertyValues<TaskStatus>(property: 'status');
+
+// Get distinct priority values (TaskPriority enum)
+final priorities = await client.getStoredPropertyValues<TaskPriority>(property: 'priority');
+
+// Get all possible TaskStatus values (regardless of what's stored)
+final allStatuses = await client.getAllPropertyValues<TaskStatus>();
+
+// Get all possible TaskPriority values (regardless of what's stored)
+final allPriorities = await client.getAllPropertyValues<TaskPriority>();
 ```
 
 ### Import/Export

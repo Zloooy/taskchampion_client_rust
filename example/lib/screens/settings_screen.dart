@@ -32,7 +32,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _encryptionSecretController = TextEditingController(
       text: config.encryptionSecret,
     );
-    
+
     // Initialize app config if not already initialized
     if (!config.isInitialized) {
       config.initialize();
@@ -89,10 +89,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -167,7 +164,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
 
     // Check permission
-    final permissionGranted = await PermissionService.requestStoragePermission();
+    final permissionGranted =
+        await PermissionService.requestStoragePermission();
     if (!permissionGranted) {
       if (mounted) {
         _showPermissionDeniedDialog();
@@ -218,7 +216,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
 
     // Check permission
-    final permissionGranted = await PermissionService.requestStoragePermission();
+    final permissionGranted =
+        await PermissionService.requestStoragePermission();
     if (!permissionGranted) {
       if (mounted) {
         _showPermissionDeniedDialog();
@@ -519,7 +518,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     const Divider(),
                     ListTile(
-                      leading: const Icon(Icons.delete_forever, color: Colors.red),
+                      leading: const Icon(
+                        Icons.delete_forever,
+                        color: Colors.red,
+                      ),
                       title: const Text(
                         'Clear Credentials',
                         style: TextStyle(color: Colors.red),
