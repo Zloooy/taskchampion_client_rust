@@ -8,6 +8,8 @@ import 'models.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'properties.dart';
 
+// These functions are ignored because they are not marked as `pub`: `open_repo`
+
 /// Get all tasks from the local TaskChampion replica as a JSON array
 ///
 /// # Arguments
@@ -68,13 +70,12 @@ Future<void> updateTask({
 
 /// Delete a task from the local TaskChampion replica
 ///
+/// Marks the task as deleted (sets its status to `Deleted`).
+///
 /// # Arguments
 /// * `taskdb_dir_path` - Path to the directory containing the task database
 /// * `uuid_str` - UUID of the task to delete
-///
-/// # Returns
-/// 0 on success, error otherwise
-Future<int> deleteTask({
+Future<void> deleteTask({
   required String taskdbDirPath,
   required String uuidStr,
 }) => RustLib.instance.api.crateApiDeleteTask(
@@ -98,36 +99,6 @@ Future<String?> getTaskByUuid({
   uuidStr: uuidStr,
 );
 
-/// Get all pending tasks from the local TaskChampion replica as a JSON array
-///
-/// This is optimized to use TaskChampion's built-in pending tasks query
-///
-/// # Arguments
-/// * `taskdb_dir_path` - Path to the directory containing the task database
-///
-/// # Returns
-/// JSON string containing an array of pending task objects
-Future<String> getPendingTasksJson({required String taskdbDirPath}) => RustLib
-    .instance
-    .api
-    .crateApiGetPendingTasksJson(taskdbDirPath: taskdbDirPath);
-
-/// Get tasks filtered by a filter expression
-///
-/// # Arguments
-/// * `taskdb_dir_path` - Path to the directory containing the task database
-/// * `filter_json` - JSON string representing the filter expression
-///
-/// # Returns
-/// JSON string containing an array of filtered task objects
-Future<String> getTasksWithFilterJson({
-  required String taskdbDirPath,
-  required String filterJson,
-}) => RustLib.instance.api.crateApiGetTasksWithFilterJson(
-  taskdbDirPath: taskdbDirPath,
-  filterJson: filterJson,
-);
-
 /// Get tasks filtered by a filter expression with sorting
 ///
 /// # Arguments
@@ -145,6 +116,34 @@ Future<String> getTasksWithFilterAndSortJson({
   taskdbDirPath: taskdbDirPath,
   filterJson: filterJson,
   sortJson: sortJson,
+);
+
+/// Get all tasks as typed DTOs.
+///
+/// Prefer this over [`get_all_tasks_json`] when the Dart side can consume
+/// `TaskDto` values directly: it avoids the JSON round-trip and preserves
+/// tag/UDA structure exactly.
+Future<List<TaskDto>> getAllTasksDtos({required String taskdbDirPath}) =>
+    RustLib.instance.api.crateApiGetAllTasksDtos(taskdbDirPath: taskdbDirPath);
+
+/// Add a task from a typed DTO. Returns the new task's UUID as a string.
+Future<String> addTaskDto({
+  required String taskdbDirPath,
+  required TaskDto dto,
+}) => RustLib.instance.api.crateApiAddTaskDto(
+  taskdbDirPath: taskdbDirPath,
+  dto: dto,
+);
+
+/// Replace an existing task's mutable fields from a typed DTO.
+Future<void> updateTaskDto({
+  required String taskdbDirPath,
+  required String uuidStr,
+  required TaskDto dto,
+}) => RustLib.instance.api.crateApiUpdateTaskDto(
+  taskdbDirPath: taskdbDirPath,
+  uuidStr: uuidStr,
+  dto: dto,
 );
 
 /// Synchronize tasks with a TaskChampion sync server
@@ -209,20 +208,6 @@ Future<String> validateCredentials({
   clientId: clientId,
   encryptionSecret: encryptionSecret,
 );
-
-/// Generate a new client ID for use with the sync server
-///
-/// # Returns
-/// New UUID as a string
-Future<String> generateClientId() =>
-    RustLib.instance.api.crateApiGenerateClientId();
-
-/// Generate a new encryption secret for use with the sync server
-///
-/// # Returns
-/// Random secret as a hex string
-Future<String> generateEncryptionSecret() =>
-    RustLib.instance.api.crateApiGenerateEncryptionSecret();
 
 /// Get task database statistics
 ///

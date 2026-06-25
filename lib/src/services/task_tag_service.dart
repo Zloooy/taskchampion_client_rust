@@ -1,40 +1,33 @@
-import 'package:flutter/foundation.dart';
-import 'package:taskchampion_client_rust/src/rust_bridge/rust_bridge.dart';
+import '../core/core.dart';
 import '../models/models.dart';
+import '../storage/task_storage.dart';
+import 'interfaces/i_task_tag_service.dart';
 
-/// Service for retrieving distinct tag values from tasks
+/// Service for retrieving distinct tag values from tasks.
 ///
 /// Provides access to tags (both regular and virtual) filtered by pattern
 /// and sorted alphabetically.
-class TaskTagService {
-  /// Path to the task database
-  final String taskdbPath;
+class TaskTagService implements ITaskTagService {
+  /// Underlying storage implementation.
+  final TaskStorage _storage;
 
-  /// Create a new TaskTagService instance
-  TaskTagService(this.taskdbPath);
+  /// Logger for this service.
+  final Logger _logger;
 
-  /// Retrieve distinct tag values from tasks.
-  ///
-  /// * `filter` – optional [TaskFilter] to limit the tasks considered.
-  /// * `includeVirtualTags` – when true, include virtual tags in the results.
-  /// * `pattern` – optional case‑insensitive substring that a tag must contain.
-  ///
-  /// Returns a sorted list of distinct tag strings.
-  /// Returns an empty list and logs an error on failure.
+  /// Create a new TaskTagService instance.
+  TaskTagService(this._storage, {Logger? logger})
+    : _logger = logger ?? const DebugPrintLogger();
+
+  @override
   Future<List<String>> getTags({
     TaskFilter? filter,
     bool includeVirtualTags = false,
     String? pattern,
   }) async {
     try {
-      return RustBridge.getTags(
-        taskdbPath,
-        filter,
-        includeVirtualTags,
-        pattern,
-      );
-    } catch (e) {
-      debugPrint('Error getting tags: $e');
+      return _storage.getTags(filter, includeVirtualTags, pattern);
+    } catch (e, st) {
+      _logger.error('Failed to get tags', error: e, stackTrace: st);
       return [];
     }
   }

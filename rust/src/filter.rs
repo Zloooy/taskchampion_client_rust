@@ -1,12 +1,81 @@
-use chrono::{DateTime, Datelike, Utc};
-use std::str::FromStr;
-use taskchampion::Task;
+use chrono::{DateTime, Utc};
+use taskchampion::storage::Storage;
+use taskchampion::{Replica, Task};
 
-/// Property reference for filtering
+// ============================================================================
+// Regex compilation cache (ticket R2)
+// ============================================================================
+//
+// `RegexFilter` and `WordFilter` previously called `Regex::new` inside the
+// per-task closure inside `evaluate_filter_expression`. For large task
+// databases this recompiles the same pattern thousands of times.
+//
+// We memoise compiled regexes per-pattern-string in a thread-local cache so
+// that subsequent evaluations within the same thread (which is the common
+// case during a single filter pass on the FRB-owned tokio worker) reuse the
+// already-compiled `Regex`. Compilation failures are cached as `None` to keep
+// the observable behaviour identical to the previous `is_ok_and(|re| ...)`
+// fall-through (an invalid pattern simply never matches).
+//
+// `Regex` is `Send` but not `Sync`-cheaply-enough for our purposes; the
+// thread-local avoids locking entirely on the hot path.
+
+use regex::Regex;
+use std::cell::RefCell;
+use std::collections::HashMap;
+
+thread_local! {
+    /// Per-thread cache of compiled regexes, keyed by the exact pattern string
+    /// (including any inline `(?i)` flag we prepend for case-insensitive matches).
+    static REGEX_CACHE: RefCell<HashMap<String, Option<Regex>>> =
+        RefCell::new(HashMap::new());
+}
+
+/// Compile (or fetch the cached compilation of) a regex pattern.
+///
+/// Returns `None` when the pattern is not a valid regex, mirroring the
+/// previous `Regex::new(..).ok()` behaviour.
+fn compile_regex(pattern: &str) -> Option<Regex> {
+    REGEX_CACHE.with(|cache| {
+        let borrowed = cache.borrow();
+        if let Some(existing) = borrowed.get(pattern) {
+            return existing.clone();
+        }
+        drop(borrowed);
+        let compiled = Regex::new(pattern).ok();
+        cache
+            .borrow_mut()
+            .insert(pattern.to_string(), compiled.clone());
+        compiled
+    })
+}
+
+// ============================================================================
+// Sub-modules (ticket R7 split)
+// ============================================================================
+
+mod evaluator;
+mod sort;
+
+pub(crate) use evaluator::evaluate_filter_expression;
+pub use sort::compare_tasks;
+
+/// Property reference used both for filtering and for sorting.
+///
+/// Ticket R9 consolidated the previously-duplicated `PropertyRef` and
+/// `SortProperty` structs (both were `{ name: String }`) into this single
+/// type. `SortProperty` is kept as a deprecated alias so external/serde
+/// references keep compiling.
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
 pub struct PropertyRef {
     pub name: String,
 }
+
+/// Legacy alias for [`PropertyRef`] used in sort specifications.
+///
+/// Prefer `PropertyRef` in new code; this alias exists for backward
+/// compatibility with serialised sort specs and existing call sites.
+pub type SortProperty = PropertyRef;
 
 /// Sort direction enum
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize, PartialEq, Eq)]
@@ -16,176 +85,11 @@ pub enum SortDirection {
     Descending,
 }
 
-/// Property reference for sorting
-#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
-pub struct SortProperty {
-    pub name: String,
-}
-
 /// Sort specification
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
 pub struct TaskSort {
     pub property: SortProperty,
     pub direction: SortDirection,
-}
-
-/// String comparison filters
-#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
-#[serde(tag = "type")]
-pub enum StringPropertyFilter {
-    Equals {
-        property: PropertyRef,
-        value: String,
-    },
-    NotEquals {
-        property: PropertyRef,
-        value: String,
-    },
-    In {
-        property: PropertyRef,
-        values: Vec<String>,
-    },
-    NotIn {
-        property: PropertyRef,
-        values: Vec<String>,
-    },
-    Contains {
-        property: PropertyRef,
-        value: String,
-        case_sensitive: bool,
-    },
-    NotContains {
-        property: PropertyRef,
-        value: String,
-        case_sensitive: bool,
-    },
-    StartsWith {
-        property: PropertyRef,
-        value: String,
-        case_sensitive: bool,
-    },
-    EndsWith {
-        property: PropertyRef,
-        value: String,
-        case_sensitive: bool,
-    },
-    Word {
-        property: PropertyRef,
-        value: String,
-        case_sensitive: bool,
-    },
-    NoWord {
-        property: PropertyRef,
-        value: String,
-        case_sensitive: bool,
-    },
-    Regex {
-        property: PropertyRef,
-        pattern: String,
-        case_sensitive: bool,
-    },
-    None {
-        property: PropertyRef,
-    },
-    Any {
-        property: PropertyRef,
-    },
-}
-
-/// DateTime comparison filters
-#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
-#[serde(tag = "type")]
-pub enum DateTimePropertyFilter {
-    Equals {
-        property: PropertyRef,
-        value: String,
-    },
-    NotEquals {
-        property: PropertyRef,
-        value: String,
-    },
-    In {
-        property: PropertyRef,
-        values: Vec<String>,
-    },
-    NotIn {
-        property: PropertyRef,
-        values: Vec<String>,
-    },
-    Before {
-        property: PropertyRef,
-        date: String,
-    },
-    After {
-        property: PropertyRef,
-        date: String,
-    },
-    By {
-        property: PropertyRef,
-        date: String,
-    },
-    DateFrom {
-        property: PropertyRef,
-        from: String,
-    },
-    DateTo {
-        property: PropertyRef,
-        to: String,
-    },
-    None {
-        property: PropertyRef,
-    },
-    Any {
-        property: PropertyRef,
-    },
-}
-
-/// Numeric comparison filters
-#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
-#[serde(tag = "type")]
-pub enum NumericPropertyFilter {
-    Equals { property: PropertyRef, value: f64 },
-    NotEquals { property: PropertyRef, value: f64 },
-    LessThan { property: PropertyRef, value: f64 },
-    LessThanOrEqual { property: PropertyRef, value: f64 },
-    GreaterThan { property: PropertyRef, value: f64 },
-    GreaterThanOrEqual { property: PropertyRef, value: f64 },
-    None { property: PropertyRef },
-    Any { property: PropertyRef },
-}
-
-/// Combined property filter enum
-#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
-#[serde(untagged)]
-pub enum PropertyFilter {
-    String(StringPropertyFilter),
-    DateTime(DateTimePropertyFilter),
-    Numeric(NumericPropertyFilter),
-}
-
-/// Filter group types
-#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
-#[serde(tag = "type")]
-pub enum FilterGroup {
-    AndFilterGroup { filters: Vec<FilterExpression> },
-    OrFilterGroup { filters: Vec<FilterExpression> },
-    XorFilterGroup { filters: Vec<FilterExpression> },
-}
-
-/// Tag filter for +tag / -tag syntax
-#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
-#[serde(tag = "type")]
-pub struct TagFilter {
-    pub tag: String,
-    pub exclude: bool,
-}
-
-/// Virtual tag filter for +ACTIVE, -DELETED, etc.
-#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
-#[serde(tag = "type")]
-pub struct VirtualTagFilter {
-    pub tag: String,
-    pub exclude: bool,
 }
 
 /// Main filter expression type (taskwarrior-compatible)
@@ -314,7 +218,7 @@ pub struct TaskFilter {
 }
 
 /// Get a string property value from a task
-pub fn get_string_property(task: &Task, property_name: &str) -> Option<String> {
+pub(crate) fn get_string_property(task: &Task, property_name: &str) -> Option<String> {
     match property_name {
         "description" => Some(task.get_description().to_string()),
         "status" => {
@@ -341,7 +245,7 @@ pub fn get_string_property(task: &Task, property_name: &str) -> Option<String> {
 }
 
 /// Get a DateTime property value from a task
-pub fn get_datetime_property(task: &Task, property_name: &str) -> Option<DateTime<Utc>> {
+pub(crate) fn get_datetime_property(task: &Task, property_name: &str) -> Option<DateTime<Utc>> {
     match property_name {
         "due" => task.get_due(),
         "wait" => task.get_wait(),
@@ -359,396 +263,72 @@ pub fn get_datetime_property(task: &Task, property_name: &str) -> Option<DateTim
     }
 }
 
-/// Check if a task has a virtual tag
-pub fn has_virtual_tag(task: &Task, tag: &str) -> bool {
-    match tag.to_uppercase().as_str() {
-        "ACTIVE" | "BLOCKED" | "BLOCKING" | "COMPLETED" | "DELETED" | "PENDING" | "UNBLOCKED"
-        | "WAITING" => {
-            if let Ok(tag_obj) = taskchampion::Tag::from_str(tag) {
-                return task.has_tag(&tag_obj);
-            }
-            false
+/// Check if a task has a virtual tag.
+///
+/// Thin delegation to the central [`crate::virtual_tags`] registry (ticket R6).
+/// Kept here as a `pub(crate)` shim so existing call sites inside the crate
+/// keep compiling without touching every reference.
+pub(crate) fn has_virtual_tag(task: &Task, tag: &str) -> bool {
+    crate::virtual_tags::has_virtual_tag(task, tag)
+}
+
+/// Parse an optional JSON-encoded [`TaskFilter`] into an optional [`FilterExpression`].
+///
+/// Returns `Ok(None)` when `filter_json` is `None`. Returns an error if the JSON
+/// string cannot be deserialized into a `TaskFilter`. This centralizes the
+/// `filter_opt` parsing previously duplicated across the API and property queries.
+pub(crate) fn parse_filter_option(
+    filter_json: Option<String>,
+) -> anyhow::Result<Option<FilterExpression>> {
+    match filter_json {
+        Some(json) => {
+            let task_filter: TaskFilter = serde_json::from_str(&json)?;
+            Ok(Some(task_filter.filter))
         }
-        "ANNOTATED" => task.get_annotations().count() > 0,
-        "DUE" => {
-            if let Some(due) = task.get_due() {
-                let now = Utc::now();
-                let seven_days = chrono::Duration::days(7);
-                due <= now + seven_days
-            } else {
-                false
-            }
-        }
-        "DUETODAY" | "TODAY" => {
-            if let Some(due) = task.get_due() {
-                let now = Utc::now();
-                due.date_naive() == now.date_naive()
-            } else {
-                false
-            }
-        }
-        "INSTANCE" => task.get_value("template").is_some() || task.get_value("parent").is_some(),
-        "LATEST" => false,
-        "MONTH" => {
-            if let Some(due) = task.get_due() {
-                let now = Utc::now();
-                due.month() == now.month() && due.year() == now.year()
-            } else {
-                false
-            }
-        }
-        "ORPHAN" => false,
-        "OVERDUE" => {
-            if let Some(due) = task.get_due() {
-                due < Utc::now() && task.get_status() == taskchampion::Status::Pending
-            } else {
-                false
-            }
-        }
-        "PARENT" => task.get_value("last").is_some() || task.get_value("mask").is_some(),
-        "PRIORITY" => !task.get_priority().is_empty(),
-        "PROJECT" => task.get_value("project").is_some(),
-        "QUARTER" => {
-            if let Some(due) = task.get_due() {
-                let now = Utc::now();
-                let current_quarter = (now.month() - 1) / 3 + 1;
-                let due_quarter = (due.month() - 1) / 3 + 1;
-                current_quarter == due_quarter && now.year() == due.year()
-            } else {
-                false
-            }
-        }
-        "READY" => {
-            task.get_status() == taskchampion::Status::Pending
-                && task.get_wait().is_none_or(|w| w <= Utc::now())
-        }
-        "SCHEDULED" => task.get_value("scheduled").is_some(),
-        "TAGGED" => task.get_tags().count() > 0,
-        "TEMPLATE" => task.get_value("last").is_some() || task.get_value("mask").is_some(),
-        "TOMORROW" => {
-            if let Some(due) = task.get_due() {
-                let tomorrow = Utc::now() + chrono::Duration::days(1);
-                due.date_naive() == tomorrow.date_naive()
-            } else {
-                false
-            }
-        }
-        "UDA" => false,
-        "UNTIL" => task.get_value("until").is_some(),
-        "WEEK" => {
-            if let Some(due) = task.get_due() {
-                let now_iso = Utc::now().iso_week();
-                let due_iso = due.iso_week();
-                now_iso.year() == due_iso.year() && now_iso.week() == due_iso.week()
-            } else {
-                false
-            }
-        }
-        "YEAR" => {
-            if let Some(due) = task.get_due() {
-                due.year() == Utc::now().year()
-            } else {
-                false
-            }
-        }
-        "YESTERDAY" => {
-            if let Some(due) = task.get_due() {
-                let yesterday = Utc::now() - chrono::Duration::days(1);
-                due.date_naive() == yesterday.date_naive()
-            } else {
-                false
-            }
-        }
+        None => Ok(None),
+    }
+}
+
+/// Returns `true` when `expr` constrains the task set to `status == pending`
+/// and nothing else useful for the fast path, i.e. when `pending_tasks()` is
+/// a safe superset of the candidates the filter would ever accept.
+///
+/// Recognised shapes (ticket R3):
+/// * `EqualsFilter { property: "status", value: "pending" }`
+/// * `AndGroup { ..., EqualsFilter { property: "status", value: "pending" }, ... }`
+///
+/// Because `pending_tasks()` returns every pending task, any AND-combination
+/// that *includes* a `status == pending` constraint is still a subset of the
+/// pending set, so the fast path applies. OR-groups and NOT-wrapped status
+/// filters do *not* qualify, because they could admit non-pending tasks.
+fn implies_pending_only(expr: &FilterExpression) -> bool {
+    fn is_status_pending(property: &PropertyRef, value: &serde_json::Value) -> bool {
+        property.name == "status" && value.as_str() == Some("pending")
+    }
+
+    match expr {
+        FilterExpression::EqualsFilter { property, value } => is_status_pending(property, value),
+        FilterExpression::AndGroup { filters } => filters.iter().any(implies_pending_only),
         _ => false,
     }
 }
 
-/// Compare two tasks for sorting
-pub fn compare_tasks(task1: &Task, task2: &Task, sort: &TaskSort) -> std::cmp::Ordering {
-    let property_name = &sort.property.name;
-    let ascending = sort.direction == SortDirection::Ascending;
-
-    let str_cmp = |prop: &str| -> Option<std::cmp::Ordering> {
-        let v1 = get_string_property(task1, prop);
-        let v2 = get_string_property(task2, prop);
-        match (v1, v2) {
-            (Some(a), Some(b)) => Some(a.cmp(&b)),
-            (Some(_), None) => Some(std::cmp::Ordering::Greater),
-            (None, Some(_)) => Some(std::cmp::Ordering::Less),
-            (None, None) => None,
-        }
-    };
-
-    let dt_cmp = |prop: &str| -> Option<std::cmp::Ordering> {
-        let v1 = get_datetime_property(task1, prop);
-        let v2 = get_datetime_property(task2, prop);
-        match (v1, v2) {
-            (Some(a), Some(b)) => Some(a.cmp(&b)),
-            (Some(_), None) => Some(std::cmp::Ordering::Greater),
-            (None, Some(_)) => Some(std::cmp::Ordering::Less),
-            (None, None) => None,
-        }
-    };
-
-    let double_cmp = |prop: &str| -> Option<std::cmp::Ordering> {
-        let v1 = task1.get_value(prop).and_then(|s| s.parse::<f64>().ok());
-        let v2 = task2.get_value(prop).and_then(|s| s.parse::<f64>().ok());
-        match (v1, v2) {
-            (Some(a), Some(b)) => Some(a.partial_cmp(&b).unwrap_or(std::cmp::Ordering::Equal)),
-            (Some(_), None) => Some(std::cmp::Ordering::Greater),
-            (None, Some(_)) => Some(std::cmp::Ordering::Less),
-            (None, None) => None,
-        }
-    };
-
-    let result = match property_name.as_str() {
-        "description" | "status" | "priority" | "project" => str_cmp(property_name),
-        "due" | "wait" | "entry" | "modified" | "end" | "scheduled" | "until" => {
-            dt_cmp(property_name)
-        }
-        "urgency" => double_cmp(property_name),
-        _ => str_cmp(property_name)
-            .or_else(|| dt_cmp(property_name))
-            .or_else(|| double_cmp(property_name)),
-    };
-
-    match (result, ascending) {
-        (Some(ord), true) => ord,
-        (Some(ord), false) => ord.reverse(),
-        (None, _) => std::cmp::Ordering::Equal,
+/// Collect the base set of tasks to evaluate, applying the pending-status fast path.
+///
+/// When the filter constrains the result to `status == pending` (either as a
+/// top-level `EqualsFilter` or inside an `AndGroup` — the most common real
+/// query shape), TaskChampion's built-in [`Replica::pending_tasks`] is used
+/// for better performance. Otherwise all tasks are loaded. The resulting
+/// tasks still need to be passed through [`evaluate_filter_expression`] when a
+/// filter is present.
+pub(crate) async fn collect_base_tasks<S: Storage>(
+    replica: &mut Replica<S>,
+    filter_opt: Option<&FilterExpression>,
+) -> anyhow::Result<Vec<Task>> {
+    if filter_opt.is_some_and(implies_pending_only) {
+        return Ok(replica.pending_tasks().await?.into_iter().collect());
     }
-}
-
-/// Evaluate a filter expression against a task
-pub fn evaluate_filter_expression(task: &Task, expr: &FilterExpression) -> bool {
-    match expr {
-        FilterExpression::AndGroup { filters } => {
-            filters.iter().all(|f| evaluate_filter_expression(task, f))
-        }
-        FilterExpression::OrGroup { filters } => {
-            filters.iter().any(|f| evaluate_filter_expression(task, f))
-        }
-        FilterExpression::XorGroup { filters } => {
-            filters
-                .iter()
-                .filter(|f| evaluate_filter_expression(task, f))
-                .count()
-                == 1
-        }
-        FilterExpression::Not { inner } => !evaluate_filter_expression(task, inner),
-        FilterExpression::Tag { tag, exclude } => {
-            let has_tag = task.get_tags().any(|t| t.as_ref() == tag.as_str());
-            if *exclude {
-                !has_tag
-            } else {
-                has_tag
-            }
-        }
-        FilterExpression::VirtualTag { tag, exclude } => {
-            let has_virtual = has_virtual_tag(task, tag);
-            if *exclude {
-                !has_virtual
-            } else {
-                has_virtual
-            }
-        }
-        FilterExpression::EqualsFilter { property, value } => {
-            get_string_property(task, &property.name).is_some_and(|v| {
-                if let Some(s) = value.as_str() {
-                    v == s
-                } else {
-                    false
-                }
-            })
-        }
-        FilterExpression::NotEqualsFilter { property, value } => {
-            get_string_property(task, &property.name).is_none_or(|v| {
-                if let Some(s) = value.as_str() {
-                    v != s
-                } else {
-                    true
-                }
-            })
-        }
-        FilterExpression::InFilter { property, values } => {
-            get_string_property(task, &property.name)
-                .is_some_and(|v| values.iter().any(|val| val.as_str() == Some(&v)))
-        }
-        FilterExpression::NotInFilter { property, values } => {
-            get_string_property(task, &property.name)
-                .is_none_or(|v| values.iter().all(|val| val.as_str() != Some(&v)))
-        }
-        FilterExpression::ContainsFilter {
-            property,
-            value,
-            case_sensitive,
-        } => get_string_property(task, &property.name).is_some_and(|v| {
-            if *case_sensitive {
-                v.contains(value)
-            } else {
-                v.to_lowercase().contains(&value.to_lowercase())
-            }
-        }),
-        FilterExpression::NotContainsFilter {
-            property,
-            value,
-            case_sensitive,
-        } => get_string_property(task, &property.name).is_none_or(|v| {
-            if *case_sensitive {
-                !v.contains(value)
-            } else {
-                !v.to_lowercase().contains(&value.to_lowercase())
-            }
-        }),
-        FilterExpression::StartsWithFilter {
-            property,
-            value,
-            case_sensitive,
-        } => get_string_property(task, &property.name).is_some_and(|v| {
-            if *case_sensitive {
-                v.starts_with(value)
-            } else {
-                v.to_lowercase().starts_with(&value.to_lowercase())
-            }
-        }),
-        FilterExpression::EndsWithFilter {
-            property,
-            value,
-            case_sensitive,
-        } => get_string_property(task, &property.name).is_some_and(|v| {
-            if *case_sensitive {
-                v.ends_with(value)
-            } else {
-                v.to_lowercase().ends_with(&value.to_lowercase())
-            }
-        }),
-        FilterExpression::WordFilter {
-            property,
-            value,
-            case_sensitive,
-        } => get_string_property(task, &property.name).is_some_and(|v| {
-            let search_val = if *case_sensitive {
-                value.clone()
-            } else {
-                value.to_lowercase()
-            };
-            let text = if *case_sensitive { v } else { v.to_lowercase() };
-            let pattern = format!(r"\b{}\b", regex::escape(&search_val));
-            regex::Regex::new(&pattern).is_ok_and(|re| re.is_match(&text))
-        }),
-        FilterExpression::NoWordFilter {
-            property,
-            value,
-            case_sensitive,
-        } => get_string_property(task, &property.name).is_none_or(|v| {
-            let search_val = if *case_sensitive {
-                value.clone()
-            } else {
-                value.to_lowercase()
-            };
-            let text = if *case_sensitive { v } else { v.to_lowercase() };
-            let pattern = format!(r"\b{}\b", regex::escape(&search_val));
-            regex::Regex::new(&pattern).is_ok_and(|re| !re.is_match(&text))
-        }),
-        FilterExpression::RegexFilter {
-            property,
-            pattern,
-            case_sensitive,
-        } => get_string_property(task, &property.name).is_some_and(|v| {
-            let regex_pattern = if *case_sensitive {
-                pattern.clone()
-            } else {
-                format!("(?i){pattern}")
-            };
-            regex::Regex::new(&regex_pattern).is_ok_and(|re| re.is_match(&v))
-        }),
-        FilterExpression::NoneFilter { property } => {
-            get_string_property(task, &property.name).is_none_or(|v| v.is_empty())
-        }
-        FilterExpression::AnyFilter { property } => {
-            get_string_property(task, &property.name).is_some_and(|v| !v.is_empty())
-        }
-        FilterExpression::DateBeforeFilter { property, date } => {
-            get_datetime_property(task, &property.name).is_some_and(|task_dt| {
-                let filter_dt = DateTime::parse_from_rfc3339(date)
-                    .map(|dt| dt.with_timezone(&Utc))
-                    .ok();
-                filter_dt.is_some_and(|f_dt| task_dt < f_dt)
-            })
-        }
-        FilterExpression::DateAfterFilter { property, date } => {
-            get_datetime_property(task, &property.name).is_some_and(|task_dt| {
-                let filter_dt = DateTime::parse_from_rfc3339(date)
-                    .map(|dt| dt.with_timezone(&Utc))
-                    .ok();
-                filter_dt.is_some_and(|f_dt| task_dt > f_dt)
-            })
-        }
-        FilterExpression::DateByFilter { property, date } => {
-            get_datetime_property(task, &property.name).is_some_and(|task_dt| {
-                let filter_dt = DateTime::parse_from_rfc3339(date)
-                    .map(|dt| dt.with_timezone(&Utc))
-                    .ok();
-                filter_dt.is_some_and(|f_dt| task_dt <= f_dt)
-            })
-        }
-        FilterExpression::DateFromFilter { property, from } => {
-            get_datetime_property(task, &property.name).is_some_and(|task_dt| {
-                let filter_dt = DateTime::parse_from_rfc3339(from)
-                    .map(|dt| dt.with_timezone(&Utc))
-                    .ok();
-                filter_dt.is_some_and(|f_dt| task_dt >= f_dt)
-            })
-        }
-        FilterExpression::DateToFilter { property, to } => {
-            get_datetime_property(task, &property.name).is_some_and(|task_dt| {
-                let filter_dt = DateTime::parse_from_rfc3339(to)
-                    .map(|dt| dt.with_timezone(&Utc))
-                    .ok();
-                filter_dt.is_some_and(|f_dt| task_dt <= f_dt)
-            })
-        }
-        FilterExpression::LessThanFilter { property, value } => {
-            if property.name == "urgency" {
-                if let Some(urgency_str) = task.get_value("urgency") {
-                    if let Ok(urgency) = urgency_str.parse::<f64>() {
-                        return urgency < *value;
-                    }
-                }
-            }
-            false
-        }
-        FilterExpression::LessThanOrEqualFilter { property, value } => {
-            if property.name == "urgency" {
-                if let Some(urgency_str) = task.get_value("urgency") {
-                    if let Ok(urgency) = urgency_str.parse::<f64>() {
-                        return urgency <= *value;
-                    }
-                }
-            }
-            false
-        }
-        FilterExpression::GreaterThanFilter { property, value } => {
-            if property.name == "urgency" {
-                if let Some(urgency_str) = task.get_value("urgency") {
-                    if let Ok(urgency) = urgency_str.parse::<f64>() {
-                        return urgency > *value;
-                    }
-                }
-            }
-            false
-        }
-        FilterExpression::GreaterThanOrEqualFilter { property, value } => {
-            if property.name == "urgency" {
-                if let Some(urgency_str) = task.get_value("urgency") {
-                    if let Ok(urgency) = urgency_str.parse::<f64>() {
-                        return urgency >= *value;
-                    }
-                }
-            }
-            false
-        }
-    }
+    Ok(replica.all_tasks().await?.into_values().collect())
 }
 
 // ============================================================================
@@ -759,6 +339,7 @@ pub fn evaluate_filter_expression(task: &Task, expr: &FilterExpression) -> bool 
 mod tests {
     use super::*;
     use crate::create_storage_async;
+    use std::str::FromStr;
     use taskchampion::Operations;
     use taskchampion::Replica;
     use tempfile::TempDir;
@@ -825,6 +406,11 @@ mod tests {
         let mut ops = Operations::new();
         let mut task = replica.create_task(uuid, &mut ops).await.unwrap();
         task.set_description(description.to_string(), &mut ops)
+            .unwrap();
+        // Set an explicit status so the task is returned by
+        // `Replica::pending_tasks()` (which filters on the TaskMap `status`
+        // key) — matching the assumption made by the pending fast-path tests.
+        task.set_status(taskchampion::Status::Pending, &mut ops)
             .unwrap();
         task.set_user_defined_attribute("project".to_string(), project.to_string(), &mut ops)
             .unwrap();
@@ -1693,5 +1279,203 @@ mod tests {
         }"#;
         let result: Result<FilterExpression, _> = serde_json::from_str(json);
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_get_string_property_unknown() {
+        let td = TempDir::new().unwrap();
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap();
+        rt.block_on(async move {
+            let mut replica = build_replica(&td).await;
+            let uuid =
+                create_test_task(&mut replica, "Test task", taskchampion::Status::Pending, "")
+                    .await;
+            let task = replica.get_task(uuid).await.unwrap().unwrap();
+            assert_eq!(get_string_property(&task, "unknown_property"), None);
+        });
+    }
+
+    #[test]
+    fn test_get_datetime_property_unknown() {
+        let td = TempDir::new().unwrap();
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap();
+        rt.block_on(async move {
+            let mut replica = build_replica(&td).await;
+            let uuid =
+                create_test_task(&mut replica, "Test task", taskchampion::Status::Pending, "")
+                    .await;
+            let task = replica.get_task(uuid).await.unwrap().unwrap();
+            assert_eq!(get_datetime_property(&task, "unknown_property"), None);
+        });
+    }
+
+    #[test]
+    fn test_parse_filter_option_none() {
+        let result = parse_filter_option(None).unwrap();
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_parse_filter_option_some() {
+        let json = r#"{"filter": {"type": "Tag", "tag": "home", "exclude": false}}"#.to_string();
+        let result = parse_filter_option(Some(json)).unwrap();
+        match result {
+            Some(FilterExpression::Tag { tag, exclude }) => {
+                assert_eq!(tag, "home");
+                assert!(!exclude);
+            }
+            other => panic!("expected Tag filter, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn test_parse_filter_option_invalid_json() {
+        let result = parse_filter_option(Some("not json".to_string()));
+        assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_collect_base_tasks_returns_all_without_filter() {
+        let td = TempDir::new().unwrap();
+        let mut replica = build_replica(&td).await;
+        create_test_task(&mut replica, "T1", taskchampion::Status::Pending, "").await;
+        create_test_task(&mut replica, "T2", taskchampion::Status::Completed, "").await;
+        let tasks = collect_base_tasks(&mut replica, None).await.unwrap();
+        assert_eq!(tasks.len(), 2);
+    }
+
+    #[tokio::test]
+    async fn test_collect_base_tasks_pending_fast_path() {
+        let td = TempDir::new().unwrap();
+        let mut replica = build_replica(&td).await;
+        create_test_task(&mut replica, "T1", taskchampion::Status::Pending, "").await;
+        create_test_task(&mut replica, "T2", taskchampion::Status::Pending, "").await;
+        create_test_task(&mut replica, "T3", taskchampion::Status::Completed, "").await;
+        let filter = FilterExpression::EqualsFilter {
+            property: PropertyRef {
+                name: "status".to_string(),
+            },
+            value: serde_json::Value::String("pending".to_string()),
+        };
+        let tasks = collect_base_tasks(&mut replica, Some(&filter))
+            .await
+            .unwrap();
+        assert_eq!(tasks.len(), 2);
+        for task in &tasks {
+            assert_eq!(task.get_status(), taskchampion::Status::Pending);
+        }
+    }
+
+    #[test]
+    fn test_implies_pending_only_top_level_equals() {
+        // Ticket R3: the original fast-path shape must still be recognised.
+        let filter = FilterExpression::EqualsFilter {
+            property: PropertyRef {
+                name: "status".to_string(),
+            },
+            value: serde_json::Value::String("pending".to_string()),
+        };
+        assert!(implies_pending_only(&filter));
+    }
+
+    #[test]
+    fn test_implies_pending_only_and_group_with_status() {
+        // The most common real query shape: AND of status==pending with
+        // arbitrary other constraints. The fast path must still fire.
+        let filter = FilterExpression::AndGroup {
+            filters: vec![
+                FilterExpression::EqualsFilter {
+                    property: PropertyRef {
+                        name: "status".to_string(),
+                    },
+                    value: serde_json::Value::String("pending".to_string()),
+                },
+                FilterExpression::ContainsFilter {
+                    property: PropertyRef {
+                        name: "description".to_string(),
+                    },
+                    value: "Test".to_string(),
+                    case_sensitive: false,
+                },
+            ],
+        };
+        assert!(implies_pending_only(&filter));
+    }
+
+    #[test]
+    fn test_implies_pending_only_rejects_or_group() {
+        // An OR with status==pending can admit non-pending tasks; fast path
+        // must NOT apply.
+        let filter = FilterExpression::OrGroup {
+            filters: vec![
+                FilterExpression::EqualsFilter {
+                    property: PropertyRef {
+                        name: "status".to_string(),
+                    },
+                    value: serde_json::Value::String("pending".to_string()),
+                },
+                FilterExpression::EqualsFilter {
+                    property: PropertyRef {
+                        name: "status".to_string(),
+                    },
+                    value: serde_json::Value::String("completed".to_string()),
+                },
+            ],
+        };
+        assert!(!implies_pending_only(&filter));
+    }
+
+    #[test]
+    fn test_implies_pending_only_rejects_non_pending_value() {
+        let filter = FilterExpression::EqualsFilter {
+            property: PropertyRef {
+                name: "status".to_string(),
+            },
+            value: serde_json::Value::String("completed".to_string()),
+        };
+        assert!(!implies_pending_only(&filter));
+    }
+
+    #[tokio::test]
+    async fn test_collect_base_tasks_and_group_fast_path() {
+        // Ticket R3: an AndGroup that *contains* a status==pending term must
+        // use pending_tasks() so that the base set excludes completed/deleted.
+        let td = TempDir::new().unwrap();
+        let mut replica = build_replica(&td).await;
+        create_test_task(&mut replica, "T1", taskchampion::Status::Pending, "").await;
+        create_test_task(&mut replica, "T2", taskchampion::Status::Pending, "").await;
+        create_test_task(&mut replica, "T3", taskchampion::Status::Completed, "").await;
+
+        let filter = FilterExpression::AndGroup {
+            filters: vec![
+                FilterExpression::EqualsFilter {
+                    property: PropertyRef {
+                        name: "status".to_string(),
+                    },
+                    value: serde_json::Value::String("pending".to_string()),
+                },
+                FilterExpression::ContainsFilter {
+                    property: PropertyRef {
+                        name: "description".to_string(),
+                    },
+                    value: "T".to_string(),
+                    case_sensitive: true,
+                },
+            ],
+        };
+        let tasks = collect_base_tasks(&mut replica, Some(&filter))
+            .await
+            .unwrap();
+        // Fast path: only the two pending tasks are returned as candidates.
+        assert_eq!(tasks.len(), 2);
+        for task in &tasks {
+            assert_eq!(task.get_status(), taskchampion::Status::Pending);
+        }
     }
 }

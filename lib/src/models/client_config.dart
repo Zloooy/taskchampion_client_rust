@@ -24,20 +24,8 @@ abstract class ClientConfig with _$ClientConfig {
     /// Enable debug logging
     @Default(false) bool debugLogging,
 
-    /// Enable automatic sync on startup
-    @Default(false) bool autoSyncOnStartup,
-
     /// Enable automatic sync after task changes
     @Default(false) bool autoSyncOnTaskChange,
-
-    /// Sync interval in minutes (for periodic sync)
-    @Default(15) int syncIntervalMinutes,
-
-    /// Maximum number of tasks to keep in history
-    @Default(1000) int maxHistorySize,
-
-    /// Enable task encryption at rest
-    @Default(true) bool encryptAtRest,
   }) = _ClientConfig;
 
   /// Create a ClientConfig from a JSON map
@@ -50,6 +38,8 @@ abstract class ClientConfig with _$ClientConfig {
     required String clientId,
     required String encryptionSecret,
     String? taskdbPath,
+    bool autoSyncOnTaskChange = false,
+    bool debugLogging = false,
   }) {
     final syncConfig = SyncConfig(
       serverUrl: serverUrl,
@@ -67,30 +57,8 @@ abstract class ClientConfig with _$ClientConfig {
       taskdbPath: taskdbPath ?? 'taskchampion_db',
       syncConfig: syncConfig,
       authConfig: authConfig,
+      autoSyncOnTaskChange: autoSyncOnTaskChange,
+      debugLogging: debugLogging,
     );
-  }
-}
-
-/// Extension methods for ClientConfig
-extension ClientConfigExtensions on ClientConfig {
-  /// Check if all configuration is valid
-  bool get isValid =>
-      taskdbPath.isNotEmpty &&
-      syncConfig.isValid &&
-      authConfig.hasValidCredentials;
-
-  /// Get a sanitized version for logging
-  Map<String, dynamic> toSafeMap() {
-    return {
-      'taskdbPath': taskdbPath,
-      'syncConfig': syncConfig.toSafeMap(),
-      'authConfig': authConfig.toSafeMap(),
-      'debugLogging': debugLogging,
-      'autoSyncOnStartup': autoSyncOnStartup,
-      'autoSyncOnTaskChange': autoSyncOnTaskChange,
-      'syncIntervalMinutes': syncIntervalMinutes,
-      'maxHistorySize': maxHistorySize,
-      'encryptAtRest': encryptAtRest,
-    };
   }
 }

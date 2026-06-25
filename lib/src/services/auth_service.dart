@@ -1,68 +1,55 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
+import '../core/core.dart';
 import '../models/models.dart';
-import '../rust_bridge/rust_bridge.dart';
+import '../storage/task_storage.dart';
+import 'interfaces/i_auth_service.dart';
 
-/// Service for authentication with TaskChampion sync server
+/// Service for authentication with TaskChampion sync server.
 ///
 /// Handles credential validation and authentication operations.
-class AuthService {
-  /// Authentication configuration
-  final AuthConfig authConfig;
+class AuthService implements IAuthService {
+  /// Underlying storage implementation.
+  final TaskStorage _storage;
 
-  /// Create a new AuthService instance
-  AuthService(this.authConfig);
+  /// Authentication configuration.
+  final AuthConfig _authConfig;
 
-  /// Validate credentials with the sync server
+  /// Logger for this service.
+  final Logger _logger;
+
+  /// Create a new AuthService instance.
+  AuthService(this._storage, this._authConfig, {Logger? logger})
+    : _logger = logger ?? const DebugPrintLogger();
+
+  @override
   Future<AuthResult> validateCredentials() async {
     try {
-      final jsonStr = await RustBridge.validateCredentials(
-        authConfig.serverUrl,
-        authConfig.clientId,
-        authConfig.encryptionSecret,
+      final jsonStr = await _storage.validateCredentials(
+        _authConfig.serverUrl,
+        _authConfig.clientId,
+        _authConfig.encryptionSecret,
       );
 
       final Map<String, dynamic> jsonData = json.decode(jsonStr);
 
-      final success = jsonData['valid'] == 'true' || jsonData['valid'] == true;
+      final success = jsonData['valid'] == true;
 
       if (success) {
         return AuthResult(
           success: true,
-          serverUrl: authConfig.serverUrl,
-          clientId: authConfig.clientId,
+          serverUrl: _authConfig.serverUrl,
+          clientId: _authConfig.clientId,
           canSync: true,
-          authenticatedAt: DateTime.now(),
         );
       } else {
-        return AuthResult(
+        return const AuthResult(
           success: false,
           errorMessage: 'Invalid credentials',
-          authenticatedAt: DateTime.now(),
         );
       }
-    } catch (e) {
-      debugPrint('Auth error: $e');
-      return AuthResult(
-        success: false,
-        errorMessage: 'Authentication failed: $e',
-        authenticatedAt: DateTime.now(),
-      );
+    } catch (e, st) {
+      _logger.error('Authentication failed', error: e, stackTrace: st);
+      throw AuthException('Authentication failed', cause: e);
     }
-  }
-
-  /// Generate a new client ID
-  static Future<String> generateClientId() async {
-    return RustBridge.generateClientId();
-  }
-
-  /// Generate a new encryption secret
-  static Future<String> generateEncryptionSecret() async {
-    return RustBridge.generateEncryptionSecret();
-  }
-
-  /// Check if credentials are valid locally (without server check)
-  bool hasValidCredentials() {
-    return authConfig.hasValidCredentials;
   }
 }

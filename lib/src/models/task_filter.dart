@@ -69,18 +69,6 @@ final class OrFilterGroup extends FilterGroup {
   };
 }
 
-/// Combines all contained filters with logical XOR
-/// Matches if exactly one of the contained filters matches
-final class XorFilterGroup extends FilterGroup {
-  const XorFilterGroup(super.filters);
-
-  @override
-  Map<String, dynamic> toJson() => {
-    'type': 'XorGroup',
-    'filters': filters.map((f) => f.toJson()).toList(),
-  };
-}
-
 /// Negates a single filter expression
 final class NotFilter extends FilterExpression {
   final FilterExpression inner;

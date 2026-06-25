@@ -18,10 +18,7 @@ mixin _$SyncConfig {
 /// URL of the TaskChampion sync server
  String get serverUrl;/// Client ID for authentication (UUID v4)
  String get clientId;/// Encryption secret for secure data transmission
- String get encryptionSecret;/// Timeout for sync operations in milliseconds
- int get timeout;/// Enable automatic sync on task changes
- bool get autoSync;/// Enable verbose logging for debugging
- bool get verboseLogging;
+ String get encryptionSecret;
 /// Create a copy of SyncConfig
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -34,16 +31,16 @@ $SyncConfigCopyWith<SyncConfig> get copyWith => _$SyncConfigCopyWithImpl<SyncCon
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SyncConfig&&(identical(other.serverUrl, serverUrl) || other.serverUrl == serverUrl)&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.encryptionSecret, encryptionSecret) || other.encryptionSecret == encryptionSecret)&&(identical(other.timeout, timeout) || other.timeout == timeout)&&(identical(other.autoSync, autoSync) || other.autoSync == autoSync)&&(identical(other.verboseLogging, verboseLogging) || other.verboseLogging == verboseLogging));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SyncConfig&&(identical(other.serverUrl, serverUrl) || other.serverUrl == serverUrl)&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.encryptionSecret, encryptionSecret) || other.encryptionSecret == encryptionSecret));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,serverUrl,clientId,encryptionSecret,timeout,autoSync,verboseLogging);
+int get hashCode => Object.hash(runtimeType,serverUrl,clientId,encryptionSecret);
 
 @override
 String toString() {
-  return 'SyncConfig(serverUrl: $serverUrl, clientId: $clientId, encryptionSecret: $encryptionSecret, timeout: $timeout, autoSync: $autoSync, verboseLogging: $verboseLogging)';
+  return 'SyncConfig(serverUrl: $serverUrl, clientId: $clientId, encryptionSecret: $encryptionSecret)';
 }
 
 
@@ -54,7 +51,7 @@ abstract mixin class $SyncConfigCopyWith<$Res>  {
   factory $SyncConfigCopyWith(SyncConfig value, $Res Function(SyncConfig) _then) = _$SyncConfigCopyWithImpl;
 @useResult
 $Res call({
- String serverUrl, String clientId, String encryptionSecret, int timeout, bool autoSync, bool verboseLogging
+ String serverUrl, String clientId, String encryptionSecret
 });
 
 
@@ -71,15 +68,12 @@ class _$SyncConfigCopyWithImpl<$Res>
 
 /// Create a copy of SyncConfig
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? serverUrl = null,Object? clientId = null,Object? encryptionSecret = null,Object? timeout = null,Object? autoSync = null,Object? verboseLogging = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? serverUrl = null,Object? clientId = null,Object? encryptionSecret = null,}) {
   return _then(_self.copyWith(
 serverUrl: null == serverUrl ? _self.serverUrl : serverUrl // ignore: cast_nullable_to_non_nullable
 as String,clientId: null == clientId ? _self.clientId : clientId // ignore: cast_nullable_to_non_nullable
 as String,encryptionSecret: null == encryptionSecret ? _self.encryptionSecret : encryptionSecret // ignore: cast_nullable_to_non_nullable
-as String,timeout: null == timeout ? _self.timeout : timeout // ignore: cast_nullable_to_non_nullable
-as int,autoSync: null == autoSync ? _self.autoSync : autoSync // ignore: cast_nullable_to_non_nullable
-as bool,verboseLogging: null == verboseLogging ? _self.verboseLogging : verboseLogging // ignore: cast_nullable_to_non_nullable
-as bool,
+as String,
   ));
 }
 
@@ -164,10 +158,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String serverUrl,  String clientId,  String encryptionSecret,  int timeout,  bool autoSync,  bool verboseLogging)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String serverUrl,  String clientId,  String encryptionSecret)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SyncConfig() when $default != null:
-return $default(_that.serverUrl,_that.clientId,_that.encryptionSecret,_that.timeout,_that.autoSync,_that.verboseLogging);case _:
+return $default(_that.serverUrl,_that.clientId,_that.encryptionSecret);case _:
   return orElse();
 
 }
@@ -185,10 +179,10 @@ return $default(_that.serverUrl,_that.clientId,_that.encryptionSecret,_that.time
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String serverUrl,  String clientId,  String encryptionSecret,  int timeout,  bool autoSync,  bool verboseLogging)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String serverUrl,  String clientId,  String encryptionSecret)  $default,) {final _that = this;
 switch (_that) {
 case _SyncConfig():
-return $default(_that.serverUrl,_that.clientId,_that.encryptionSecret,_that.timeout,_that.autoSync,_that.verboseLogging);case _:
+return $default(_that.serverUrl,_that.clientId,_that.encryptionSecret);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -205,10 +199,10 @@ return $default(_that.serverUrl,_that.clientId,_that.encryptionSecret,_that.time
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String serverUrl,  String clientId,  String encryptionSecret,  int timeout,  bool autoSync,  bool verboseLogging)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String serverUrl,  String clientId,  String encryptionSecret)?  $default,) {final _that = this;
 switch (_that) {
 case _SyncConfig() when $default != null:
-return $default(_that.serverUrl,_that.clientId,_that.encryptionSecret,_that.timeout,_that.autoSync,_that.verboseLogging);case _:
+return $default(_that.serverUrl,_that.clientId,_that.encryptionSecret);case _:
   return null;
 
 }
@@ -220,7 +214,7 @@ return $default(_that.serverUrl,_that.clientId,_that.encryptionSecret,_that.time
 @JsonSerializable()
 
 class _SyncConfig implements SyncConfig {
-  const _SyncConfig({required this.serverUrl, required this.clientId, required this.encryptionSecret, this.timeout = 30000, this.autoSync = false, this.verboseLogging = false});
+  const _SyncConfig({required this.serverUrl, required this.clientId, required this.encryptionSecret});
   factory _SyncConfig.fromJson(Map<String, dynamic> json) => _$SyncConfigFromJson(json);
 
 /// URL of the TaskChampion sync server
@@ -229,12 +223,6 @@ class _SyncConfig implements SyncConfig {
 @override final  String clientId;
 /// Encryption secret for secure data transmission
 @override final  String encryptionSecret;
-/// Timeout for sync operations in milliseconds
-@override@JsonKey() final  int timeout;
-/// Enable automatic sync on task changes
-@override@JsonKey() final  bool autoSync;
-/// Enable verbose logging for debugging
-@override@JsonKey() final  bool verboseLogging;
 
 /// Create a copy of SyncConfig
 /// with the given fields replaced by the non-null parameter values.
@@ -249,16 +237,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SyncConfig&&(identical(other.serverUrl, serverUrl) || other.serverUrl == serverUrl)&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.encryptionSecret, encryptionSecret) || other.encryptionSecret == encryptionSecret)&&(identical(other.timeout, timeout) || other.timeout == timeout)&&(identical(other.autoSync, autoSync) || other.autoSync == autoSync)&&(identical(other.verboseLogging, verboseLogging) || other.verboseLogging == verboseLogging));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SyncConfig&&(identical(other.serverUrl, serverUrl) || other.serverUrl == serverUrl)&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.encryptionSecret, encryptionSecret) || other.encryptionSecret == encryptionSecret));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,serverUrl,clientId,encryptionSecret,timeout,autoSync,verboseLogging);
+int get hashCode => Object.hash(runtimeType,serverUrl,clientId,encryptionSecret);
 
 @override
 String toString() {
-  return 'SyncConfig(serverUrl: $serverUrl, clientId: $clientId, encryptionSecret: $encryptionSecret, timeout: $timeout, autoSync: $autoSync, verboseLogging: $verboseLogging)';
+  return 'SyncConfig(serverUrl: $serverUrl, clientId: $clientId, encryptionSecret: $encryptionSecret)';
 }
 
 
@@ -269,7 +257,7 @@ abstract mixin class _$SyncConfigCopyWith<$Res> implements $SyncConfigCopyWith<$
   factory _$SyncConfigCopyWith(_SyncConfig value, $Res Function(_SyncConfig) _then) = __$SyncConfigCopyWithImpl;
 @override @useResult
 $Res call({
- String serverUrl, String clientId, String encryptionSecret, int timeout, bool autoSync, bool verboseLogging
+ String serverUrl, String clientId, String encryptionSecret
 });
 
 
@@ -286,15 +274,12 @@ class __$SyncConfigCopyWithImpl<$Res>
 
 /// Create a copy of SyncConfig
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? serverUrl = null,Object? clientId = null,Object? encryptionSecret = null,Object? timeout = null,Object? autoSync = null,Object? verboseLogging = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? serverUrl = null,Object? clientId = null,Object? encryptionSecret = null,}) {
   return _then(_SyncConfig(
 serverUrl: null == serverUrl ? _self.serverUrl : serverUrl // ignore: cast_nullable_to_non_nullable
 as String,clientId: null == clientId ? _self.clientId : clientId // ignore: cast_nullable_to_non_nullable
 as String,encryptionSecret: null == encryptionSecret ? _self.encryptionSecret : encryptionSecret // ignore: cast_nullable_to_non_nullable
-as String,timeout: null == timeout ? _self.timeout : timeout // ignore: cast_nullable_to_non_nullable
-as int,autoSync: null == autoSync ? _self.autoSync : autoSync // ignore: cast_nullable_to_non_nullable
-as bool,verboseLogging: null == verboseLogging ? _self.verboseLogging : verboseLogging // ignore: cast_nullable_to_non_nullable
-as bool,
+as String,
   ));
 }
 

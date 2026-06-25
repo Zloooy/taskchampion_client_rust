@@ -22,3 +22,13 @@
 - Added `getAllPropertyValues<T>` to retrieve all possible enum values for a type
 - Moved property value parsing to Rust side for type safety
 - All parsing now happens in Rust; Dart generic types are mapped to Rust `PropertyReturnType`
+
+## 0.4.0
+
+- Added optional service injection to `TaskChampionClient` constructors (`ITaskService?`, `ISyncService?`, `IAuthService?`, `ITaskPropertyService?`, `ITaskTagService?`) for testing with mocks or custom decorators
+- Added optional `eventManager` parameter to `TaskChampionClient` constructors for injecting custom event managers
+- Task change events are now emitted automatically after `createTask`, `updateTask`, and `deleteTask` operations
+- Sync events are now emitted via `syncEvents` stream on every sync completion (success or failure)
+- Fixed `TaskPriority` enum values: now correctly uses `"H"`, `"M"`, `"L"` instead of `"high"`, `"medium"`, `"low"`
+- Fixed `getStoredPropertyValues<T>` for `TaskPriority`: returns correct enum values matching stored data
+- Fixed `importTasks`: per-row import errors are now properly reported instead of silently returning partial counts

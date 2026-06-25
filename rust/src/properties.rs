@@ -2,10 +2,26 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use taskchampion::Replica;
 
-use crate::{
-    create_storage_async, evaluate_filter_expression, get_datetime_property, get_string_property,
-    has_virtual_tag, FilterExpression, SortDirection, TaskFilter, TaskSort,
+use crate::filter::{
+    collect_base_tasks, evaluate_filter_expression, get_datetime_property, get_string_property,
+    has_virtual_tag, parse_filter_option,
 };
+use crate::{create_storage_async, FilterExpression, SortDirection, TaskSort};
+
+/// Canonical Taskwarrior/TaskChampion priority values (single uppercase letters).
+///
+/// The empty string represents "no priority" and is intentionally excluded
+/// from this list; it is reported as `None` from `Task::get_priority`.
+///
+/// See ticket R1: the crate previously returned `"high"/"medium"/"low"/"none"`
+/// which diverged from both the rest of this crate and the wider Taskwarrior
+/// ecosystem that uses `"H"/"M"/"L"`.
+pub const CANONICAL_PRIORITIES: [&str; 3] = ["H", "M", "L"];
+
+/// Returns `true` when `value` is one of the canonical priority codes.
+pub fn is_canonical_priority(value: &str) -> bool {
+    CANONICAL_PRIORITIES.contains(&value)
+}
 
 /// The type of values expected from a property query.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -26,8 +42,7 @@ pub enum PropertyReturnType {
 /// * `property` - name of the property to query (e.g. "description", "due").
 /// * `filter_json` - optional JSON describing a `TaskFilter` to limit the tasks.
 /// * `sort_json` - optional JSON describing a `TaskSort` that may affect the order of the returned list.
-#[flutter_rust_bridge::frb]
-pub async fn get_task_property_values(
+pub(crate) async fn get_task_property_values(
     taskdb_dir_path: String,
     property: String,
     filter_json: Option<String>,
@@ -36,26 +51,10 @@ pub async fn get_task_property_values(
     let storage = create_storage_async(taskdb_dir_path).await?;
     let mut replica = Replica::new(storage);
 
-    let filter_opt: Option<FilterExpression> = if let Some(fjson) = filter_json {
-        let tf: TaskFilter = serde_json::from_str(&fjson)?;
-        Some(tf.filter)
-    } else {
-        None
-    };
+    let filter_opt: Option<FilterExpression> = parse_filter_option(filter_json)?;
 
-    let base_tasks: Vec<taskchampion::Task> = if let Some(ref filter) = filter_opt {
-        if let FilterExpression::EqualsFilter { property, value } = filter {
-            if property.name == "status" && value.as_str() == Some("pending") {
-                replica.pending_tasks().await?.into_iter().collect()
-            } else {
-                replica.all_tasks().await?.into_values().collect()
-            }
-        } else {
-            replica.all_tasks().await?.into_values().collect()
-        }
-    } else {
-        replica.all_tasks().await?.into_values().collect()
-    };
+    let base_tasks: Vec<taskchampion::Task> =
+        collect_base_tasks(&mut replica, filter_opt.as_ref()).await?;
 
     let tasks: Vec<taskchampion::Task> = if let Some(ref filter) = filter_opt {
         base_tasks
@@ -106,8 +105,7 @@ pub async fn get_task_property_values(
 /// * `filter_json` - optional JSON describing a `TaskFilter` to limit the tasks.
 /// * `include_virtual_tags` - when true, include virtual tags (tags starting with '+' or '-').
 /// * `pattern` - optional case-insensitive substring that a tag must contain.
-#[flutter_rust_bridge::frb]
-pub async fn get_tags(
+pub(crate) async fn get_tags(
     taskdb_dir_path: String,
     filter_json: Option<String>,
     include_virtual_tags: bool,
@@ -116,26 +114,10 @@ pub async fn get_tags(
     let storage = create_storage_async(taskdb_dir_path).await?;
     let mut replica = Replica::new(storage);
 
-    let filter_opt: Option<FilterExpression> = if let Some(fjson) = filter_json {
-        let tf: TaskFilter = serde_json::from_str(&fjson)?;
-        Some(tf.filter)
-    } else {
-        None
-    };
+    let filter_opt: Option<FilterExpression> = parse_filter_option(filter_json)?;
 
-    let base_tasks: Vec<taskchampion::Task> = if let Some(ref filter) = filter_opt {
-        if let FilterExpression::EqualsFilter { property, value } = filter {
-            if property.name == "status" && value.as_str() == Some("pending") {
-                replica.pending_tasks().await?.into_iter().collect()
-            } else {
-                replica.all_tasks().await?.into_values().collect()
-            }
-        } else {
-            replica.all_tasks().await?.into_values().collect()
-        }
-    } else {
-        replica.all_tasks().await?.into_values().collect()
-    };
+    let base_tasks: Vec<taskchampion::Task> =
+        collect_base_tasks(&mut replica, filter_opt.as_ref()).await?;
 
     let tasks: Vec<taskchampion::Task> = if let Some(ref filter) = filter_opt {
         base_tasks
@@ -191,26 +173,10 @@ pub async fn get_task_property_values_typed(
     let storage = create_storage_async(taskdb_dir_path).await?;
     let mut replica = Replica::new(storage);
 
-    let filter_opt: Option<FilterExpression> = if let Some(fjson) = filter_json {
-        let tf: TaskFilter = serde_json::from_str(&fjson)?;
-        Some(tf.filter)
-    } else {
-        None
-    };
+    let filter_opt: Option<FilterExpression> = parse_filter_option(filter_json)?;
 
-    let base_tasks: Vec<taskchampion::Task> = if let Some(ref filter) = filter_opt {
-        if let FilterExpression::EqualsFilter { property, value } = filter {
-            if property.name == "status" && value.as_str() == Some("pending") {
-                replica.pending_tasks().await?.into_iter().collect()
-            } else {
-                replica.all_tasks().await?.into_values().collect()
-            }
-        } else {
-            replica.all_tasks().await?.into_values().collect()
-        }
-    } else {
-        replica.all_tasks().await?.into_values().collect()
-    };
+    let base_tasks: Vec<taskchampion::Task> =
+        collect_base_tasks(&mut replica, filter_opt.as_ref()).await?;
 
     let tasks: Vec<taskchampion::Task> = if let Some(ref filter) = filter_opt {
         base_tasks
@@ -250,12 +216,11 @@ pub async fn get_task_property_values_typed(
             PropertyReturnType::EnumPriority => {
                 if let Some(raw) = task.get_value(&property) {
                     let val_str = raw.to_string();
-                    // Validate it's a valid priority value
-                    match val_str.as_str() {
-                        "high" | "medium" | "low" | "none" => {
-                            raw_values.insert(val_str);
-                        }
-                        _ => {} // skip invalid values silently
+                    // Taskwarrior/TaskChampion canonical priorities are the single
+                    // uppercase letters "H", "M", "L". An empty value means "no
+                    // priority". See ticket R1.
+                    if is_canonical_priority(&val_str) {
+                        raw_values.insert(val_str);
                     }
                 }
             }
@@ -293,12 +258,10 @@ pub fn get_all_enum_values(return_type: PropertyReturnType) -> Result<Vec<String
             "deleted".to_string(),
             "pending".to_string(),
         ]),
-        PropertyReturnType::EnumPriority => Ok(vec![
-            "high".to_string(),
-            "low".to_string(),
-            "medium".to_string(),
-            "none".to_string(),
-        ]),
+        PropertyReturnType::EnumPriority => Ok(CANONICAL_PRIORITIES
+            .iter()
+            .map(|s| (*s).to_string())
+            .collect()),
         PropertyReturnType::String | PropertyReturnType::DateTime => Err(anyhow::anyhow!(
             "getAllPropertyValues only supports enum types (EnumStatus, EnumPriority)"
         )),
@@ -452,7 +415,8 @@ mod tests {
         {
             let storage = create_storage_async(path.clone()).await.unwrap();
             let mut replica = Replica::new(storage);
-            for priority in &["high", "medium", "high"] {
+            // Use canonical Taskwarrior priority codes (H/M/L) — see ticket R1.
+            for priority in &["H", "M", "H"] {
                 let mut ops = Operations::new();
                 let uuid = Uuid::new_v4();
                 let mut task = replica.create_task(uuid, &mut ops).await.unwrap();
@@ -471,7 +435,7 @@ mod tests {
         )
         .await
         .unwrap();
-        assert_eq!(result, vec!["high".to_string(), "medium".to_string()]);
+        assert_eq!(result, vec!["H".to_string(), "M".to_string()]);
     }
 
     #[tokio::test]
@@ -492,12 +456,7 @@ mod tests {
         let result = get_all_enum_values(PropertyReturnType::EnumPriority).unwrap();
         assert_eq!(
             result,
-            vec![
-                "high".to_string(),
-                "low".to_string(),
-                "medium".to_string(),
-                "none".to_string()
-            ]
+            vec!["H".to_string(), "M".to_string(), "L".to_string()]
         );
     }
 
@@ -508,5 +467,56 @@ mod tests {
 
         let result = get_all_enum_values(PropertyReturnType::DateTime);
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn is_canonical_priority_recognises_canonical_codes() {
+        // See ticket R1: canonical priorities are single uppercase letters.
+        assert!(is_canonical_priority("H"));
+        assert!(is_canonical_priority("M"));
+        assert!(is_canonical_priority("L"));
+    }
+
+    #[test]
+    fn is_canonical_priority_rejects_legacy_words() {
+        // The legacy lowercase words must NOT be reported as valid priorities.
+        assert!(!is_canonical_priority("high"));
+        assert!(!is_canonical_priority("medium"));
+        assert!(!is_canonical_priority("low"));
+        assert!(!is_canonical_priority("none"));
+        assert!(!is_canonical_priority(""));
+    }
+
+    #[tokio::test]
+    async fn typed_enum_priority_values_filters_legacy_words() {
+        let td = TempDir::new().unwrap();
+        let path = td.path().to_str().unwrap().to_string();
+
+        {
+            let storage = create_storage_async(path.clone()).await.unwrap();
+            let mut replica = Replica::new(storage);
+            // A canonical priority plus the legacy lowercase forms. Only the
+            // canonical value should survive the typed query.
+            for priority in &["H", "high", "medium"] {
+                let mut ops = Operations::new();
+                let uuid = Uuid::new_v4();
+                let mut task = replica.create_task(uuid, &mut ops).await.unwrap();
+                task.set_priority((*priority).to_string(), &mut ops)
+                    .unwrap();
+                replica.commit_operations(ops).await.unwrap();
+            }
+            drop(replica);
+        }
+
+        let result = get_task_property_values_typed(
+            path,
+            "priority".to_string(),
+            PropertyReturnType::EnumPriority,
+            None,
+            None,
+        )
+        .await
+        .unwrap();
+        assert_eq!(result, vec!["H".to_string()]);
     }
 }

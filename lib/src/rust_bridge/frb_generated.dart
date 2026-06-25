@@ -66,7 +66,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.12.0';
 
   @override
-  int get rustContentHash => 945119626;
+  int get rustContentHash => -243688432;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -83,7 +83,12 @@ abstract class RustLibApi extends BaseApi {
     required Map<String, String> taskData,
   });
 
-  Future<int> crateApiDeleteTask({
+  Future<String> crateApiAddTaskDto({
+    required String taskdbDirPath,
+    required TaskDto dto,
+  });
+
+  Future<void> crateApiDeleteTask({
     required String taskdbDirPath,
     required String uuidStr,
   });
@@ -93,12 +98,12 @@ abstract class RustLibApi extends BaseApi {
     required String exportFilePath,
   });
 
-  Future<String> crateApiGenerateClientId();
-
-  Future<String> crateApiGenerateEncryptionSecret();
-
   Future<List<String>> crateApiGetAllEnumValues({
     required PropertyReturnType returnType,
+  });
+
+  Future<List<TaskDto>> crateApiGetAllTasksDtos({
+    required String taskdbDirPath,
   });
 
   Future<String> crateApiGetAllTasksJson({required String taskdbDirPath});
@@ -107,8 +112,6 @@ abstract class RustLibApi extends BaseApi {
     required String taskdbDirPath,
     required String sortJson,
   });
-
-  Future<String> crateApiGetPendingTasksJson({required String taskdbDirPath});
 
   Future<String> crateApiGetSnapshot({
     required String taskdbDirPath,
@@ -152,11 +155,6 @@ abstract class RustLibApi extends BaseApi {
     required String sortJson,
   });
 
-  Future<String> crateApiGetTasksWithFilterJson({
-    required String taskdbDirPath,
-    required String filterJson,
-  });
-
   Future<int> crateApiImportTasks({
     required String taskdbDirPath,
     required String importFilePath,
@@ -173,6 +171,12 @@ abstract class RustLibApi extends BaseApi {
     required String taskdbDirPath,
     required String uuidStr,
     required Map<String, String> taskData,
+  });
+
+  Future<void> crateApiUpdateTaskDto({
+    required String taskdbDirPath,
+    required String uuidStr,
+    required TaskDto dto,
   });
 
   Future<String> crateApiValidateCredentials({
@@ -225,7 +229,41 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   );
 
   @override
-  Future<int> crateApiDeleteTask({
+  Future<String> crateApiAddTaskDto({
+    required String taskdbDirPath,
+    required TaskDto dto,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_String(taskdbDirPath, serializer);
+          sse_encode_box_autoadd_task_dto(dto, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 2,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_String,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiAddTaskDtoConstMeta,
+        argValues: [taskdbDirPath, dto],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiAddTaskDtoConstMeta => const TaskConstMeta(
+    debugName: "add_task_dto",
+    argNames: ["taskdbDirPath", "dto"],
+  );
+
+  @override
+  Future<void> crateApiDeleteTask({
     required String taskdbDirPath,
     required String uuidStr,
   }) {
@@ -238,12 +276,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 2,
+            funcId: 3,
             port: port_,
           );
         },
         codec: SseCodec(
-          decodeSuccessData: sse_decode_i_8,
+          decodeSuccessData: sse_decode_unit,
           decodeErrorData: sse_decode_AnyhowException,
         ),
         constMeta: kCrateApiDeleteTaskConstMeta,
@@ -272,7 +310,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 3,
+            funcId: 4,
             port: port_,
           );
         },
@@ -293,63 +331,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   );
 
   @override
-  Future<String> crateApiGenerateClientId() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 4,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiGenerateClientIdConstMeta,
-        argValues: [],
-        apiImpl: this,
-      ),
-    );
-  }
-
-  TaskConstMeta get kCrateApiGenerateClientIdConstMeta =>
-      const TaskConstMeta(debugName: "generate_client_id", argNames: []);
-
-  @override
-  Future<String> crateApiGenerateEncryptionSecret() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 5,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: null,
-        ),
-        constMeta: kCrateApiGenerateEncryptionSecretConstMeta,
-        argValues: [],
-        apiImpl: this,
-      ),
-    );
-  }
-
-  TaskConstMeta get kCrateApiGenerateEncryptionSecretConstMeta =>
-      const TaskConstMeta(
-        debugName: "generate_encryption_secret",
-        argNames: [],
-      );
-
-  @override
   Future<List<String>> crateApiGetAllEnumValues({
     required PropertyReturnType returnType,
   }) {
@@ -361,7 +342,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 6,
+            funcId: 5,
             port: port_,
           );
         },
@@ -379,6 +360,38 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiGetAllEnumValuesConstMeta => const TaskConstMeta(
     debugName: "get_all_enum_values",
     argNames: ["returnType"],
+  );
+
+  @override
+  Future<List<TaskDto>> crateApiGetAllTasksDtos({
+    required String taskdbDirPath,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_String(taskdbDirPath, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 6,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_list_task_dto,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiGetAllTasksDtosConstMeta,
+        argValues: [taskdbDirPath],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiGetAllTasksDtosConstMeta => const TaskConstMeta(
+    debugName: "get_all_tasks_dtos",
+    argNames: ["taskdbDirPath"],
   );
 
   @override
@@ -447,37 +460,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<String> crateApiGetPendingTasksJson({required String taskdbDirPath}) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_String(taskdbDirPath, serializer);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 9,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta: kCrateApiGetPendingTasksJsonConstMeta,
-        argValues: [taskdbDirPath],
-        apiImpl: this,
-      ),
-    );
-  }
-
-  TaskConstMeta get kCrateApiGetPendingTasksJsonConstMeta =>
-      const TaskConstMeta(
-        debugName: "get_pending_tasks_json",
-        argNames: ["taskdbDirPath"],
-      );
-
-  @override
   Future<String> crateApiGetSnapshot({
     required String taskdbDirPath,
     required String serverUrl,
@@ -495,7 +477,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 10,
+            funcId: 9,
             port: port_,
           );
         },
@@ -533,7 +515,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 11,
+            funcId: 10,
             port: port_,
           );
         },
@@ -567,7 +549,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 12,
+            funcId: 11,
             port: port_,
           );
         },
@@ -605,7 +587,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 13,
+            funcId: 12,
             port: port_,
           );
         },
@@ -646,7 +628,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 14,
+            funcId: 13,
             port: port_,
           );
         },
@@ -683,7 +665,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 15,
+            funcId: 14,
             port: port_,
           );
         },
@@ -719,7 +701,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 16,
+            funcId: 15,
             port: port_,
           );
         },
@@ -741,41 +723,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<String> crateApiGetTasksWithFilterJson({
-    required String taskdbDirPath,
-    required String filterJson,
-  }) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_String(taskdbDirPath, serializer);
-          sse_encode_String(filterJson, serializer);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 17,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
-          decodeErrorData: sse_decode_AnyhowException,
-        ),
-        constMeta: kCrateApiGetTasksWithFilterJsonConstMeta,
-        argValues: [taskdbDirPath, filterJson],
-        apiImpl: this,
-      ),
-    );
-  }
-
-  TaskConstMeta get kCrateApiGetTasksWithFilterJsonConstMeta =>
-      const TaskConstMeta(
-        debugName: "get_tasks_with_filter_json",
-        argNames: ["taskdbDirPath", "filterJson"],
-      );
-
-  @override
   Future<int> crateApiImportTasks({
     required String taskdbDirPath,
     required String importFilePath,
@@ -789,7 +736,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 18,
+            funcId: 16,
             port: port_,
           );
         },
@@ -827,7 +774,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 19,
+            funcId: 17,
             port: port_,
           );
         },
@@ -863,7 +810,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 20,
+            funcId: 18,
             port: port_,
           );
         },
@@ -884,6 +831,42 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   );
 
   @override
+  Future<void> crateApiUpdateTaskDto({
+    required String taskdbDirPath,
+    required String uuidStr,
+    required TaskDto dto,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_String(taskdbDirPath, serializer);
+          sse_encode_String(uuidStr, serializer);
+          sse_encode_box_autoadd_task_dto(dto, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 19,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiUpdateTaskDtoConstMeta,
+        argValues: [taskdbDirPath, uuidStr, dto],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiUpdateTaskDtoConstMeta => const TaskConstMeta(
+    debugName: "update_task_dto",
+    argNames: ["taskdbDirPath", "uuidStr", "dto"],
+  );
+
+  @override
   Future<String> crateApiValidateCredentials({
     required String serverUrl,
     required String clientId,
@@ -899,7 +882,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 21,
+            funcId: 20,
             port: port_,
           );
         },
@@ -943,9 +926,27 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  AnnotationDto dco_decode_annotation_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return AnnotationDto(
+      entry: dco_decode_String(arr[0]),
+      description: dco_decode_String(arr[1]),
+    );
+  }
+
+  @protected
   bool dco_decode_bool(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as bool;
+  }
+
+  @protected
+  TaskDto dco_decode_box_autoadd_task_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_task_dto(raw);
   }
 
   @protected
@@ -961,15 +962,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  int dco_decode_i_8(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return raw as int;
-  }
-
-  @protected
   List<String> dco_decode_list_String(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_String).toList();
+  }
+
+  @protected
+  List<AnnotationDto> dco_decode_list_annotation_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_annotation_dto).toList();
   }
 
   @protected
@@ -982,6 +983,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   List<(String, String)> dco_decode_list_record_string_string(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_record_string_string).toList();
+  }
+
+  @protected
+  List<TaskDto> dco_decode_list_task_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_task_dto).toList();
   }
 
   @protected
@@ -1030,6 +1037,35 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  TaskDto dco_decode_task_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 13)
+      throw Exception('unexpected arr length: expect 13 but see ${arr.length}');
+    return TaskDto(
+      uuid: dco_decode_String(arr[0]),
+      description: dco_decode_String(arr[1]),
+      status: dco_decode_task_status_dto(arr[2]),
+      priority: dco_decode_opt_String(arr[3]),
+      due: dco_decode_opt_String(arr[4]),
+      wait: dco_decode_opt_String(arr[5]),
+      entry: dco_decode_opt_String(arr[6]),
+      modified: dco_decode_opt_String(arr[7]),
+      end: dco_decode_opt_String(arr[8]),
+      tags: dco_decode_list_String(arr[9]),
+      depends: dco_decode_list_String(arr[10]),
+      annotations: dco_decode_list_annotation_dto(arr[11]),
+      udas: dco_decode_Map_String_String_None(arr[12]),
+    );
+  }
+
+  @protected
+  TaskStatusDto dco_decode_task_status_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return TaskStatusDto.values[raw as int];
+  }
+
+  @protected
   BigInt dco_decode_u_64(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dcoDecodeU64(raw);
@@ -1071,9 +1107,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  AnnotationDto sse_decode_annotation_dto(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_entry = sse_decode_String(deserializer);
+    var var_description = sse_decode_String(deserializer);
+    return AnnotationDto(entry: var_entry, description: var_description);
+  }
+
+  @protected
   bool sse_decode_bool(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return deserializer.buffer.getUint8() != 0;
+  }
+
+  @protected
+  TaskDto sse_decode_box_autoadd_task_dto(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_task_dto(deserializer));
   }
 
   @protected
@@ -1089,12 +1139,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  int sse_decode_i_8(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return deserializer.buffer.getInt8();
-  }
-
-  @protected
   List<String> sse_decode_list_String(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -1102,6 +1146,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var ans_ = <String>[];
     for (var idx_ = 0; idx_ < len_; ++idx_) {
       ans_.add(sse_decode_String(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<AnnotationDto> sse_decode_list_annotation_dto(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <AnnotationDto>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_annotation_dto(deserializer));
     }
     return ans_;
   }
@@ -1123,6 +1181,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var ans_ = <(String, String)>[];
     for (var idx_ = 0; idx_ < len_; ++idx_) {
       ans_.add(sse_decode_record_string_string(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<TaskDto> sse_decode_list_task_dto(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <TaskDto>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_task_dto(deserializer));
     }
     return ans_;
   }
@@ -1190,6 +1260,46 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  TaskDto sse_decode_task_dto(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_uuid = sse_decode_String(deserializer);
+    var var_description = sse_decode_String(deserializer);
+    var var_status = sse_decode_task_status_dto(deserializer);
+    var var_priority = sse_decode_opt_String(deserializer);
+    var var_due = sse_decode_opt_String(deserializer);
+    var var_wait = sse_decode_opt_String(deserializer);
+    var var_entry = sse_decode_opt_String(deserializer);
+    var var_modified = sse_decode_opt_String(deserializer);
+    var var_end = sse_decode_opt_String(deserializer);
+    var var_tags = sse_decode_list_String(deserializer);
+    var var_depends = sse_decode_list_String(deserializer);
+    var var_annotations = sse_decode_list_annotation_dto(deserializer);
+    var var_udas = sse_decode_Map_String_String_None(deserializer);
+    return TaskDto(
+      uuid: var_uuid,
+      description: var_description,
+      status: var_status,
+      priority: var_priority,
+      due: var_due,
+      wait: var_wait,
+      entry: var_entry,
+      modified: var_modified,
+      end: var_end,
+      tags: var_tags,
+      depends: var_depends,
+      annotations: var_annotations,
+      udas: var_udas,
+    );
+  }
+
+  @protected
+  TaskStatusDto sse_decode_task_status_dto(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return TaskStatusDto.values[inner];
+  }
+
+  @protected
   BigInt sse_decode_u_64(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return deserializer.buffer.getBigUint64();
@@ -1234,9 +1344,22 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_annotation_dto(AnnotationDto self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.entry, serializer);
+    sse_encode_String(self.description, serializer);
+  }
+
+  @protected
   void sse_encode_bool(bool self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     serializer.buffer.putUint8(self ? 1 : 0);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_task_dto(TaskDto self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_task_dto(self, serializer);
   }
 
   @protected
@@ -1252,17 +1375,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  void sse_encode_i_8(int self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    serializer.buffer.putInt8(self);
-  }
-
-  @protected
   void sse_encode_list_String(List<String> self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.length, serializer);
     for (final item in self) {
       sse_encode_String(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_annotation_dto(
+    List<AnnotationDto> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_annotation_dto(item, serializer);
     }
   }
 
@@ -1285,6 +1414,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_i_32(self.length, serializer);
     for (final item in self) {
       sse_encode_record_string_string(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_task_dto(List<TaskDto> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_task_dto(item, serializer);
     }
   }
 
@@ -1340,6 +1478,33 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_u_64(self.tasksDeleted, serializer);
     sse_encode_opt_String(self.errorMessage, serializer);
     sse_encode_opt_box_autoadd_u_64(self.durationMs, serializer);
+  }
+
+  @protected
+  void sse_encode_task_dto(TaskDto self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.uuid, serializer);
+    sse_encode_String(self.description, serializer);
+    sse_encode_task_status_dto(self.status, serializer);
+    sse_encode_opt_String(self.priority, serializer);
+    sse_encode_opt_String(self.due, serializer);
+    sse_encode_opt_String(self.wait, serializer);
+    sse_encode_opt_String(self.entry, serializer);
+    sse_encode_opt_String(self.modified, serializer);
+    sse_encode_opt_String(self.end, serializer);
+    sse_encode_list_String(self.tags, serializer);
+    sse_encode_list_String(self.depends, serializer);
+    sse_encode_list_annotation_dto(self.annotations, serializer);
+    sse_encode_Map_String_String_None(self.udas, serializer);
+  }
+
+  @protected
+  void sse_encode_task_status_dto(
+    TaskStatusDto self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
   }
 
   @protected

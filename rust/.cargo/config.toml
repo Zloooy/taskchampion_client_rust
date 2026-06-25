@@ -1,2 +1,12 @@
-[build]
-rustflags = ["--cfg", "frb_expand"]
+# NOTE (ticket R9): the `--cfg frb_expand` flag previously set here was
+# applied to *every* build, which forces flutter_rust_bridge into its codegen
+# expansion mode even for plain `cargo check`/`cargo build`. That slows down
+# normal builds and is only needed when regenerating `frb_generated.rs`.
+#
+# To regenerate the bridge, run the codegen tool (which sets the flag itself)
+# or invoke cargo with the flag explicitly, e.g.:
+#
+#     RUSTFLAGS='--cfg frb_expand' cargo build
+#     flutter_rust_bridge_codegen generate
+#
+# No build-wide rustflags are set by default anymore.

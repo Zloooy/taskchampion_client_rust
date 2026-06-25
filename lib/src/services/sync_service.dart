@@ -1,30 +1,34 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
+import '../core/core.dart';
 import '../models/models.dart';
-import '../rust_bridge/rust_bridge.dart';
+import '../storage/task_storage.dart';
+import 'interfaces/i_sync_service.dart';
 
-/// Service for synchronizing tasks with TaskChampion sync server
+/// Service for synchronizing tasks with TaskChampion sync server.
 ///
 /// Handles all synchronization operations including upload, download,
 /// and conflict resolution.
-class SyncService {
-  /// Path to the task database
-  final String taskdbPath;
+class SyncService implements ISyncService {
+  /// Underlying storage implementation.
+  final TaskStorage _storage;
 
-  /// Sync configuration
-  final SyncConfig syncConfig;
+  /// Sync configuration.
+  final SyncConfig _syncConfig;
 
-  /// Create a new SyncService instance
-  SyncService(this.taskdbPath, this.syncConfig);
+  /// Logger for this service.
+  final Logger _logger;
 
-  /// Synchronize with the sync server
+  /// Create a new SyncService instance.
+  SyncService(this._storage, this._syncConfig, {Logger? logger})
+    : _logger = logger ?? const DebugPrintLogger();
+
+  @override
   Future<SyncResult> sync() async {
     try {
-      final resultData = await RustBridge.syncWithServer(
-        taskdbPath,
-        syncConfig.serverUrl,
-        syncConfig.clientId,
-        syncConfig.encryptionSecret,
+      final resultData = await _storage.syncWithServer(
+        _syncConfig.serverUrl,
+        _syncConfig.clientId,
+        _syncConfig.encryptionSecret,
       );
 
       return SyncResult(
@@ -36,8 +40,8 @@ class SyncService {
         errorMessage: resultData.errorMessage,
         durationMs: resultData.durationMs?.toInt(),
       );
-    } catch (e) {
-      debugPrint('Sync error: $e');
+    } catch (e, st) {
+      _logger.error('Sync failed', error: e, stackTrace: st);
       return SyncResult(
         success: false,
         errorMessage: 'Sync failed: $e',
@@ -46,14 +50,13 @@ class SyncService {
     }
   }
 
-  /// Get the latest snapshot from the server
+  @override
   Future<Map<String, dynamic>?> getSnapshot() async {
     try {
-      final jsonStr = await RustBridge.getSnapshot(
-        taskdbPath,
-        syncConfig.serverUrl,
-        syncConfig.clientId,
-        syncConfig.encryptionSecret,
+      final jsonStr = await _storage.getSnapshot(
+        _syncConfig.serverUrl,
+        _syncConfig.clientId,
+        _syncConfig.encryptionSecret,
       );
 
       if (jsonStr == 'null') {
@@ -61,19 +64,9 @@ class SyncService {
       }
 
       return Map<String, dynamic>.from(json.decode(jsonStr));
-    } catch (e) {
-      debugPrint('Error getting snapshot: $e');
+    } catch (e, st) {
+      _logger.error('Failed to get snapshot', error: e, stackTrace: st);
       return null;
-    }
-  }
-
-  /// Check if sync is possible (server is reachable)
-  Future<bool> canSync() async {
-    try {
-      final result = await sync();
-      return result.success;
-    } catch (e) {
-      return false;
     }
   }
 }

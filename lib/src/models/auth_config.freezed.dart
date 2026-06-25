@@ -19,9 +19,7 @@ mixin _$AuthConfig {
  String get clientId;/// Encryption secret for secure communication
  String get encryptionSecret;/// Server URL to authenticate against
  String get serverUrl;/// Whether to validate SSL certificates
- bool get validateCertificates;/// Custom certificate paths (optional)
- String? get certificatePath;/// Custom key paths (optional)
- String? get keyPath;
+ bool get validateCertificates;
 /// Create a copy of AuthConfig
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -34,16 +32,16 @@ $AuthConfigCopyWith<AuthConfig> get copyWith => _$AuthConfigCopyWithImpl<AuthCon
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthConfig&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.encryptionSecret, encryptionSecret) || other.encryptionSecret == encryptionSecret)&&(identical(other.serverUrl, serverUrl) || other.serverUrl == serverUrl)&&(identical(other.validateCertificates, validateCertificates) || other.validateCertificates == validateCertificates)&&(identical(other.certificatePath, certificatePath) || other.certificatePath == certificatePath)&&(identical(other.keyPath, keyPath) || other.keyPath == keyPath));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthConfig&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.encryptionSecret, encryptionSecret) || other.encryptionSecret == encryptionSecret)&&(identical(other.serverUrl, serverUrl) || other.serverUrl == serverUrl)&&(identical(other.validateCertificates, validateCertificates) || other.validateCertificates == validateCertificates));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,clientId,encryptionSecret,serverUrl,validateCertificates,certificatePath,keyPath);
+int get hashCode => Object.hash(runtimeType,clientId,encryptionSecret,serverUrl,validateCertificates);
 
 @override
 String toString() {
-  return 'AuthConfig(clientId: $clientId, encryptionSecret: $encryptionSecret, serverUrl: $serverUrl, validateCertificates: $validateCertificates, certificatePath: $certificatePath, keyPath: $keyPath)';
+  return 'AuthConfig(clientId: $clientId, encryptionSecret: $encryptionSecret, serverUrl: $serverUrl, validateCertificates: $validateCertificates)';
 }
 
 
@@ -54,7 +52,7 @@ abstract mixin class $AuthConfigCopyWith<$Res>  {
   factory $AuthConfigCopyWith(AuthConfig value, $Res Function(AuthConfig) _then) = _$AuthConfigCopyWithImpl;
 @useResult
 $Res call({
- String clientId, String encryptionSecret, String serverUrl, bool validateCertificates, String? certificatePath, String? keyPath
+ String clientId, String encryptionSecret, String serverUrl, bool validateCertificates
 });
 
 
@@ -71,15 +69,13 @@ class _$AuthConfigCopyWithImpl<$Res>
 
 /// Create a copy of AuthConfig
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? clientId = null,Object? encryptionSecret = null,Object? serverUrl = null,Object? validateCertificates = null,Object? certificatePath = freezed,Object? keyPath = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? clientId = null,Object? encryptionSecret = null,Object? serverUrl = null,Object? validateCertificates = null,}) {
   return _then(_self.copyWith(
 clientId: null == clientId ? _self.clientId : clientId // ignore: cast_nullable_to_non_nullable
 as String,encryptionSecret: null == encryptionSecret ? _self.encryptionSecret : encryptionSecret // ignore: cast_nullable_to_non_nullable
 as String,serverUrl: null == serverUrl ? _self.serverUrl : serverUrl // ignore: cast_nullable_to_non_nullable
 as String,validateCertificates: null == validateCertificates ? _self.validateCertificates : validateCertificates // ignore: cast_nullable_to_non_nullable
-as bool,certificatePath: freezed == certificatePath ? _self.certificatePath : certificatePath // ignore: cast_nullable_to_non_nullable
-as String?,keyPath: freezed == keyPath ? _self.keyPath : keyPath // ignore: cast_nullable_to_non_nullable
-as String?,
+as bool,
   ));
 }
 
@@ -164,10 +160,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String clientId,  String encryptionSecret,  String serverUrl,  bool validateCertificates,  String? certificatePath,  String? keyPath)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String clientId,  String encryptionSecret,  String serverUrl,  bool validateCertificates)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AuthConfig() when $default != null:
-return $default(_that.clientId,_that.encryptionSecret,_that.serverUrl,_that.validateCertificates,_that.certificatePath,_that.keyPath);case _:
+return $default(_that.clientId,_that.encryptionSecret,_that.serverUrl,_that.validateCertificates);case _:
   return orElse();
 
 }
@@ -185,10 +181,10 @@ return $default(_that.clientId,_that.encryptionSecret,_that.serverUrl,_that.vali
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String clientId,  String encryptionSecret,  String serverUrl,  bool validateCertificates,  String? certificatePath,  String? keyPath)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String clientId,  String encryptionSecret,  String serverUrl,  bool validateCertificates)  $default,) {final _that = this;
 switch (_that) {
 case _AuthConfig():
-return $default(_that.clientId,_that.encryptionSecret,_that.serverUrl,_that.validateCertificates,_that.certificatePath,_that.keyPath);case _:
+return $default(_that.clientId,_that.encryptionSecret,_that.serverUrl,_that.validateCertificates);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -205,10 +201,10 @@ return $default(_that.clientId,_that.encryptionSecret,_that.serverUrl,_that.vali
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String clientId,  String encryptionSecret,  String serverUrl,  bool validateCertificates,  String? certificatePath,  String? keyPath)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String clientId,  String encryptionSecret,  String serverUrl,  bool validateCertificates)?  $default,) {final _that = this;
 switch (_that) {
 case _AuthConfig() when $default != null:
-return $default(_that.clientId,_that.encryptionSecret,_that.serverUrl,_that.validateCertificates,_that.certificatePath,_that.keyPath);case _:
+return $default(_that.clientId,_that.encryptionSecret,_that.serverUrl,_that.validateCertificates);case _:
   return null;
 
 }
@@ -220,7 +216,7 @@ return $default(_that.clientId,_that.encryptionSecret,_that.serverUrl,_that.vali
 @JsonSerializable()
 
 class _AuthConfig implements AuthConfig {
-  const _AuthConfig({required this.clientId, required this.encryptionSecret, required this.serverUrl, this.validateCertificates = true, this.certificatePath, this.keyPath});
+  const _AuthConfig({required this.clientId, required this.encryptionSecret, required this.serverUrl, this.validateCertificates = true});
   factory _AuthConfig.fromJson(Map<String, dynamic> json) => _$AuthConfigFromJson(json);
 
 /// Client ID for authentication (UUID v4)
@@ -231,10 +227,6 @@ class _AuthConfig implements AuthConfig {
 @override final  String serverUrl;
 /// Whether to validate SSL certificates
 @override@JsonKey() final  bool validateCertificates;
-/// Custom certificate paths (optional)
-@override final  String? certificatePath;
-/// Custom key paths (optional)
-@override final  String? keyPath;
 
 /// Create a copy of AuthConfig
 /// with the given fields replaced by the non-null parameter values.
@@ -249,16 +241,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuthConfig&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.encryptionSecret, encryptionSecret) || other.encryptionSecret == encryptionSecret)&&(identical(other.serverUrl, serverUrl) || other.serverUrl == serverUrl)&&(identical(other.validateCertificates, validateCertificates) || other.validateCertificates == validateCertificates)&&(identical(other.certificatePath, certificatePath) || other.certificatePath == certificatePath)&&(identical(other.keyPath, keyPath) || other.keyPath == keyPath));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuthConfig&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.encryptionSecret, encryptionSecret) || other.encryptionSecret == encryptionSecret)&&(identical(other.serverUrl, serverUrl) || other.serverUrl == serverUrl)&&(identical(other.validateCertificates, validateCertificates) || other.validateCertificates == validateCertificates));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,clientId,encryptionSecret,serverUrl,validateCertificates,certificatePath,keyPath);
+int get hashCode => Object.hash(runtimeType,clientId,encryptionSecret,serverUrl,validateCertificates);
 
 @override
 String toString() {
-  return 'AuthConfig(clientId: $clientId, encryptionSecret: $encryptionSecret, serverUrl: $serverUrl, validateCertificates: $validateCertificates, certificatePath: $certificatePath, keyPath: $keyPath)';
+  return 'AuthConfig(clientId: $clientId, encryptionSecret: $encryptionSecret, serverUrl: $serverUrl, validateCertificates: $validateCertificates)';
 }
 
 
@@ -269,7 +261,7 @@ abstract mixin class _$AuthConfigCopyWith<$Res> implements $AuthConfigCopyWith<$
   factory _$AuthConfigCopyWith(_AuthConfig value, $Res Function(_AuthConfig) _then) = __$AuthConfigCopyWithImpl;
 @override @useResult
 $Res call({
- String clientId, String encryptionSecret, String serverUrl, bool validateCertificates, String? certificatePath, String? keyPath
+ String clientId, String encryptionSecret, String serverUrl, bool validateCertificates
 });
 
 
@@ -286,15 +278,13 @@ class __$AuthConfigCopyWithImpl<$Res>
 
 /// Create a copy of AuthConfig
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? clientId = null,Object? encryptionSecret = null,Object? serverUrl = null,Object? validateCertificates = null,Object? certificatePath = freezed,Object? keyPath = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? clientId = null,Object? encryptionSecret = null,Object? serverUrl = null,Object? validateCertificates = null,}) {
   return _then(_AuthConfig(
 clientId: null == clientId ? _self.clientId : clientId // ignore: cast_nullable_to_non_nullable
 as String,encryptionSecret: null == encryptionSecret ? _self.encryptionSecret : encryptionSecret // ignore: cast_nullable_to_non_nullable
 as String,serverUrl: null == serverUrl ? _self.serverUrl : serverUrl // ignore: cast_nullable_to_non_nullable
 as String,validateCertificates: null == validateCertificates ? _self.validateCertificates : validateCertificates // ignore: cast_nullable_to_non_nullable
-as bool,certificatePath: freezed == certificatePath ? _self.certificatePath : certificatePath // ignore: cast_nullable_to_non_nullable
-as String?,keyPath: freezed == keyPath ? _self.keyPath : keyPath // ignore: cast_nullable_to_non_nullable
-as String?,
+as bool,
   ));
 }
 

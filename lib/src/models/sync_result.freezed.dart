@@ -23,9 +23,7 @@ mixin _$SyncResult {
  int get tasksDeleted;/// Error message if sync failed
  String? get errorMessage;/// Duration of the sync operation in milliseconds
  int? get durationMs;/// Timestamp when sync completed
- DateTime? get completedAt;/// Whether a snapshot was downloaded
- bool get snapshotDownloaded;/// Whether a snapshot was uploaded
- bool get snapshotUploaded;
+ DateTime? get completedAt;
 /// Create a copy of SyncResult
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -38,16 +36,16 @@ $SyncResultCopyWith<SyncResult> get copyWith => _$SyncResultCopyWithImpl<SyncRes
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SyncResult&&(identical(other.success, success) || other.success == success)&&(identical(other.versionsSynced, versionsSynced) || other.versionsSynced == versionsSynced)&&(identical(other.tasksAdded, tasksAdded) || other.tasksAdded == tasksAdded)&&(identical(other.tasksUpdated, tasksUpdated) || other.tasksUpdated == tasksUpdated)&&(identical(other.tasksDeleted, tasksDeleted) || other.tasksDeleted == tasksDeleted)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.durationMs, durationMs) || other.durationMs == durationMs)&&(identical(other.completedAt, completedAt) || other.completedAt == completedAt)&&(identical(other.snapshotDownloaded, snapshotDownloaded) || other.snapshotDownloaded == snapshotDownloaded)&&(identical(other.snapshotUploaded, snapshotUploaded) || other.snapshotUploaded == snapshotUploaded));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SyncResult&&(identical(other.success, success) || other.success == success)&&(identical(other.versionsSynced, versionsSynced) || other.versionsSynced == versionsSynced)&&(identical(other.tasksAdded, tasksAdded) || other.tasksAdded == tasksAdded)&&(identical(other.tasksUpdated, tasksUpdated) || other.tasksUpdated == tasksUpdated)&&(identical(other.tasksDeleted, tasksDeleted) || other.tasksDeleted == tasksDeleted)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.durationMs, durationMs) || other.durationMs == durationMs)&&(identical(other.completedAt, completedAt) || other.completedAt == completedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,success,versionsSynced,tasksAdded,tasksUpdated,tasksDeleted,errorMessage,durationMs,completedAt,snapshotDownloaded,snapshotUploaded);
+int get hashCode => Object.hash(runtimeType,success,versionsSynced,tasksAdded,tasksUpdated,tasksDeleted,errorMessage,durationMs,completedAt);
 
 @override
 String toString() {
-  return 'SyncResult(success: $success, versionsSynced: $versionsSynced, tasksAdded: $tasksAdded, tasksUpdated: $tasksUpdated, tasksDeleted: $tasksDeleted, errorMessage: $errorMessage, durationMs: $durationMs, completedAt: $completedAt, snapshotDownloaded: $snapshotDownloaded, snapshotUploaded: $snapshotUploaded)';
+  return 'SyncResult(success: $success, versionsSynced: $versionsSynced, tasksAdded: $tasksAdded, tasksUpdated: $tasksUpdated, tasksDeleted: $tasksDeleted, errorMessage: $errorMessage, durationMs: $durationMs, completedAt: $completedAt)';
 }
 
 
@@ -58,7 +56,7 @@ abstract mixin class $SyncResultCopyWith<$Res>  {
   factory $SyncResultCopyWith(SyncResult value, $Res Function(SyncResult) _then) = _$SyncResultCopyWithImpl;
 @useResult
 $Res call({
- bool success, int versionsSynced, int tasksAdded, int tasksUpdated, int tasksDeleted, String? errorMessage, int? durationMs, DateTime? completedAt, bool snapshotDownloaded, bool snapshotUploaded
+ bool success, int versionsSynced, int tasksAdded, int tasksUpdated, int tasksDeleted, String? errorMessage, int? durationMs, DateTime? completedAt
 });
 
 
@@ -75,7 +73,7 @@ class _$SyncResultCopyWithImpl<$Res>
 
 /// Create a copy of SyncResult
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? success = null,Object? versionsSynced = null,Object? tasksAdded = null,Object? tasksUpdated = null,Object? tasksDeleted = null,Object? errorMessage = freezed,Object? durationMs = freezed,Object? completedAt = freezed,Object? snapshotDownloaded = null,Object? snapshotUploaded = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? success = null,Object? versionsSynced = null,Object? tasksAdded = null,Object? tasksUpdated = null,Object? tasksDeleted = null,Object? errorMessage = freezed,Object? durationMs = freezed,Object? completedAt = freezed,}) {
   return _then(_self.copyWith(
 success: null == success ? _self.success : success // ignore: cast_nullable_to_non_nullable
 as bool,versionsSynced: null == versionsSynced ? _self.versionsSynced : versionsSynced // ignore: cast_nullable_to_non_nullable
@@ -85,9 +83,7 @@ as int,tasksDeleted: null == tasksDeleted ? _self.tasksDeleted : tasksDeleted //
 as int,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
 as String?,durationMs: freezed == durationMs ? _self.durationMs : durationMs // ignore: cast_nullable_to_non_nullable
 as int?,completedAt: freezed == completedAt ? _self.completedAt : completedAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,snapshotDownloaded: null == snapshotDownloaded ? _self.snapshotDownloaded : snapshotDownloaded // ignore: cast_nullable_to_non_nullable
-as bool,snapshotUploaded: null == snapshotUploaded ? _self.snapshotUploaded : snapshotUploaded // ignore: cast_nullable_to_non_nullable
-as bool,
+as DateTime?,
   ));
 }
 
@@ -172,10 +168,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool success,  int versionsSynced,  int tasksAdded,  int tasksUpdated,  int tasksDeleted,  String? errorMessage,  int? durationMs,  DateTime? completedAt,  bool snapshotDownloaded,  bool snapshotUploaded)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool success,  int versionsSynced,  int tasksAdded,  int tasksUpdated,  int tasksDeleted,  String? errorMessage,  int? durationMs,  DateTime? completedAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SyncResult() when $default != null:
-return $default(_that.success,_that.versionsSynced,_that.tasksAdded,_that.tasksUpdated,_that.tasksDeleted,_that.errorMessage,_that.durationMs,_that.completedAt,_that.snapshotDownloaded,_that.snapshotUploaded);case _:
+return $default(_that.success,_that.versionsSynced,_that.tasksAdded,_that.tasksUpdated,_that.tasksDeleted,_that.errorMessage,_that.durationMs,_that.completedAt);case _:
   return orElse();
 
 }
@@ -193,10 +189,10 @@ return $default(_that.success,_that.versionsSynced,_that.tasksAdded,_that.tasksU
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool success,  int versionsSynced,  int tasksAdded,  int tasksUpdated,  int tasksDeleted,  String? errorMessage,  int? durationMs,  DateTime? completedAt,  bool snapshotDownloaded,  bool snapshotUploaded)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool success,  int versionsSynced,  int tasksAdded,  int tasksUpdated,  int tasksDeleted,  String? errorMessage,  int? durationMs,  DateTime? completedAt)  $default,) {final _that = this;
 switch (_that) {
 case _SyncResult():
-return $default(_that.success,_that.versionsSynced,_that.tasksAdded,_that.tasksUpdated,_that.tasksDeleted,_that.errorMessage,_that.durationMs,_that.completedAt,_that.snapshotDownloaded,_that.snapshotUploaded);case _:
+return $default(_that.success,_that.versionsSynced,_that.tasksAdded,_that.tasksUpdated,_that.tasksDeleted,_that.errorMessage,_that.durationMs,_that.completedAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -213,10 +209,10 @@ return $default(_that.success,_that.versionsSynced,_that.tasksAdded,_that.tasksU
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool success,  int versionsSynced,  int tasksAdded,  int tasksUpdated,  int tasksDeleted,  String? errorMessage,  int? durationMs,  DateTime? completedAt,  bool snapshotDownloaded,  bool snapshotUploaded)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool success,  int versionsSynced,  int tasksAdded,  int tasksUpdated,  int tasksDeleted,  String? errorMessage,  int? durationMs,  DateTime? completedAt)?  $default,) {final _that = this;
 switch (_that) {
 case _SyncResult() when $default != null:
-return $default(_that.success,_that.versionsSynced,_that.tasksAdded,_that.tasksUpdated,_that.tasksDeleted,_that.errorMessage,_that.durationMs,_that.completedAt,_that.snapshotDownloaded,_that.snapshotUploaded);case _:
+return $default(_that.success,_that.versionsSynced,_that.tasksAdded,_that.tasksUpdated,_that.tasksDeleted,_that.errorMessage,_that.durationMs,_that.completedAt);case _:
   return null;
 
 }
@@ -228,7 +224,7 @@ return $default(_that.success,_that.versionsSynced,_that.tasksAdded,_that.tasksU
 @JsonSerializable()
 
 class _SyncResult implements SyncResult {
-  const _SyncResult({required this.success, this.versionsSynced = 0, this.tasksAdded = 0, this.tasksUpdated = 0, this.tasksDeleted = 0, this.errorMessage, this.durationMs, this.completedAt, this.snapshotDownloaded = false, this.snapshotUploaded = false});
+  const _SyncResult({required this.success, this.versionsSynced = 0, this.tasksAdded = 0, this.tasksUpdated = 0, this.tasksDeleted = 0, this.errorMessage, this.durationMs, this.completedAt});
   factory _SyncResult.fromJson(Map<String, dynamic> json) => _$SyncResultFromJson(json);
 
 /// Whether the sync was successful
@@ -247,10 +243,6 @@ class _SyncResult implements SyncResult {
 @override final  int? durationMs;
 /// Timestamp when sync completed
 @override final  DateTime? completedAt;
-/// Whether a snapshot was downloaded
-@override@JsonKey() final  bool snapshotDownloaded;
-/// Whether a snapshot was uploaded
-@override@JsonKey() final  bool snapshotUploaded;
 
 /// Create a copy of SyncResult
 /// with the given fields replaced by the non-null parameter values.
@@ -265,16 +257,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SyncResult&&(identical(other.success, success) || other.success == success)&&(identical(other.versionsSynced, versionsSynced) || other.versionsSynced == versionsSynced)&&(identical(other.tasksAdded, tasksAdded) || other.tasksAdded == tasksAdded)&&(identical(other.tasksUpdated, tasksUpdated) || other.tasksUpdated == tasksUpdated)&&(identical(other.tasksDeleted, tasksDeleted) || other.tasksDeleted == tasksDeleted)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.durationMs, durationMs) || other.durationMs == durationMs)&&(identical(other.completedAt, completedAt) || other.completedAt == completedAt)&&(identical(other.snapshotDownloaded, snapshotDownloaded) || other.snapshotDownloaded == snapshotDownloaded)&&(identical(other.snapshotUploaded, snapshotUploaded) || other.snapshotUploaded == snapshotUploaded));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SyncResult&&(identical(other.success, success) || other.success == success)&&(identical(other.versionsSynced, versionsSynced) || other.versionsSynced == versionsSynced)&&(identical(other.tasksAdded, tasksAdded) || other.tasksAdded == tasksAdded)&&(identical(other.tasksUpdated, tasksUpdated) || other.tasksUpdated == tasksUpdated)&&(identical(other.tasksDeleted, tasksDeleted) || other.tasksDeleted == tasksDeleted)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.durationMs, durationMs) || other.durationMs == durationMs)&&(identical(other.completedAt, completedAt) || other.completedAt == completedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,success,versionsSynced,tasksAdded,tasksUpdated,tasksDeleted,errorMessage,durationMs,completedAt,snapshotDownloaded,snapshotUploaded);
+int get hashCode => Object.hash(runtimeType,success,versionsSynced,tasksAdded,tasksUpdated,tasksDeleted,errorMessage,durationMs,completedAt);
 
 @override
 String toString() {
-  return 'SyncResult(success: $success, versionsSynced: $versionsSynced, tasksAdded: $tasksAdded, tasksUpdated: $tasksUpdated, tasksDeleted: $tasksDeleted, errorMessage: $errorMessage, durationMs: $durationMs, completedAt: $completedAt, snapshotDownloaded: $snapshotDownloaded, snapshotUploaded: $snapshotUploaded)';
+  return 'SyncResult(success: $success, versionsSynced: $versionsSynced, tasksAdded: $tasksAdded, tasksUpdated: $tasksUpdated, tasksDeleted: $tasksDeleted, errorMessage: $errorMessage, durationMs: $durationMs, completedAt: $completedAt)';
 }
 
 
@@ -285,7 +277,7 @@ abstract mixin class _$SyncResultCopyWith<$Res> implements $SyncResultCopyWith<$
   factory _$SyncResultCopyWith(_SyncResult value, $Res Function(_SyncResult) _then) = __$SyncResultCopyWithImpl;
 @override @useResult
 $Res call({
- bool success, int versionsSynced, int tasksAdded, int tasksUpdated, int tasksDeleted, String? errorMessage, int? durationMs, DateTime? completedAt, bool snapshotDownloaded, bool snapshotUploaded
+ bool success, int versionsSynced, int tasksAdded, int tasksUpdated, int tasksDeleted, String? errorMessage, int? durationMs, DateTime? completedAt
 });
 
 
@@ -302,7 +294,7 @@ class __$SyncResultCopyWithImpl<$Res>
 
 /// Create a copy of SyncResult
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? success = null,Object? versionsSynced = null,Object? tasksAdded = null,Object? tasksUpdated = null,Object? tasksDeleted = null,Object? errorMessage = freezed,Object? durationMs = freezed,Object? completedAt = freezed,Object? snapshotDownloaded = null,Object? snapshotUploaded = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? success = null,Object? versionsSynced = null,Object? tasksAdded = null,Object? tasksUpdated = null,Object? tasksDeleted = null,Object? errorMessage = freezed,Object? durationMs = freezed,Object? completedAt = freezed,}) {
   return _then(_SyncResult(
 success: null == success ? _self.success : success // ignore: cast_nullable_to_non_nullable
 as bool,versionsSynced: null == versionsSynced ? _self.versionsSynced : versionsSynced // ignore: cast_nullable_to_non_nullable
@@ -312,9 +304,7 @@ as int,tasksDeleted: null == tasksDeleted ? _self.tasksDeleted : tasksDeleted //
 as int,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
 as String?,durationMs: freezed == durationMs ? _self.durationMs : durationMs // ignore: cast_nullable_to_non_nullable
 as int?,completedAt: freezed == completedAt ? _self.completedAt : completedAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,snapshotDownloaded: null == snapshotDownloaded ? _self.snapshotDownloaded : snapshotDownloaded // ignore: cast_nullable_to_non_nullable
-as bool,snapshotUploaded: null == snapshotUploaded ? _self.snapshotUploaded : snapshotUploaded // ignore: cast_nullable_to_non_nullable
-as bool,
+as DateTime?,
   ));
 }
 

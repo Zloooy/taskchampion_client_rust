@@ -19,12 +19,8 @@ mixin _$ClientConfig {
  String get taskdbPath;/// Sync server configuration
  SyncConfig get syncConfig;/// Authentication configuration
  AuthConfig get authConfig;/// Enable debug logging
- bool get debugLogging;/// Enable automatic sync on startup
- bool get autoSyncOnStartup;/// Enable automatic sync after task changes
- bool get autoSyncOnTaskChange;/// Sync interval in minutes (for periodic sync)
- int get syncIntervalMinutes;/// Maximum number of tasks to keep in history
- int get maxHistorySize;/// Enable task encryption at rest
- bool get encryptAtRest;
+ bool get debugLogging;/// Enable automatic sync after task changes
+ bool get autoSyncOnTaskChange;
 /// Create a copy of ClientConfig
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -37,16 +33,16 @@ $ClientConfigCopyWith<ClientConfig> get copyWith => _$ClientConfigCopyWithImpl<C
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ClientConfig&&(identical(other.taskdbPath, taskdbPath) || other.taskdbPath == taskdbPath)&&(identical(other.syncConfig, syncConfig) || other.syncConfig == syncConfig)&&(identical(other.authConfig, authConfig) || other.authConfig == authConfig)&&(identical(other.debugLogging, debugLogging) || other.debugLogging == debugLogging)&&(identical(other.autoSyncOnStartup, autoSyncOnStartup) || other.autoSyncOnStartup == autoSyncOnStartup)&&(identical(other.autoSyncOnTaskChange, autoSyncOnTaskChange) || other.autoSyncOnTaskChange == autoSyncOnTaskChange)&&(identical(other.syncIntervalMinutes, syncIntervalMinutes) || other.syncIntervalMinutes == syncIntervalMinutes)&&(identical(other.maxHistorySize, maxHistorySize) || other.maxHistorySize == maxHistorySize)&&(identical(other.encryptAtRest, encryptAtRest) || other.encryptAtRest == encryptAtRest));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ClientConfig&&(identical(other.taskdbPath, taskdbPath) || other.taskdbPath == taskdbPath)&&(identical(other.syncConfig, syncConfig) || other.syncConfig == syncConfig)&&(identical(other.authConfig, authConfig) || other.authConfig == authConfig)&&(identical(other.debugLogging, debugLogging) || other.debugLogging == debugLogging)&&(identical(other.autoSyncOnTaskChange, autoSyncOnTaskChange) || other.autoSyncOnTaskChange == autoSyncOnTaskChange));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,taskdbPath,syncConfig,authConfig,debugLogging,autoSyncOnStartup,autoSyncOnTaskChange,syncIntervalMinutes,maxHistorySize,encryptAtRest);
+int get hashCode => Object.hash(runtimeType,taskdbPath,syncConfig,authConfig,debugLogging,autoSyncOnTaskChange);
 
 @override
 String toString() {
-  return 'ClientConfig(taskdbPath: $taskdbPath, syncConfig: $syncConfig, authConfig: $authConfig, debugLogging: $debugLogging, autoSyncOnStartup: $autoSyncOnStartup, autoSyncOnTaskChange: $autoSyncOnTaskChange, syncIntervalMinutes: $syncIntervalMinutes, maxHistorySize: $maxHistorySize, encryptAtRest: $encryptAtRest)';
+  return 'ClientConfig(taskdbPath: $taskdbPath, syncConfig: $syncConfig, authConfig: $authConfig, debugLogging: $debugLogging, autoSyncOnTaskChange: $autoSyncOnTaskChange)';
 }
 
 
@@ -57,7 +53,7 @@ abstract mixin class $ClientConfigCopyWith<$Res>  {
   factory $ClientConfigCopyWith(ClientConfig value, $Res Function(ClientConfig) _then) = _$ClientConfigCopyWithImpl;
 @useResult
 $Res call({
- String taskdbPath, SyncConfig syncConfig, AuthConfig authConfig, bool debugLogging, bool autoSyncOnStartup, bool autoSyncOnTaskChange, int syncIntervalMinutes, int maxHistorySize, bool encryptAtRest
+ String taskdbPath, SyncConfig syncConfig, AuthConfig authConfig, bool debugLogging, bool autoSyncOnTaskChange
 });
 
 
@@ -74,17 +70,13 @@ class _$ClientConfigCopyWithImpl<$Res>
 
 /// Create a copy of ClientConfig
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? taskdbPath = null,Object? syncConfig = null,Object? authConfig = null,Object? debugLogging = null,Object? autoSyncOnStartup = null,Object? autoSyncOnTaskChange = null,Object? syncIntervalMinutes = null,Object? maxHistorySize = null,Object? encryptAtRest = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? taskdbPath = null,Object? syncConfig = null,Object? authConfig = null,Object? debugLogging = null,Object? autoSyncOnTaskChange = null,}) {
   return _then(_self.copyWith(
 taskdbPath: null == taskdbPath ? _self.taskdbPath : taskdbPath // ignore: cast_nullable_to_non_nullable
 as String,syncConfig: null == syncConfig ? _self.syncConfig : syncConfig // ignore: cast_nullable_to_non_nullable
 as SyncConfig,authConfig: null == authConfig ? _self.authConfig : authConfig // ignore: cast_nullable_to_non_nullable
 as AuthConfig,debugLogging: null == debugLogging ? _self.debugLogging : debugLogging // ignore: cast_nullable_to_non_nullable
-as bool,autoSyncOnStartup: null == autoSyncOnStartup ? _self.autoSyncOnStartup : autoSyncOnStartup // ignore: cast_nullable_to_non_nullable
 as bool,autoSyncOnTaskChange: null == autoSyncOnTaskChange ? _self.autoSyncOnTaskChange : autoSyncOnTaskChange // ignore: cast_nullable_to_non_nullable
-as bool,syncIntervalMinutes: null == syncIntervalMinutes ? _self.syncIntervalMinutes : syncIntervalMinutes // ignore: cast_nullable_to_non_nullable
-as int,maxHistorySize: null == maxHistorySize ? _self.maxHistorySize : maxHistorySize // ignore: cast_nullable_to_non_nullable
-as int,encryptAtRest: null == encryptAtRest ? _self.encryptAtRest : encryptAtRest // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }
@@ -188,10 +180,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String taskdbPath,  SyncConfig syncConfig,  AuthConfig authConfig,  bool debugLogging,  bool autoSyncOnStartup,  bool autoSyncOnTaskChange,  int syncIntervalMinutes,  int maxHistorySize,  bool encryptAtRest)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String taskdbPath,  SyncConfig syncConfig,  AuthConfig authConfig,  bool debugLogging,  bool autoSyncOnTaskChange)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ClientConfig() when $default != null:
-return $default(_that.taskdbPath,_that.syncConfig,_that.authConfig,_that.debugLogging,_that.autoSyncOnStartup,_that.autoSyncOnTaskChange,_that.syncIntervalMinutes,_that.maxHistorySize,_that.encryptAtRest);case _:
+return $default(_that.taskdbPath,_that.syncConfig,_that.authConfig,_that.debugLogging,_that.autoSyncOnTaskChange);case _:
   return orElse();
 
 }
@@ -209,10 +201,10 @@ return $default(_that.taskdbPath,_that.syncConfig,_that.authConfig,_that.debugLo
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String taskdbPath,  SyncConfig syncConfig,  AuthConfig authConfig,  bool debugLogging,  bool autoSyncOnStartup,  bool autoSyncOnTaskChange,  int syncIntervalMinutes,  int maxHistorySize,  bool encryptAtRest)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String taskdbPath,  SyncConfig syncConfig,  AuthConfig authConfig,  bool debugLogging,  bool autoSyncOnTaskChange)  $default,) {final _that = this;
 switch (_that) {
 case _ClientConfig():
-return $default(_that.taskdbPath,_that.syncConfig,_that.authConfig,_that.debugLogging,_that.autoSyncOnStartup,_that.autoSyncOnTaskChange,_that.syncIntervalMinutes,_that.maxHistorySize,_that.encryptAtRest);case _:
+return $default(_that.taskdbPath,_that.syncConfig,_that.authConfig,_that.debugLogging,_that.autoSyncOnTaskChange);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -229,10 +221,10 @@ return $default(_that.taskdbPath,_that.syncConfig,_that.authConfig,_that.debugLo
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String taskdbPath,  SyncConfig syncConfig,  AuthConfig authConfig,  bool debugLogging,  bool autoSyncOnStartup,  bool autoSyncOnTaskChange,  int syncIntervalMinutes,  int maxHistorySize,  bool encryptAtRest)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String taskdbPath,  SyncConfig syncConfig,  AuthConfig authConfig,  bool debugLogging,  bool autoSyncOnTaskChange)?  $default,) {final _that = this;
 switch (_that) {
 case _ClientConfig() when $default != null:
-return $default(_that.taskdbPath,_that.syncConfig,_that.authConfig,_that.debugLogging,_that.autoSyncOnStartup,_that.autoSyncOnTaskChange,_that.syncIntervalMinutes,_that.maxHistorySize,_that.encryptAtRest);case _:
+return $default(_that.taskdbPath,_that.syncConfig,_that.authConfig,_that.debugLogging,_that.autoSyncOnTaskChange);case _:
   return null;
 
 }
@@ -244,7 +236,7 @@ return $default(_that.taskdbPath,_that.syncConfig,_that.authConfig,_that.debugLo
 @JsonSerializable()
 
 class _ClientConfig implements ClientConfig {
-  const _ClientConfig({required this.taskdbPath, required this.syncConfig, required this.authConfig, this.debugLogging = false, this.autoSyncOnStartup = false, this.autoSyncOnTaskChange = false, this.syncIntervalMinutes = 15, this.maxHistorySize = 1000, this.encryptAtRest = true});
+  const _ClientConfig({required this.taskdbPath, required this.syncConfig, required this.authConfig, this.debugLogging = false, this.autoSyncOnTaskChange = false});
   factory _ClientConfig.fromJson(Map<String, dynamic> json) => _$ClientConfigFromJson(json);
 
 /// Path to the task database directory
@@ -255,16 +247,8 @@ class _ClientConfig implements ClientConfig {
 @override final  AuthConfig authConfig;
 /// Enable debug logging
 @override@JsonKey() final  bool debugLogging;
-/// Enable automatic sync on startup
-@override@JsonKey() final  bool autoSyncOnStartup;
 /// Enable automatic sync after task changes
 @override@JsonKey() final  bool autoSyncOnTaskChange;
-/// Sync interval in minutes (for periodic sync)
-@override@JsonKey() final  int syncIntervalMinutes;
-/// Maximum number of tasks to keep in history
-@override@JsonKey() final  int maxHistorySize;
-/// Enable task encryption at rest
-@override@JsonKey() final  bool encryptAtRest;
 
 /// Create a copy of ClientConfig
 /// with the given fields replaced by the non-null parameter values.
@@ -279,16 +263,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ClientConfig&&(identical(other.taskdbPath, taskdbPath) || other.taskdbPath == taskdbPath)&&(identical(other.syncConfig, syncConfig) || other.syncConfig == syncConfig)&&(identical(other.authConfig, authConfig) || other.authConfig == authConfig)&&(identical(other.debugLogging, debugLogging) || other.debugLogging == debugLogging)&&(identical(other.autoSyncOnStartup, autoSyncOnStartup) || other.autoSyncOnStartup == autoSyncOnStartup)&&(identical(other.autoSyncOnTaskChange, autoSyncOnTaskChange) || other.autoSyncOnTaskChange == autoSyncOnTaskChange)&&(identical(other.syncIntervalMinutes, syncIntervalMinutes) || other.syncIntervalMinutes == syncIntervalMinutes)&&(identical(other.maxHistorySize, maxHistorySize) || other.maxHistorySize == maxHistorySize)&&(identical(other.encryptAtRest, encryptAtRest) || other.encryptAtRest == encryptAtRest));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ClientConfig&&(identical(other.taskdbPath, taskdbPath) || other.taskdbPath == taskdbPath)&&(identical(other.syncConfig, syncConfig) || other.syncConfig == syncConfig)&&(identical(other.authConfig, authConfig) || other.authConfig == authConfig)&&(identical(other.debugLogging, debugLogging) || other.debugLogging == debugLogging)&&(identical(other.autoSyncOnTaskChange, autoSyncOnTaskChange) || other.autoSyncOnTaskChange == autoSyncOnTaskChange));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,taskdbPath,syncConfig,authConfig,debugLogging,autoSyncOnStartup,autoSyncOnTaskChange,syncIntervalMinutes,maxHistorySize,encryptAtRest);
+int get hashCode => Object.hash(runtimeType,taskdbPath,syncConfig,authConfig,debugLogging,autoSyncOnTaskChange);
 
 @override
 String toString() {
-  return 'ClientConfig(taskdbPath: $taskdbPath, syncConfig: $syncConfig, authConfig: $authConfig, debugLogging: $debugLogging, autoSyncOnStartup: $autoSyncOnStartup, autoSyncOnTaskChange: $autoSyncOnTaskChange, syncIntervalMinutes: $syncIntervalMinutes, maxHistorySize: $maxHistorySize, encryptAtRest: $encryptAtRest)';
+  return 'ClientConfig(taskdbPath: $taskdbPath, syncConfig: $syncConfig, authConfig: $authConfig, debugLogging: $debugLogging, autoSyncOnTaskChange: $autoSyncOnTaskChange)';
 }
 
 
@@ -299,7 +283,7 @@ abstract mixin class _$ClientConfigCopyWith<$Res> implements $ClientConfigCopyWi
   factory _$ClientConfigCopyWith(_ClientConfig value, $Res Function(_ClientConfig) _then) = __$ClientConfigCopyWithImpl;
 @override @useResult
 $Res call({
- String taskdbPath, SyncConfig syncConfig, AuthConfig authConfig, bool debugLogging, bool autoSyncOnStartup, bool autoSyncOnTaskChange, int syncIntervalMinutes, int maxHistorySize, bool encryptAtRest
+ String taskdbPath, SyncConfig syncConfig, AuthConfig authConfig, bool debugLogging, bool autoSyncOnTaskChange
 });
 
 
@@ -316,17 +300,13 @@ class __$ClientConfigCopyWithImpl<$Res>
 
 /// Create a copy of ClientConfig
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? taskdbPath = null,Object? syncConfig = null,Object? authConfig = null,Object? debugLogging = null,Object? autoSyncOnStartup = null,Object? autoSyncOnTaskChange = null,Object? syncIntervalMinutes = null,Object? maxHistorySize = null,Object? encryptAtRest = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? taskdbPath = null,Object? syncConfig = null,Object? authConfig = null,Object? debugLogging = null,Object? autoSyncOnTaskChange = null,}) {
   return _then(_ClientConfig(
 taskdbPath: null == taskdbPath ? _self.taskdbPath : taskdbPath // ignore: cast_nullable_to_non_nullable
 as String,syncConfig: null == syncConfig ? _self.syncConfig : syncConfig // ignore: cast_nullable_to_non_nullable
 as SyncConfig,authConfig: null == authConfig ? _self.authConfig : authConfig // ignore: cast_nullable_to_non_nullable
 as AuthConfig,debugLogging: null == debugLogging ? _self.debugLogging : debugLogging // ignore: cast_nullable_to_non_nullable
-as bool,autoSyncOnStartup: null == autoSyncOnStartup ? _self.autoSyncOnStartup : autoSyncOnStartup // ignore: cast_nullable_to_non_nullable
 as bool,autoSyncOnTaskChange: null == autoSyncOnTaskChange ? _self.autoSyncOnTaskChange : autoSyncOnTaskChange // ignore: cast_nullable_to_non_nullable
-as bool,syncIntervalMinutes: null == syncIntervalMinutes ? _self.syncIntervalMinutes : syncIntervalMinutes // ignore: cast_nullable_to_non_nullable
-as int,maxHistorySize: null == maxHistorySize ? _self.maxHistorySize : maxHistorySize // ignore: cast_nullable_to_non_nullable
-as int,encryptAtRest: null == encryptAtRest ? _self.encryptAtRest : encryptAtRest // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }

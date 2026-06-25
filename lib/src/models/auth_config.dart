@@ -20,36 +20,9 @@ abstract class AuthConfig with _$AuthConfig {
 
     /// Whether to validate SSL certificates
     @Default(true) bool validateCertificates,
-
-    /// Custom certificate paths (optional)
-    String? certificatePath,
-
-    /// Custom key paths (optional)
-    String? keyPath,
   }) = _AuthConfig;
 
   /// Create an AuthConfig from a JSON map
   factory AuthConfig.fromJson(Map<String, dynamic> json) =>
       _$AuthConfigFromJson(json);
-}
-
-/// Extension methods for AuthConfig
-extension AuthConfigExtensions on AuthConfig {
-  /// Check if credentials are valid
-  bool get hasValidCredentials =>
-      clientId.isNotEmpty &&
-      encryptionSecret.isNotEmpty &&
-      serverUrl.isNotEmpty;
-
-  /// Get a sanitized version for logging
-  Map<String, dynamic> toSafeMap() {
-    return {
-      'clientId': clientId,
-      'encryptionSecret': encryptionSecret.isEmpty ? '(empty)' : '(hidden)',
-      'serverUrl': serverUrl,
-      'validateCertificates': validateCertificates,
-      'hasCertificate': certificatePath != null,
-      'hasKey': keyPath != null,
-    };
-  }
 }

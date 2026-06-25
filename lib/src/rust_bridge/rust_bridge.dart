@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'api.dart' as frb_api;
-import 'frb_generated.dart';
 import 'models.dart';
 import '../models/task_filter.dart';
 import '../models/task_sort.dart';
@@ -13,13 +12,6 @@ import 'package:taskchampion_client_rust/src/rust_bridge/properties.dart';
 /// This class provides static methods that call into the Rust FFI layer
 /// using the generated flutter_rust_bridge code.
 class RustBridge {
-  /// Initialize the Rust library
-  ///
-  /// This must be called before any other Rust FFI calls.
-  static Future<void> init() async {
-    await RustLib.init();
-  }
-
   // ============================================================================
   // TASK OPERATIONS
   // ============================================================================
@@ -66,28 +58,6 @@ class RustBridge {
     );
   }
 
-  /// Get pending tasks as JSON string
-  ///
-  /// This is optimized to use TaskChampion's built-in pending tasks query
-  static Future<String> getPendingTasksJson(String taskdbDirPath) async {
-    return frb_api.getPendingTasksJson(taskdbDirPath: taskdbDirPath);
-  }
-
-  /// Get tasks filtered by a filter expression
-  ///
-  /// This method automatically optimizes queries:
-  /// - For status=Pending filters, uses TaskChampion's built-in pending_tasks()
-  /// - For other filters, loads all tasks and filters in-memory
-  static Future<String> getTasksWithFilterJson(
-    String taskdbDirPath,
-    TaskFilter filter,
-  ) async {
-    return frb_api.getTasksWithFilterJson(
-      taskdbDirPath: taskdbDirPath,
-      filterJson: filter.toJson(),
-    );
-  }
-
   /// Get all tasks with sorting
   static Future<String> getAllTasksWithSortJson(
     String taskdbDirPath,
@@ -105,16 +75,15 @@ class RustBridge {
     TaskFilter filter,
     TaskSort? sort,
   ) async {
-    if (sort != null) {
-      return frb_api.getTasksWithFilterAndSortJson(
-        taskdbDirPath: taskdbDirPath,
-        filterJson: filter.toJson(),
-        sortJson: json.encode(sort.toJson()),
-      );
-    }
-    return frb_api.getTasksWithFilterJson(
+    return frb_api.getTasksWithFilterAndSortJson(
       taskdbDirPath: taskdbDirPath,
       filterJson: filter.toJson(),
+      sortJson: sort != null
+          ? json.encode(sort.toJson())
+          : json.encode(const {
+              'property': {'name': 'entry'},
+              'direction': 'ascending',
+            }),
     );
   }
 
@@ -167,16 +136,6 @@ class RustBridge {
       clientId: clientId,
       encryptionSecret: encryptionSecret,
     );
-  }
-
-  /// Generate a new client ID
-  static Future<String> generateClientId() async {
-    return frb_api.generateClientId();
-  }
-
-  /// Generate a new encryption secret
-  static Future<String> generateEncryptionSecret() async {
-    return frb_api.generateEncryptionSecret();
   }
 
   // ============================================================================

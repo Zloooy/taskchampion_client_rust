@@ -1,8 +1,14 @@
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
-/// Helper utilities for TaskChampion client
+/// Test-only helper utilities for TaskChampion client
+///
+/// These utilities are intended for testing purposes only.
+/// They are thin wrappers around third-party libraries and
+/// should not be used in production code.
+@visibleForTesting
 class TaskChampionHelpers {
   /// Generate a new UUID v4
   static String generateUuid() {

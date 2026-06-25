@@ -17,8 +17,6 @@ _SyncResult _$SyncResultFromJson(Map<String, dynamic> json) => _SyncResult(
   completedAt: json['completedAt'] == null
       ? null
       : DateTime.parse(json['completedAt'] as String),
-  snapshotDownloaded: json['snapshotDownloaded'] as bool? ?? false,
-  snapshotUploaded: json['snapshotUploaded'] as bool? ?? false,
 );
 
 Map<String, dynamic> _$SyncResultToJson(_SyncResult instance) =>
@@ -31,6 +29,4 @@ Map<String, dynamic> _$SyncResultToJson(_SyncResult instance) =>
       'errorMessage': instance.errorMessage,
       'durationMs': instance.durationMs,
       'completedAt': instance.completedAt?.toIso8601String(),
-      'snapshotDownloaded': instance.snapshotDownloaded,
-      'snapshotUploaded': instance.snapshotUploaded,
     };

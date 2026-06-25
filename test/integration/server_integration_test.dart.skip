@@ -606,7 +606,7 @@ void main() {
           await clientB.sync().timeout(_networkTimeout);
 
           // Client A completes the task
-          await clientA.completeTask(task.uuid);
+          await clientA.updateTask(uuid: task.uuid, status: TaskStatus.completed);
           await clientA.sync().timeout(_networkTimeout);
 
           // Client B syncs to see completion
@@ -617,7 +617,7 @@ void main() {
           expect(completedTask.status, equals(TaskStatus.completed));
 
           // Client A reopens the task
-          await clientA.reopenTask(task.uuid);
+          await clientA.updateTask(uuid: task.uuid, status: TaskStatus.pending);
           await clientA.sync().timeout(_networkTimeout);
 
           // Client B syncs to see reopen

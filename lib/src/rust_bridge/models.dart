@@ -6,7 +6,32 @@
 import 'frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-/// Sync result structure for returning sync statistics
+/// A single annotation entry.
+class AnnotationDto {
+  /// RFC-3339 timestamp of when the annotation was added.
+  final String entry;
+
+  /// The free-form annotation text.
+  final String description;
+
+  const AnnotationDto({required this.entry, required this.description});
+
+  @override
+  int get hashCode => entry.hashCode ^ description.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is AnnotationDto &&
+          runtimeType == other.runtimeType &&
+          entry == other.entry &&
+          description == other.description;
+}
+
+/// Sync result structure for returning sync statistics.
+///
+/// (Renamed candidate `SyncResult` is tracked under ticket R9; the public
+/// name is preserved here for FFI backward compatibility.)
 class SyncResultData {
   final bool success;
   final BigInt versionsSynced;
@@ -48,4 +73,120 @@ class SyncResultData {
           tasksDeleted == other.tasksDeleted &&
           errorMessage == other.errorMessage &&
           durationMs == other.durationMs;
+}
+
+/// A fully typed task, intended to replace the lossy `HashMap<String,String>`
+/// representation at the FFI boundary.
+///
+/// Notable fixes vs. the legacy map encoding:
+/// * `tags` is a real `Vec<String>` — the old code joined/split on
+///   whitespace, which corrupted tags containing spaces (ticket R5).
+/// * `udas` is a separate map, so a UDA whose name happens to share a prefix
+///   with a built-in property (e.g. `"entry_note"`) is no longer silently
+///   dropped (ticket R5 / I-13).
+/// * `annotations` is a structured list rather than `annotation_<timestamp>`
+///   keys interleaved with everything else.
+///
+/// Datetimes are carried as RFC-3339 strings to stay wire-compatible with
+/// the existing Dart consumers without forcing a chrono-aware FRB regen.
+class TaskDto {
+  final String uuid;
+  final String description;
+  final TaskStatusDto status;
+
+  /// Canonical priority code (`"H"`/`"M"`/`"L"`) or `None` for no priority.
+  /// See [`crate::properties::CANONICAL_PRIORITIES`].
+  final String? priority;
+
+  /// RFC-3339 due date, if set.
+  final String? due;
+
+  /// RFC-3339 wait-until date, if set.
+  final String? wait;
+
+  /// RFC-3339 creation timestamp, if set.
+  final String? entry;
+
+  /// RFC-3339 last-modified timestamp, if set.
+  final String? modified;
+
+  /// RFC-3339 completion/deletion timestamp, if set.
+  final String? end;
+
+  /// User tags. Each tag is a separate element; spaces are preserved.
+  final List<String> tags;
+
+  /// Dependency UUIDs (string form).
+  final List<String> depends;
+
+  /// Annotations, oldest-first.
+  final List<AnnotationDto> annotations;
+
+  /// User-defined attributes, keyed by their Taskwarrior name.
+  final Map<String, String> udas;
+
+  const TaskDto({
+    required this.uuid,
+    required this.description,
+    required this.status,
+    this.priority,
+    this.due,
+    this.wait,
+    this.entry,
+    this.modified,
+    this.end,
+    required this.tags,
+    required this.depends,
+    required this.annotations,
+    required this.udas,
+  });
+
+  @override
+  int get hashCode =>
+      uuid.hashCode ^
+      description.hashCode ^
+      status.hashCode ^
+      priority.hashCode ^
+      due.hashCode ^
+      wait.hashCode ^
+      entry.hashCode ^
+      modified.hashCode ^
+      end.hashCode ^
+      tags.hashCode ^
+      depends.hashCode ^
+      annotations.hashCode ^
+      udas.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TaskDto &&
+          runtimeType == other.runtimeType &&
+          uuid == other.uuid &&
+          description == other.description &&
+          status == other.status &&
+          priority == other.priority &&
+          due == other.due &&
+          wait == other.wait &&
+          entry == other.entry &&
+          modified == other.modified &&
+          end == other.end &&
+          tags == other.tags &&
+          depends == other.depends &&
+          annotations == other.annotations &&
+          udas == other.udas;
+}
+
+/// Mirrors [`taskchampion::Status`] for FFI consumers.
+///
+/// Stored as the lowercase Taskwarrior string in the wire form so the Dart
+/// side matches the rest of the crate's vocabulary.
+enum TaskStatusDto {
+  pending,
+  completed,
+  deleted,
+  recurring,
+
+  /// TaskChampion's escape hatch for unknown status strings.
+  unknown,
 }

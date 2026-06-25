@@ -1,13 +1,16 @@
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:taskchampion_client_rust/taskchampion_client_rust.dart';
+import 'package:taskchampion_client_rust/src/services/task_service.dart';
+import 'package:taskchampion_client_rust/src/storage/rust_task_storage.dart';
 
 void main() {
   test('TaskService extracts tasks without virtual tags', () async {
     // Create a temporary directory for the task database.
     final tempDir = await Directory.systemTemp.createTemp('tc_test_');
     await TaskChampionClient.init();
-    final taskService = TaskService(tempDir.path);
+    final storage = RustTaskStorage(tempDir.path);
+    final taskService = TaskService(storage);
 
     // Create a task with user-defined tags.
     await taskService.createTask(
@@ -66,5 +69,5 @@ void main() {
 
     // Cleanup.
     await tempDir.delete(recursive: true);
-  }, skip: false);
+  });
 }

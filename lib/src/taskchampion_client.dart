@@ -1,12 +1,16 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'client/client.dart';
 import 'models/models.dart';
 import 'rust_bridge/frb_generated.dart';
+import 'services/interfaces/interfaces.dart';
 import 'services/task_service.dart';
 import 'services/task_property_service.dart';
 import 'services/task_tag_service.dart';
 import 'services/sync_service.dart';
 import 'services/auth_service.dart';
+import 'storage/rust_task_storage.dart';
+import 'storage/task_storage.dart';
 
 /// TaskChampion Client - Main public API for TaskChampion operations
 ///
@@ -14,6 +18,11 @@ import 'services/auth_service.dart';
 /// - Task management (create, read, update, delete)
 /// - Synchronization with TaskChampion sync server
 /// - Authentication and credential management
+///
+/// Internally it delegates to focused subsystems:
+/// - [TaskEventManager] for stream handling
+/// - [AutoSyncCoordinator] for debounced background sync
+/// - [ConnectionState] for auth / connectivity tracking
 ///
 /// ## Usage Example
 ///
@@ -57,36 +66,25 @@ class TaskChampionClient {
   /// Configuration for this client instance
   final ClientConfig config;
 
-  /// Task service for managing tasks
-  late final TaskService _taskService;
+  /// Underlying storage implementation
+  late final TaskStorage _storage;
 
-  /// Task property service for retrieving property values
-  late final TaskPropertyService _taskPropertyService;
+  // Service layer
+  late final ITaskService _taskService;
+  late final ITaskPropertyService _taskPropertyService;
+  late final ITaskTagService _taskTagService;
+  late final ISyncService _syncService;
+  late final IAuthService _authService;
 
-  /// Task tag service for retrieving tag values
-  late final TaskTagService _taskTagService;
-
-  /// Sync service for synchronization
-  late final SyncService _syncService;
-
-  /// Auth service for authentication
-  late final AuthService _authService;
-
-  /// Whether the client is connected to the server
-  bool _isConnected = false;
-
-  /// Stream controller for task changes
-  final _taskChangesController = StreamController<Task>.broadcast();
-
-  /// Stream controller for sync events
-  final _syncEventsController = StreamController<SyncResult>.broadcast();
+  // Subsystems extracted from the former god class
+  late final TaskEventManager _eventManager;
+  late final AutoSyncCoordinator _autoSyncCoordinator;
+  late final ConnectionState _connectionState;
 
   /// Initialize the TaskChampion library
   ///
   /// This must be called before creating any TaskChampionClient instances.
   /// It initializes the Rust FFI bridge and sets up necessary platform bindings.
-  ///
-  /// The native library is loaded automatically via flutter_rust_bridge's
   static Future<void> init() async {
     await RustLib.init();
     debugPrint('TaskChampionClient initialized');
@@ -98,6 +96,10 @@ class TaskChampionClient {
   /// [clientId] - Client ID for authentication
   /// [encryptionSecret] - Secret key for encrypting sync data
   /// [taskdbPath] - Optional custom path for task database
+  /// [autoSync] - Enable auto-sync after task changes (default: false)
+  /// [debugLogging] - Enable debug logging (default: false)
+  ///
+  /// Optional services allow injection of mocks or decorators for testing.
   TaskChampionClient({
     required String serverUrl,
     required String clientId,
@@ -105,46 +107,68 @@ class TaskChampionClient {
     String? taskdbPath,
     bool autoSync = false,
     bool debugLogging = false,
+    ITaskService? taskService,
+    ITaskPropertyService? taskPropertyService,
+    ITaskTagService? taskTagService,
+    ISyncService? syncService,
+    IAuthService? authService,
+    TaskEventManager? eventManager,
   }) : config = ClientConfig.createMinimal(
          serverUrl: serverUrl,
          clientId: clientId,
          encryptionSecret: encryptionSecret,
          taskdbPath: taskdbPath,
+         autoSyncOnTaskChange: autoSync,
+         debugLogging: debugLogging,
        ) {
-    _initializeServices();
+    _storage = RustTaskStorage(config.taskdbPath);
+    _taskService = taskService ?? TaskService(_storage);
+    _taskPropertyService = taskPropertyService ?? TaskPropertyService(_storage);
+    _taskTagService = taskTagService ?? TaskTagService(_storage);
+    _syncService = syncService ?? SyncService(_storage, config.syncConfig);
+    _authService = authService ?? AuthService(_storage, config.authConfig);
+
+    _eventManager = eventManager ?? TaskEventManager();
+    _autoSyncCoordinator = AutoSyncCoordinator(_syncService);
+    _connectionState = ConnectionState(_authService);
+
+    _setupAutoSyncListeners();
   }
 
   /// Create a TaskChampionClient with custom configuration
-  TaskChampionClient.withConfig(this.config) {
-    _initializeServices();
+  ///
+  /// Optional services allow injection of mocks or decorators for testing.
+  TaskChampionClient.withConfig(
+    this.config, {
+    ITaskService? taskService,
+    ITaskPropertyService? taskPropertyService,
+    ITaskTagService? taskTagService,
+    ISyncService? syncService,
+    IAuthService? authService,
+    TaskEventManager? eventManager,
+  }) {
+    _storage = RustTaskStorage(config.taskdbPath);
+    _taskService = taskService ?? TaskService(_storage);
+    _taskPropertyService = taskPropertyService ?? TaskPropertyService(_storage);
+    _taskTagService = taskTagService ?? TaskTagService(_storage);
+    _syncService = syncService ?? SyncService(_storage, config.syncConfig);
+    _authService = authService ?? AuthService(_storage, config.authConfig);
+
+    _eventManager = eventManager ?? TaskEventManager();
+    _autoSyncCoordinator = AutoSyncCoordinator(_syncService);
+    _connectionState = ConnectionState(_authService);
+
+    _setupAutoSyncListeners();
   }
 
-  /// Initialize internal services
-  void _initializeServices() {
-    _taskService = TaskService(config.taskdbPath);
-    _taskPropertyService = TaskPropertyService(config.taskdbPath);
-    _taskTagService = TaskTagService(config.taskdbPath);
-    _syncService = SyncService(config.taskdbPath, config.syncConfig);
-    _authService = AuthService(config.authConfig);
-
-    // Listen to sync events if auto-sync is enabled
+  void _setupAutoSyncListeners() {
     if (config.autoSyncOnTaskChange) {
-      _taskChangesController.stream.listen((_) {
-        // Debounce auto-sync
-        _debouncedSync();
+      _eventManager.taskChanges.listen((_) {
+        if (isConnected) {
+          _autoSyncCoordinator.requestSync();
+        }
       });
     }
-  }
-
-  /// Debounce timer for auto-sync
-  Timer? _syncDebounceTimer;
-
-  /// Debounced sync operation
-  void _debouncedSync() {
-    _syncDebounceTimer?.cancel();
-    _syncDebounceTimer = Timer(const Duration(seconds: 2), () {
-      sync();
-    });
   }
 
   /// Get the task database path
@@ -157,48 +181,37 @@ class TaskChampionClient {
   String get clientId => config.syncConfig.clientId;
 
   /// Check if connected to the server
-  bool get isConnected => _isConnected;
+  bool get isConnected => _connectionState.isConnected;
 
   /// Stream of task changes
-  Stream<Task> get taskChanges => _taskChangesController.stream;
+  Stream<Task> get taskChanges => _eventManager.taskChanges;
 
   /// Stream of sync events
-  Stream<SyncResult> get syncEvents => _syncEventsController.stream;
+  Stream<SyncResult> get syncEvents => _eventManager.syncEvents;
 
   /// Connect to the TaskChampion sync server
   ///
   /// This validates credentials and establishes a connection.
   /// Call this before performing sync operations.
   Future<AuthResult> connect() async {
-    try {
-      if (config.debugLogging) {
-        debugPrint('Connecting to server: $serverUrl');
-      }
-
-      // Validate credentials
-      final authResult = await _authService.validateCredentials();
-
-      if (authResult.success) {
-        _isConnected = true;
-        debugPrint('Connected to server: $serverUrl');
-      } else {
-        debugPrint('Connection failed: ${authResult.errorMessage}');
-      }
-
-      return authResult;
-    } catch (e) {
-      _isConnected = false;
-      return AuthResult(
-        success: false,
-        errorMessage: 'Connection error: $e',
-        authenticatedAt: DateTime.now(),
-      );
+    if (config.debugLogging) {
+      debugPrint('Connecting to server: $serverUrl');
     }
+
+    final authResult = await _connectionState.validateAndConnect();
+
+    if (authResult.success) {
+      debugPrint('Connected to server: $serverUrl');
+    } else {
+      debugPrint('Connection failed: ${authResult.errorMessage}');
+    }
+
+    return authResult;
   }
 
   /// Disconnect from the server
   void disconnect() {
-    _isConnected = false;
+    _connectionState.disconnect();
     debugPrint('Disconnected from server');
   }
 
@@ -224,7 +237,7 @@ class TaskChampionClient {
       );
 
       // Emit sync event
-      _syncEventsController.add(syncResult);
+      _eventManager.emitSyncResult(syncResult);
 
       if (config.debugLogging) {
         debugPrint('Sync completed: ${syncResult.summary}');
@@ -237,7 +250,7 @@ class TaskChampionClient {
         errorMessage: 'Sync error: $e',
         completedAt: DateTime.now(),
       );
-      _syncEventsController.add(errorResult);
+      _eventManager.emitSyncResult(errorResult);
       return errorResult;
     }
   }
@@ -305,7 +318,7 @@ class TaskChampionClient {
 
   /// Get distinct property values for a given property name.
   ///
-  /// [property] – name of the property to query (e.g. "description", "due").
+  /// [property] – name of the property to query.
   /// [filter] – optional [TaskFilter] to limit the tasks considered.
   /// [sort] – optional [TaskSort] that may affect the order of the returned list.
   ///
@@ -411,12 +424,9 @@ class TaskChampionClient {
     );
 
     // Emit task change event
-    _taskChangesController.add(task);
+    _eventManager.emitTaskChange(task);
 
-    // Auto-sync if enabled
-    if (config.autoSyncOnTaskChange && _isConnected) {
-      _debouncedSync();
-    }
+    // Auto-sync is handled by the event listener when connected
 
     return task;
   }
@@ -452,12 +462,9 @@ class TaskChampionClient {
     );
 
     // Emit task change event
-    _taskChangesController.add(task);
+    _eventManager.emitTaskChange(task);
 
-    // Auto-sync if enabled
-    if (config.autoSyncOnTaskChange && _isConnected) {
-      _debouncedSync();
-    }
+    // Auto-sync is handled by the event listener when connected
 
     return task;
   }
@@ -465,30 +472,16 @@ class TaskChampionClient {
   /// Delete a task
   ///
   /// [uuid] - Task UUID to delete
-  /// [permanent] - If true, permanently delete (default: false, marks as deleted)
-  Future<void> deleteTask(String uuid, {bool permanent = false}) async {
-    await _taskService.deleteTask(uuid, permanent: permanent);
+  Future<void> deleteTask(String uuid) async {
+    await _taskService.deleteTask(uuid);
 
     // Emit task change event (get the task before deletion)
     final task = await getTask(uuid);
     if (task != null) {
-      _taskChangesController.add(task);
+      _eventManager.emitTaskChange(task);
     }
 
-    // Auto-sync if enabled
-    if (config.autoSyncOnTaskChange && _isConnected) {
-      _debouncedSync();
-    }
-  }
-
-  /// Mark a task as completed
-  Future<Task> completeTask(String uuid) async {
-    return updateTask(uuid: uuid, status: TaskStatus.completed);
-  }
-
-  /// Mark a task as pending (reopen)
-  Future<Task> reopenTask(String uuid) async {
-    return updateTask(uuid: uuid, status: TaskStatus.pending);
+    // Auto-sync is handled by the event listener when connected
   }
 
   /// Get task statistics
@@ -508,15 +501,10 @@ class TaskChampionClient {
     // Emit task change events for imported tasks
     final tasks = await getAllTasks();
     for (final task in tasks.take(count)) {
-      _taskChangesController.add(task);
+      _eventManager.emitTaskChange(task);
     }
 
     return count;
-  }
-
-  /// Validate current credentials
-  Future<AuthResult> validateCredentials() async {
-    return _authService.validateCredentials();
   }
 
   /// Get the latest snapshot from the server
@@ -526,42 +514,9 @@ class TaskChampionClient {
 
   /// Dispose of the client and release resources
   void dispose() {
-    _syncDebounceTimer?.cancel();
-    _taskChangesController.close();
-    _syncEventsController.close();
+    _autoSyncCoordinator.dispose();
+    _eventManager.dispose();
     disconnect();
     debugPrint('TaskChampionClient disposed');
-  }
-}
-
-/// Task statistics data class
-class TaskStats {
-  /// Total number of tasks
-  final int total;
-
-  /// Number of pending tasks
-  final int pending;
-
-  /// Number of completed tasks
-  final int completed;
-
-  /// Number of deleted tasks
-  final int deleted;
-
-  const TaskStats({
-    required this.total,
-    required this.pending,
-    required this.completed,
-    required this.deleted,
-  });
-
-  /// Create TaskStats from a map
-  factory TaskStats.fromMap(Map<String, int> map) {
-    return TaskStats(
-      total: map['total_tasks'] ?? 0,
-      pending: map['pending'] ?? 0,
-      completed: map['completed'] ?? 0,
-      deleted: map['deleted'] ?? 0,
-    );
   }
 }

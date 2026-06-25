@@ -33,12 +33,6 @@ abstract class SyncResult with _$SyncResult {
 
     /// Timestamp when sync completed
     DateTime? completedAt,
-
-    /// Whether a snapshot was downloaded
-    @Default(false) bool snapshotDownloaded,
-
-    /// Whether a snapshot was uploaded
-    @Default(false) bool snapshotUploaded,
   }) = _SyncResult;
 
   /// Create a SyncResult from a JSON map
@@ -52,8 +46,6 @@ abstract class SyncResult with _$SyncResult {
     int tasksUpdated = 0,
     int tasksDeleted = 0,
     int? durationMs,
-    bool snapshotDownloaded = false,
-    bool snapshotUploaded = false,
   }) {
     return SyncResult(
       success: true,
@@ -63,8 +55,6 @@ abstract class SyncResult with _$SyncResult {
       tasksDeleted: tasksDeleted,
       durationMs: durationMs,
       completedAt: DateTime.now(),
-      snapshotDownloaded: snapshotDownloaded,
-      snapshotUploaded: snapshotUploaded,
     );
   }
 
@@ -81,9 +71,6 @@ abstract class SyncResult with _$SyncResult {
 
 /// Extension methods for SyncResult
 extension SyncResultExtensions on SyncResult {
-  /// Check if the sync failed
-  bool get hasError => errorMessage != null;
-
   /// Get total number of changes
   int get totalChanges => tasksAdded + tasksUpdated + tasksDeleted;
 

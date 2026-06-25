@@ -20,9 +20,7 @@ mixin _$AuthResult {
  String? get errorMessage;/// Server information
  String? get serverUrl;/// Client ID that was authenticated
  String? get clientId;/// Whether the client is allowed to sync
- bool get canSync;/// Server version information
- String? get serverVersion;/// Timestamp when authentication completed
- DateTime? get authenticatedAt;
+ bool get canSync;
 /// Create a copy of AuthResult
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -35,16 +33,16 @@ $AuthResultCopyWith<AuthResult> get copyWith => _$AuthResultCopyWithImpl<AuthRes
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthResult&&(identical(other.success, success) || other.success == success)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.serverUrl, serverUrl) || other.serverUrl == serverUrl)&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.canSync, canSync) || other.canSync == canSync)&&(identical(other.serverVersion, serverVersion) || other.serverVersion == serverVersion)&&(identical(other.authenticatedAt, authenticatedAt) || other.authenticatedAt == authenticatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthResult&&(identical(other.success, success) || other.success == success)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.serverUrl, serverUrl) || other.serverUrl == serverUrl)&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.canSync, canSync) || other.canSync == canSync));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,success,errorMessage,serverUrl,clientId,canSync,serverVersion,authenticatedAt);
+int get hashCode => Object.hash(runtimeType,success,errorMessage,serverUrl,clientId,canSync);
 
 @override
 String toString() {
-  return 'AuthResult(success: $success, errorMessage: $errorMessage, serverUrl: $serverUrl, clientId: $clientId, canSync: $canSync, serverVersion: $serverVersion, authenticatedAt: $authenticatedAt)';
+  return 'AuthResult(success: $success, errorMessage: $errorMessage, serverUrl: $serverUrl, clientId: $clientId, canSync: $canSync)';
 }
 
 
@@ -55,7 +53,7 @@ abstract mixin class $AuthResultCopyWith<$Res>  {
   factory $AuthResultCopyWith(AuthResult value, $Res Function(AuthResult) _then) = _$AuthResultCopyWithImpl;
 @useResult
 $Res call({
- bool success, String? errorMessage, String? serverUrl, String? clientId, bool canSync, String? serverVersion, DateTime? authenticatedAt
+ bool success, String? errorMessage, String? serverUrl, String? clientId, bool canSync
 });
 
 
@@ -72,16 +70,14 @@ class _$AuthResultCopyWithImpl<$Res>
 
 /// Create a copy of AuthResult
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? success = null,Object? errorMessage = freezed,Object? serverUrl = freezed,Object? clientId = freezed,Object? canSync = null,Object? serverVersion = freezed,Object? authenticatedAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? success = null,Object? errorMessage = freezed,Object? serverUrl = freezed,Object? clientId = freezed,Object? canSync = null,}) {
   return _then(_self.copyWith(
 success: null == success ? _self.success : success // ignore: cast_nullable_to_non_nullable
 as bool,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
 as String?,serverUrl: freezed == serverUrl ? _self.serverUrl : serverUrl // ignore: cast_nullable_to_non_nullable
 as String?,clientId: freezed == clientId ? _self.clientId : clientId // ignore: cast_nullable_to_non_nullable
 as String?,canSync: null == canSync ? _self.canSync : canSync // ignore: cast_nullable_to_non_nullable
-as bool,serverVersion: freezed == serverVersion ? _self.serverVersion : serverVersion // ignore: cast_nullable_to_non_nullable
-as String?,authenticatedAt: freezed == authenticatedAt ? _self.authenticatedAt : authenticatedAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,
+as bool,
   ));
 }
 
@@ -166,10 +162,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool success,  String? errorMessage,  String? serverUrl,  String? clientId,  bool canSync,  String? serverVersion,  DateTime? authenticatedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool success,  String? errorMessage,  String? serverUrl,  String? clientId,  bool canSync)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _AuthResult() when $default != null:
-return $default(_that.success,_that.errorMessage,_that.serverUrl,_that.clientId,_that.canSync,_that.serverVersion,_that.authenticatedAt);case _:
+return $default(_that.success,_that.errorMessage,_that.serverUrl,_that.clientId,_that.canSync);case _:
   return orElse();
 
 }
@@ -187,10 +183,10 @@ return $default(_that.success,_that.errorMessage,_that.serverUrl,_that.clientId,
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool success,  String? errorMessage,  String? serverUrl,  String? clientId,  bool canSync,  String? serverVersion,  DateTime? authenticatedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool success,  String? errorMessage,  String? serverUrl,  String? clientId,  bool canSync)  $default,) {final _that = this;
 switch (_that) {
 case _AuthResult():
-return $default(_that.success,_that.errorMessage,_that.serverUrl,_that.clientId,_that.canSync,_that.serverVersion,_that.authenticatedAt);case _:
+return $default(_that.success,_that.errorMessage,_that.serverUrl,_that.clientId,_that.canSync);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -207,10 +203,10 @@ return $default(_that.success,_that.errorMessage,_that.serverUrl,_that.clientId,
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool success,  String? errorMessage,  String? serverUrl,  String? clientId,  bool canSync,  String? serverVersion,  DateTime? authenticatedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool success,  String? errorMessage,  String? serverUrl,  String? clientId,  bool canSync)?  $default,) {final _that = this;
 switch (_that) {
 case _AuthResult() when $default != null:
-return $default(_that.success,_that.errorMessage,_that.serverUrl,_that.clientId,_that.canSync,_that.serverVersion,_that.authenticatedAt);case _:
+return $default(_that.success,_that.errorMessage,_that.serverUrl,_that.clientId,_that.canSync);case _:
   return null;
 
 }
@@ -222,7 +218,7 @@ return $default(_that.success,_that.errorMessage,_that.serverUrl,_that.clientId,
 @JsonSerializable()
 
 class _AuthResult implements AuthResult {
-  const _AuthResult({required this.success, this.errorMessage, this.serverUrl, this.clientId, this.canSync = false, this.serverVersion, this.authenticatedAt});
+  const _AuthResult({required this.success, this.errorMessage, this.serverUrl, this.clientId, this.canSync = false});
   factory _AuthResult.fromJson(Map<String, dynamic> json) => _$AuthResultFromJson(json);
 
 /// Whether authentication was successful
@@ -235,10 +231,6 @@ class _AuthResult implements AuthResult {
 @override final  String? clientId;
 /// Whether the client is allowed to sync
 @override@JsonKey() final  bool canSync;
-/// Server version information
-@override final  String? serverVersion;
-/// Timestamp when authentication completed
-@override final  DateTime? authenticatedAt;
 
 /// Create a copy of AuthResult
 /// with the given fields replaced by the non-null parameter values.
@@ -253,16 +245,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuthResult&&(identical(other.success, success) || other.success == success)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.serverUrl, serverUrl) || other.serverUrl == serverUrl)&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.canSync, canSync) || other.canSync == canSync)&&(identical(other.serverVersion, serverVersion) || other.serverVersion == serverVersion)&&(identical(other.authenticatedAt, authenticatedAt) || other.authenticatedAt == authenticatedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuthResult&&(identical(other.success, success) || other.success == success)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.serverUrl, serverUrl) || other.serverUrl == serverUrl)&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.canSync, canSync) || other.canSync == canSync));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,success,errorMessage,serverUrl,clientId,canSync,serverVersion,authenticatedAt);
+int get hashCode => Object.hash(runtimeType,success,errorMessage,serverUrl,clientId,canSync);
 
 @override
 String toString() {
-  return 'AuthResult(success: $success, errorMessage: $errorMessage, serverUrl: $serverUrl, clientId: $clientId, canSync: $canSync, serverVersion: $serverVersion, authenticatedAt: $authenticatedAt)';
+  return 'AuthResult(success: $success, errorMessage: $errorMessage, serverUrl: $serverUrl, clientId: $clientId, canSync: $canSync)';
 }
 
 
@@ -273,7 +265,7 @@ abstract mixin class _$AuthResultCopyWith<$Res> implements $AuthResultCopyWith<$
   factory _$AuthResultCopyWith(_AuthResult value, $Res Function(_AuthResult) _then) = __$AuthResultCopyWithImpl;
 @override @useResult
 $Res call({
- bool success, String? errorMessage, String? serverUrl, String? clientId, bool canSync, String? serverVersion, DateTime? authenticatedAt
+ bool success, String? errorMessage, String? serverUrl, String? clientId, bool canSync
 });
 
 
@@ -290,16 +282,14 @@ class __$AuthResultCopyWithImpl<$Res>
 
 /// Create a copy of AuthResult
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? success = null,Object? errorMessage = freezed,Object? serverUrl = freezed,Object? clientId = freezed,Object? canSync = null,Object? serverVersion = freezed,Object? authenticatedAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? success = null,Object? errorMessage = freezed,Object? serverUrl = freezed,Object? clientId = freezed,Object? canSync = null,}) {
   return _then(_AuthResult(
 success: null == success ? _self.success : success // ignore: cast_nullable_to_non_nullable
 as bool,errorMessage: freezed == errorMessage ? _self.errorMessage : errorMessage // ignore: cast_nullable_to_non_nullable
 as String?,serverUrl: freezed == serverUrl ? _self.serverUrl : serverUrl // ignore: cast_nullable_to_non_nullable
 as String?,clientId: freezed == clientId ? _self.clientId : clientId // ignore: cast_nullable_to_non_nullable
 as String?,canSync: null == canSync ? _self.canSync : canSync // ignore: cast_nullable_to_non_nullable
-as bool,serverVersion: freezed == serverVersion ? _self.serverVersion : serverVersion // ignore: cast_nullable_to_non_nullable
-as String?,authenticatedAt: freezed == authenticatedAt ? _self.authenticatedAt : authenticatedAt // ignore: cast_nullable_to_non_nullable
-as DateTime?,
+as bool,
   ));
 }
 

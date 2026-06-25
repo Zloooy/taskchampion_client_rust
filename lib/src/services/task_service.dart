@@ -1,41 +1,44 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
+import '../core/core.dart';
 import '../models/models.dart';
-import '../rust_bridge/rust_bridge.dart';
-import '../taskchampion_client.dart' show TaskStats;
+import '../storage/task_storage.dart';
+import 'interfaces/i_task_service.dart';
 
-/// Service for managing tasks in TaskChampion
+/// Service for managing tasks in TaskChampion.
 ///
-/// Provides low-level task operations that interact with the Rust FFI layer.
-class TaskService {
-  /// Path to the task database
-  final String taskdbPath;
+/// Provides low-level task operations that interact with the storage layer.
+class TaskService implements ITaskService {
+  /// Underlying storage implementation.
+  final TaskStorage _storage;
 
-  /// Create a new TaskService instance
-  TaskService(this.taskdbPath);
+  /// Logger for this service.
+  final Logger _logger;
 
-  /// Get all tasks from the database
+  /// Create a new TaskService instance.
+  TaskService(this._storage, {Logger? logger})
+    : _logger = logger ?? const DebugPrintLogger();
+
+  @override
   Future<List<Task>> getAllTasks({TaskSort? sort}) async {
     try {
       final jsonStr = sort != null
-          ? await RustBridge.getAllTasksWithSortJson(taskdbPath, sort)
-          : await RustBridge.getAllTasksJson(taskdbPath);
+          ? await _storage.getAllTasksWithSortJson(sort)
+          : await _storage.getAllTasksJson();
       final List<dynamic> jsonList = json.decode(jsonStr);
 
       return jsonList
           .map((json) => Task.fromRawJson(Map<String, dynamic>.from(json)))
           .toList();
-    } catch (e) {
-      debugPrint('Error getting tasks: $e');
+    } catch (e, st) {
+      _logger.error('Failed to get all tasks', error: e, stackTrace: st);
       return [];
     }
   }
 
-  /// Get all tasks from the database
+  @override
   Future<List<Task>> filterTasks(TaskFilter filter, {TaskSort? sort}) async {
     try {
-      final jsonStr = await RustBridge.getTasksWithFilterAndSortJson(
-        taskdbPath,
+      final jsonStr = await _storage.getTasksWithFilterAndSortJson(
         filter,
         sort,
       );
@@ -44,16 +47,16 @@ class TaskService {
       return jsonList
           .map((json) => Task.fromRawJson(Map<String, dynamic>.from(json)))
           .toList();
-    } catch (e) {
-      debugPrint('Error getting tasks: $e');
+    } catch (e, st) {
+      _logger.error('Failed to filter tasks', error: e, stackTrace: st);
       return [];
     }
   }
 
-  /// Get a task by UUID
+  @override
   Future<Task?> getTaskByUuid(String uuid) async {
     try {
-      final jsonStr = await RustBridge.getTaskByUuid(taskdbPath, uuid);
+      final jsonStr = await _storage.getTaskByUuid(uuid);
 
       if (jsonStr == null) {
         return null;
@@ -61,13 +64,13 @@ class TaskService {
 
       final jsonData = json.decode(jsonStr);
       return Task.fromRawJson(Map<String, dynamic>.from(jsonData));
-    } catch (e) {
-      debugPrint('Error getting task: $e');
+    } catch (e, st) {
+      _logger.error('Failed to get task by UUID', error: e, stackTrace: st);
       return null;
     }
   }
 
-  /// Create a new task
+  @override
   Future<Task> createTask({
     required String description,
     TaskPriority priority = TaskPriority.none,
@@ -88,22 +91,23 @@ class TaskService {
       if (due != null) taskData['due'] = due.toIso8601String();
       if (wait != null) taskData['wait'] = wait.toIso8601String();
 
-      final uuid = await RustBridge.addTask(taskdbPath, taskData);
+      final uuid = await _storage.addTask(taskData);
 
-      // Fetch the created task
       final task = await getTaskByUuid(uuid);
       if (task == null) {
-        throw Exception('Failed to retrieve created task');
+        throw const TaskStorageException('Failed to retrieve created task');
       }
 
       return task;
-    } catch (e) {
-      debugPrint('Error creating task: $e');
+    } on TaskChampionException {
       rethrow;
+    } catch (e, st) {
+      _logger.error('Failed to create task', error: e, stackTrace: st);
+      throw TaskStorageException('Failed to create task', cause: e);
     }
   }
 
-  /// Update an existing task
+  @override
   Future<Task> updateTask({
     required String uuid,
     String? description,
@@ -123,41 +127,36 @@ class TaskService {
       if (tags != null) taskData['tags'] = tags.join(' ');
       if (due != null) taskData['due'] = due.toIso8601String();
 
-      await RustBridge.updateTask(taskdbPath, uuid, taskData);
+      await _storage.updateTask(uuid, taskData);
 
-      // Fetch the updated task
       final task = await getTaskByUuid(uuid);
       if (task == null) {
-        throw Exception('Failed to retrieve updated task');
+        throw const TaskStorageException('Failed to retrieve updated task');
       }
 
       return task;
-    } catch (e) {
-      debugPrint('Error updating task: $e');
+    } on TaskChampionException {
       rethrow;
+    } catch (e, st) {
+      _logger.error('Failed to update task', error: e, stackTrace: st);
+      throw TaskStorageException('Failed to update task', cause: e);
     }
   }
 
-  /// Delete a task
-  Future<void> deleteTask(String uuid, {bool permanent = false}) async {
+  @override
+  Future<void> deleteTask(String uuid) async {
     try {
-      if (permanent) {
-        // For permanent deletion, we'd need additional Rust FFI support
-        // For now, just mark as deleted
-        await RustBridge.deleteTask(taskdbPath, uuid);
-      } else {
-        await RustBridge.deleteTask(taskdbPath, uuid);
-      }
-    } catch (e) {
-      debugPrint('Error deleting task: $e');
-      rethrow;
+      await _storage.deleteTask(uuid);
+    } catch (e, st) {
+      _logger.error('Failed to delete task', error: e, stackTrace: st);
+      throw TaskStorageException('Failed to delete task', cause: e);
     }
   }
 
-  /// Get task statistics
+  @override
   Future<TaskStats> getStats() async {
     try {
-      final jsonStr = await RustBridge.getTaskdbStats(taskdbPath);
+      final jsonStr = await _storage.getTaskdbStats();
       final Map<String, dynamic> jsonData = json.decode(jsonStr);
 
       return TaskStats(
@@ -166,29 +165,29 @@ class TaskService {
         completed: jsonData['completed'],
         deleted: jsonData['deleted'],
       );
-    } catch (e) {
-      debugPrint('Error getting stats: $e');
+    } catch (e, st) {
+      _logger.error('Failed to get task stats', error: e, stackTrace: st);
       return const TaskStats(total: 0, pending: 0, completed: 0, deleted: 0);
     }
   }
 
-  /// Export tasks to a file
+  @override
   Future<int> exportTasks(String filePath) async {
     try {
-      return RustBridge.exportTasks(taskdbPath, filePath);
-    } catch (e) {
-      debugPrint('Error exporting tasks: $e');
-      rethrow;
+      return _storage.exportTasks(filePath);
+    } catch (e, st) {
+      _logger.error('Failed to export tasks', error: e, stackTrace: st);
+      throw TaskStorageException('Failed to export tasks', cause: e);
     }
   }
 
-  /// Import tasks from a file
+  @override
   Future<int> importTasks(String filePath) async {
     try {
-      return RustBridge.importTasks(taskdbPath, filePath);
-    } catch (e) {
-      debugPrint('Error importing tasks: $e');
-      rethrow;
+      return _storage.importTasks(filePath);
+    } catch (e, st) {
+      _logger.error('Failed to import tasks', error: e, stackTrace: st);
+      throw TaskStorageException('Failed to import tasks', cause: e);
     }
   }
 }

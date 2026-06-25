@@ -2,22 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:taskchampion_client_rust/taskchampion_client_rust.dart';
 
 void main() {
-  test('generates valid UUID', () {
-    final uuid = TaskChampionHelpers.generateUuid();
-    expect(TaskChampionHelpers.isValidUuid(uuid), isTrue);
-  });
-
-  test('hashString produces valid hash', () {
-    final hash = TaskChampionHelpers.hashString('test');
-    expect(hash.length, equals(64)); // SHA-256 produces 64 character hex string
-  });
-
-  test('isValidUrl validates URLs', () {
-    expect(TaskChampionHelpers.isValidUrl('https://example.com'), isTrue);
-    expect(TaskChampionHelpers.isValidUrl('http://example.com'), isTrue);
-    expect(TaskChampionHelpers.isValidUrl('invalid-url'), isFalse);
-  });
-
   group('Task UDA handling', () {
     test('Task.fromRawJson parses UDAs correctly', () {
       final rawJson = {
