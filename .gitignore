@@ -8,6 +8,7 @@
 .pub-cache/
 pubspec.lock
 build/
+*.dill
 
 # Android
 /android/.gradle/

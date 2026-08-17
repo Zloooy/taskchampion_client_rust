@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:taskchampion_client_rust/taskchampion_client_rust.dart';
 import 'package:path_provider/path_provider.dart';
@@ -9,7 +9,7 @@ class AppConfig extends ChangeNotifier {
   final FlutterSecureStorage _storage = const FlutterSecureStorage(
     aOptions: AndroidOptions(
       resetOnError: true,
-      sharedPreferencesName: 'taskchampion_secure_prefs',
+      storageNamespace: 'taskchampion_secure_prefs',
       preferencesKeyPrefix: 'tc_',
     ),
     iOptions: IOSOptions(

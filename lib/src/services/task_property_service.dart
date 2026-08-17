@@ -32,7 +32,8 @@ class TaskPropertyService implements ITaskPropertyService {
     TaskSort? sort,
   }) async {
     try {
-      return _storage.getTaskPropertyValues(property, filter, sort);
+      final propertyValues = await _storage.getTaskPropertyValues(property, filter, sort);
+      return propertyValues;
     } catch (e, st) {
       _logger.error(
         'Failed to get property values for $property',

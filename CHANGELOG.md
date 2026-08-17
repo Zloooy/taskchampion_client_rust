@@ -32,3 +32,7 @@
 - Fixed `TaskPriority` enum values: now correctly uses `"H"`, `"M"`, `"L"` instead of `"high"`, `"medium"`, `"low"`
 - Fixed `getStoredPropertyValues<T>` for `TaskPriority`: returns correct enum values matching stored data
 - Fixed `importTasks`: per-row import errors are now properly reported instead of silently returning partial counts
+
+## 0.4.1
+- Bumped Flutter version to 3.47.0
+- Bumped taskchampion version to 3.1.0

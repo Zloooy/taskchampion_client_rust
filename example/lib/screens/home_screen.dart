@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 import 'package:taskchampion_client_example/config/app_config.dart';
 import 'package:taskchampion_client_rust/taskchampion_client_rust.dart';

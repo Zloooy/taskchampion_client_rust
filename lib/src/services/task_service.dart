@@ -174,7 +174,8 @@ class TaskService implements ITaskService {
   @override
   Future<int> exportTasks(String filePath) async {
     try {
-      return _storage.exportTasks(filePath);
+      final exportedTasks = await _storage.exportTasks(filePath);
+      return exportedTasks;
     } catch (e, st) {
       _logger.error('Failed to export tasks', error: e, stackTrace: st);
       throw TaskStorageException('Failed to export tasks', cause: e);
@@ -184,7 +185,8 @@ class TaskService implements ITaskService {
   @override
   Future<int> importTasks(String filePath) async {
     try {
-      return _storage.importTasks(filePath);
+      final importedTasks = await _storage.importTasks(filePath);
+      return importedTasks;
     } catch (e, st) {
       _logger.error('Failed to import tasks', error: e, stackTrace: st);
       throw TaskStorageException('Failed to import tasks', cause: e);

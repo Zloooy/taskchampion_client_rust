@@ -94,13 +94,12 @@ class TaskStorageService {
 
     try {
       // Select file via file picker
-      final result = await FilePicker.platform.pickFiles(
+      final PlatformFile? result = await FilePicker.pickFile(
         type: FileType.custom,
         allowedExtensions: ['json'],
-        allowMultiple: false,
       );
 
-      if (result == null || result.files.isEmpty) {
+      if (result == null) {
         return ImportResult(
           success: false,
           errorMessage: 'File selection cancelled',
@@ -108,7 +107,7 @@ class TaskStorageService {
         );
       }
 
-      final filePath = result.files.first.path;
+      final filePath = result.path;
       if (filePath == null) {
         return ImportResult(
           success: false,

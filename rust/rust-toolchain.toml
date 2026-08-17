@@ -1,7 +1,7 @@
 [toolchain]
 # Use a specific Rust version for reproducible builds
 # Update this version when updating Rust dependencies
-channel = "1.88.0"
+channel = "1.97.1"
 
 # Components to install (clippy for linting, rustfmt for formatting)
 components = ["clippy", "rustfmt"]

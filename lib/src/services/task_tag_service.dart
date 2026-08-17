@@ -25,7 +25,8 @@ class TaskTagService implements ITaskTagService {
     String? pattern,
   }) async {
     try {
-      return _storage.getTags(filter, includeVirtualTags, pattern);
+      final tags = await _storage.getTags(filter, includeVirtualTags, pattern);
+      return tags;
     } catch (e, st) {
       _logger.error('Failed to get tags', error: e, stackTrace: st);
       return [];

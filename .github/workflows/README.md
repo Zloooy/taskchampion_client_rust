@@ -283,7 +283,7 @@ To change Flutter/Rust versions, edit the workflow files:
 # In publish.yml or ci-cd.yml
 - uses: subosito/flutter-action@v2
   with:
-    flutter-version: '3.41.3'  # Change to desired version
+    flutter-version: '3.47.0'  # Change to desired version
 
 - uses: dtolnay/rust-toolchain@stable
   with:

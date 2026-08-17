@@ -1,6 +1,6 @@
 // This is a basic Flutter widget test.
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:taskchampion_client_example/config/app_config.dart';
