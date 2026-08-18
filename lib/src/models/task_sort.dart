@@ -68,7 +68,7 @@ extension TaskSortExtensions on TaskPropertyRef {
 }
 
 /// Helper function to create the appropriate sort type based on property ref type
-TaskSort _createSort<T>(TaskPropertyRef<T> property, SortDirection direction) {
+TaskSort _createSort(TaskPropertyRef property, SortDirection direction) {
   if (property is StringPropertyRef) {
     return StringPropertySort(property.name, direction);
   } else if (property is DateTimePropertyRef) {

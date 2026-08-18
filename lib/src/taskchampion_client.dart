@@ -277,17 +277,19 @@ class TaskChampionClient {
   /// [sort] - Optional [TaskSort] to sort the results
   ///
   /// This method allows for complex filtering using composable filter expressions
-  /// such as [EqualsFilter], [InFilter], [DateFromFilter], [ContainsFilter], etc.
-  /// combined with logical operators [AndFilterGroup] and [OrFilterGroup].
+  /// such as [FilterExpression.equals], [FilterExpression.inValues],
+  /// [FilterExpression.dateFrom], [FilterExpression.contains], etc.
+  /// combined with logical operators [FilterExpression.andGroup]
+  /// and [FilterExpression.orGroup].
   ///
   /// ## Example
   ///
   /// ```dart
   /// // Filter pending tasks with high priority
   /// final filter = TaskFilter(
-  ///   AndFilterGroup([
-  ///     EqualsFilter(property: TaskFilter.status, value: 'pending'),
-  ///     EqualsFilter(property: TaskFilter.priority, value: 'high'),
+  ///   FilterExpression.andGroup(filters: [
+  ///     FilterExpression.equals(property: TaskFilter.status, value: 'pending'),
+  ///     FilterExpression.equals(property: TaskFilter.priority, value: 'high'),
   ///   ]),
   /// );
   ///
@@ -296,12 +298,12 @@ class TaskChampionClient {
   ///
   /// ## Available Filter Types
   ///
-  /// - [EqualsFilter] - Property equals a specific value
-  /// - [InFilter] - Property is in a set of values
-  /// - [NotInFilter] - Property is NOT in a set of values
-  /// - [DateFromFilter] - Date property is from a specific date
-  /// - [DateToFilter] - Date property is up to a specific date
-  /// - [ContainsFilter] - String property contains a substring
+  /// - [FilterExpression.equals] - Property equals a specific value
+  /// - [FilterExpression.inValues] - Property is in a set of values
+  /// - [FilterExpression.notInValues] - Property is NOT in a set of values
+  /// - [FilterExpression.dateFrom] - Date property is from a specific date
+  /// - [FilterExpression.dateTo] - Date property is up to a specific date
+  /// - [FilterExpression.contains] - String property contains a substring
   ///
   /// ## Property References
   ///

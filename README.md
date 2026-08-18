@@ -46,7 +46,7 @@ Add this to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  taskchampion_client_rust: ^0.1.0
+  taskchampion_client_rust: ^0.5.0
 ```
 
 Then run:
@@ -335,15 +335,15 @@ print('Total: ${stats.total}, Pending: ${stats.pending}');
 
 #### Advanced Filtering with TaskFilter
 
-For more complex queries, use the `TaskFilter` system with composable filters:
+For more complex queries, use the `TaskFilter` system with composable filters. Every filter is a factory constructor on the sealed `FilterExpression` class (freezed union, JSON key `type`):
 
 ```dart
 import 'package:taskchampion_client_rust/taskchampion_client_rust.dart';
 
 // Filter by status (pending tasks only)
 final pendingFilter = TaskFilter(
-  AndFilterGroup([
-    EqualsFilter(
+  FilterExpression.andGroup(filters: [
+    FilterExpression.equals(
       property: TaskFilter.status,
       value: 'pending',
     ),
@@ -352,8 +352,8 @@ final pendingFilter = TaskFilter(
 
 // Filter by priority (high priority tasks)
 final highPriorityFilter = TaskFilter(
-  AndFilterGroup([
-    EqualsFilter(
+  FilterExpression.andGroup(filters: [
+    FilterExpression.equals(
       property: TaskFilter.priority,
       value: 'high',
     ),
@@ -362,37 +362,41 @@ final highPriorityFilter = TaskFilter(
 
 // Filter by due date (tasks due from today)
 final dueSoonFilter = TaskFilter(
-  AndFilterGroup([
-    DateFromFilter(
+  FilterExpression.andGroup(filters: [
+    FilterExpression.dateFrom(
       property: TaskFilter.due,
       from: DateTime.now(),
     ),
   ]),
 );
 
-// Filter by multiple tags (OR logic)
+// Filter by multiple tags (OR logic) - tags is a string property
 final taggedFilter = TaskFilter(
-  AndFilterGroup([
-    InFilter(
-      property: TaskPropertyRef<String>('tags'),
-      values: {'urgent', 'important'},
+  FilterExpression.orGroup(filters: [
+    FilterExpression.contains(
+      property: StringPropertyRef('tags'),
+      value: 'urgent',
+    ),
+    FilterExpression.contains(
+      property: StringPropertyRef('tags'),
+      value: 'important',
     ),
   ]),
 );
 
 // Complex filter: pending tasks with high priority OR due this week
 final complexFilter = TaskFilter(
-  AndFilterGroup([
-    EqualsFilter(
+  FilterExpression.andGroup(filters: [
+    FilterExpression.equals(
       property: TaskFilter.status,
       value: 'pending',
     ),
-    OrFilterGroup([
-      EqualsFilter(
+    FilterExpression.orGroup(filters: [
+      FilterExpression.equals(
         property: TaskFilter.priority,
         value: 'high',
       ),
-      DateToFilter(
+      FilterExpression.dateTo(
         property: TaskFilter.due,
         to: DateTime.now().add(const Duration(days: 7)),
       ),
@@ -402,8 +406,8 @@ final complexFilter = TaskFilter(
 
 // Filter with substring search (case-insensitive)
 final containsFilter = TaskFilter(
-  AndFilterGroup([
-    ContainsFilter(
+  FilterExpression.andGroup(filters: [
+    FilterExpression.contains(
       property: TaskFilter.description,
       value: 'meeting',
       caseSensitive: false,
@@ -413,12 +417,12 @@ final containsFilter = TaskFilter(
 
 // Filter by date range (tasks created in the last 30 days)
 final recentTasksFilter = TaskFilter(
-  AndFilterGroup([
-    DateFromFilter(
+  FilterExpression.andGroup(filters: [
+    FilterExpression.dateFrom(
       property: TaskFilter.entry,
       from: DateTime.now().subtract(const Duration(days: 30)),
     ),
-    DateToFilter(
+    FilterExpression.dateTo(
       property: TaskFilter.entry,
       to: DateTime.now(),
     ),
@@ -428,43 +432,80 @@ final recentTasksFilter = TaskFilter(
 
 #### Available Filter Types
 
-| Filter | Description | Example |
-|--------|-------------|---------|
-| `EqualsFilter<T>` | Property equals a specific value | `EqualsFilter(property: TaskFilter.status, value: 'pending')` |
-| `InFilter<T>` | Property is in a set of values | `InFilter(property: TaskFilter.priority, values: {'high', 'medium'})` |
-| `NotInFilter<T>` | Property is NOT in a set of values | `NotInFilter(property: TaskFilter.status, values: {'deleted'})` |
-| `DateFromFilter` | Date property is from a specific date | `DateFromFilter(property: TaskFilter.due, from: DateTime.now())` |
-| `DateToFilter` | Date property is up to a specific date | `DateToFilter(property: TaskFilter.due, to: DateTime.now())` |
-| `ContainsFilter` | String property contains a substring | `ContainsFilter(property: TaskFilter.description, value: 'bug')` |
+All filters are factory constructors on `FilterExpression`. Each serializes to a JSON object with a `"type"` key set to the PascalCase union value (e.g. `"AndGroup"`, `"EqualsFilter"`).
+
+| Factory Constructor | Union Value (`type`) | Description | Example |
+|--------|-------------|---------|---------|
+| `FilterExpression.andGroup(filters:)` | `AndGroup` | All child filters must match (logical AND) | `.andGroup(filters: [...])` |
+| `FilterExpression.orGroup(filters:)` | `OrGroup` | At least one child filter must match (logical OR) | `.orGroup(filters: [...])` |
+| `FilterExpression.xorGroup(filters:)` | `XorGroup` | An odd number of child filters must match (logical XOR) | `.xorGroup(filters: [...])` |
+| `FilterExpression.not(inner:)` | `Not` | Negates a single inner filter | `.not(inner: ...)` |
+| `FilterExpression.tag(tag:, {exclude})` | `Tag` | Task has (or, when `exclude`, lacks) a tag | `.tag(tag: 'urgent')` |
+| `FilterExpression.virtualTag(tag:, {exclude})` | `VirtualTag` | Task matches (or lacks) a virtual tag (ACTIVE, PENDING, BLOCKED, ...) | `.virtualTag(tag: 'PENDING')` |
+| `FilterExpression.equals(property:, value:)` | `EqualsFilter` | Property equals a specific value | `.equals(property: TaskFilter.status, value: 'pending')` |
+| `FilterExpression.notEquals(property:, value:)` | `NotEqualsFilter` | Property is not equal to a value | `.notEquals(property: TaskFilter.status, value: 'deleted')` |
+| `FilterExpression.inValues(property:, values:)` | `InFilter` | Property is in a list of values | `.inValues(property: TaskFilter.priority, values: ['high', 'medium'])` |
+| `FilterExpression.notInValues(property:, values:)` | `NotInFilter` | Property is NOT in a list of values | `.notInValues(property: TaskFilter.status, values: ['deleted'])` |
+| `FilterExpression.contains(property:, value:, {caseSensitive})` | `ContainsFilter` | String property contains a substring | `.contains(property: TaskFilter.description, value: 'bug')` |
+| `FilterExpression.notContains(property:, value:, {caseSensitive})` | `NotContainsFilter` | String property does not contain a substring | `.notContains(property: TaskFilter.description, value: 'bug')` |
+| `FilterExpression.startsWith(property:, value:, {caseSensitive})` | `StartsWithFilter` | String property starts with a prefix | `.startsWith(property: TaskFilter.description, value: 'BUG-')` |
+| `FilterExpression.endsWith(property:, value:, {caseSensitive})` | `EndsWithFilter` | String property ends with a suffix | `.endsWith(property: TaskFilter.description, value: '-done')` |
+| `FilterExpression.word(property:, value:, {caseSensitive})` | `WordFilter` | String property contains a whole word | `.word(property: TaskFilter.description, value: 'milk')` |
+| `FilterExpression.noWord(property:, value:, {caseSensitive})` | `NoWordFilter` | String property does not contain a whole word | `.noWord(property: TaskFilter.description, value: 'spam')` |
+| `FilterExpression.regex(property:, pattern:, {caseSensitive})` | `RegexFilter` | String property matches a regular expression | `.regex(property: TaskFilter.description, pattern: r'^\d+$')` |
+| `FilterExpression.none(property:)` | `NoneFilter` | Property is empty / unset | `.none(property: TaskFilter.project)` |
+| `FilterExpression.any(property:)` | `AnyFilter` | Property is set / non-empty | `.any(property: TaskFilter.project)` |
+| `FilterExpression.dateBefore(property:, date:)` | `DateBeforeFilter` | Date property is before a date | `.dateBefore(property: TaskFilter.due, date: DateTime.now())` |
+| `FilterExpression.dateAfter(property:, date:)` | `DateAfterFilter` | Date property is after a date | `.dateAfter(property: TaskFilter.due, date: DateTime.now())` |
+| `FilterExpression.dateBy(property:, date:)` | `DateByFilter` | Date property is on or before a date | `.dateBy(property: TaskFilter.due, date: DateTime.now())` |
+| `FilterExpression.dateFrom(property:, from:)` | `DateFromFilter` | Date property is from a date onward | `.dateFrom(property: TaskFilter.due, from: DateTime.now())` |
+| `FilterExpression.dateTo(property:, to:)` | `DateToFilter` | Date property is up to a date | `.dateTo(property: TaskFilter.due, to: DateTime.now())` |
+| `FilterExpression.lessThan(property:, value:)` | `LessThanFilter` | Numeric property is less than a value | `.lessThan(property: TaskFilter.urgency, value: 5)` |
+| `FilterExpression.lessThanOrEqual(property:, value:)` | `LessThanOrEqualFilter` | Numeric property is ≤ a value | `.lessThanOrEqual(property: TaskFilter.urgency, value: 5)` |
+| `FilterExpression.greaterThan(property:, value:)` | `GreaterThanFilter` | Numeric property is greater than a value | `.greaterThan(property: TaskFilter.urgency, value: 0)` |
+| `FilterExpression.greaterThanOrEqual(property:, value:)` | `GreaterThanOrEqualFilter` | Numeric property is ≥ a value | `.greaterThanOrEqual(property: TaskFilter.urgency, value: 0)` |
+
+> **Note:** The string-based variants (`contains`, `notContains`, `startsWith`, `endsWith`, `word`, `noWord`, `regex`) take an optional `caseSensitive` named parameter that defaults to `false` (case-insensitive). The serialized field name is `case_sensitive`.
 
 #### Available Property References
 
+Property references are exposed as static members of the `TaskPropertyRefs` extension on `TaskFilter`. Each is a typed `TaskPropertyRef` (a sealed `Equatable` hierarchy) — no generics needed.
+
 | Property | Type | Description |
 |----------|------|-------------|
-| `TaskFilter.description` | String | Task description |
-| `TaskFilter.status` | String | Task status (pending, completed, deleted) |
-| `TaskFilter.priority` | String | Task priority (high, medium, low, none) |
-| `TaskFilter.due` | DateTime | Due date |
-| `TaskFilter.wait` | DateTime | Wait until date |
-| `TaskFilter.entry` | DateTime | Creation date |
-| `TaskFilter.modified` | DateTime | Last modified date |
+| `TaskFilter.description` | `StringPropertyRef` | Task description |
+| `TaskFilter.status` | `StringPropertyRef` | Task status (pending, completed, deleted) |
+| `TaskFilter.priority` | `StringPropertyRef` | Task priority (high, medium, low, none) |
+| `TaskFilter.project` | `StringPropertyRef` | Project name |
+| `TaskFilter.due` | `DateTimePropertyRef` | Due date |
+| `TaskFilter.wait` | `DateTimePropertyRef` | Wait until date |
+| `TaskFilter.entry` | `DateTimePropertyRef` | Creation date |
+| `TaskFilter.modified` | `DateTimePropertyRef` | Last modified date |
+| `TaskFilter.scheduled` | `DateTimePropertyRef` | Scheduled date |
+| `TaskFilter.until` | `DateTimePropertyRef` | Until date |
+| `TaskFilter.id` | `IntPropertyRef` | Task id |
+| `TaskFilter.urgency` | `DoublePropertyRef` | Urgency score |
+
+For properties not covered by the extension, construct a ref directly, e.g. `StringPropertyRef('tags')`, `DateTimePropertyRef('end')`, `IntPropertyRef('count')`, or `DoublePropertyRef('score')`.
 
 #### Logical Group Operators
 
-Combine multiple filters using logical operators:
+Combine multiple filters using logical group operators (factory constructors on `FilterExpression`):
 
-- **`AndFilterGroup`** - All filters in the group must match (logical AND)
-- **`OrFilterGroup`** - At least one filter in the group must match (logical OR)
+- **`FilterExpression.andGroup(filters:)`** - All filters in the group must match (logical AND)
+- **`FilterExpression.orGroup(filters:)`** - At least one filter in the group must match (logical OR)
+- **`FilterExpression.xorGroup(filters:)`** - An odd number of filters in the group must match (logical XOR)
+- **`FilterExpression.not(inner:)`** - Negates a single inner expression
 
 ```dart
 // Example: (pending AND high priority) OR (due today)
 final filter = TaskFilter(
-  OrFilterGroup([
-    AndFilterGroup([
-      EqualsFilter(property: TaskFilter.status, value: 'pending'),
-      EqualsFilter(property: TaskFilter.priority, value: 'high'),
+  FilterExpression.orGroup(filters: [
+    FilterExpression.andGroup(filters: [
+      FilterExpression.equals(property: TaskFilter.status, value: 'pending'),
+      FilterExpression.equals(property: TaskFilter.priority, value: 'high'),
     ]),
-    DateToFilter(property: TaskFilter.due, to: DateTime.now()),
+    FilterExpression.dateTo(property: TaskFilter.due, to: DateTime.now()),
   ]),
 );
 ```

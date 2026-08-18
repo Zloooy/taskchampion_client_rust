@@ -1,6 +1,217 @@
 import 'dart:convert';
 
-import 'package:taskchampion_client_rust/src/models/task_property_ref.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+import 'task_property_ref.dart';
+
+part 'task_filter.freezed.dart';
+part 'task_filter.g.dart';
+
+/// Serializes a [TaskPropertyRef] to its JSON form. Used as a named `toJson`
+/// so json_serializable recurses into the property reference instead of
+/// storing a raw object in the output map.
+Map<String, dynamic> _propertyToJson(TaskPropertyRef value) => value.toJson();
+
+/// Serializes a list of nested [FilterExpression]s to a list of JSON maps.
+/// Used as a named `toJson` so json_serializable recurses into each child
+/// expression instead of storing raw objects in the output map.
+List<Map<String, dynamic>> _filtersToJson(List<FilterExpression> value) =>
+    value.map((e) => e.toJson()).toList();
+
+/// Serializes a single nested [FilterExpression] to its JSON map form. Used as
+/// a named `toJson` so json_serializable recurses into the inner expression
+/// (e.g. for the `Not` variant) instead of storing a raw object.
+Map<String, dynamic> _innerToJson(FilterExpression value) => value.toJson();
+
+/// Main filter expression type (taskwarrior-compatible)
+@Freezed(unionKey: 'type', unionValueCase: FreezedUnionCase.pascal)
+abstract class FilterExpression with _$FilterExpression {
+  @FreezedUnionValue('AndGroup')
+  const factory FilterExpression.andGroup({
+    @JsonKey(toJson: _filtersToJson) required List<FilterExpression> filters,
+  }) = _FilterExpressionAndGroup;
+
+  @FreezedUnionValue('OrGroup')
+  const factory FilterExpression.orGroup({
+    @JsonKey(toJson: _filtersToJson) required List<FilterExpression> filters,
+  }) = _FilterExpressionOrGroup;
+
+  @FreezedUnionValue('XorGroup')
+  const factory FilterExpression.xorGroup({
+    @JsonKey(toJson: _filtersToJson) required List<FilterExpression> filters,
+  }) = _FilterExpressionXorGroup;
+
+  @FreezedUnionValue('Not')
+  const factory FilterExpression.not({
+    @JsonKey(toJson: _innerToJson) required FilterExpression inner,
+  }) = _FilterExpressionNot;
+
+  @FreezedUnionValue('Tag')
+  const factory FilterExpression.tag({
+    required String tag,
+    @Default(false) bool exclude,
+  }) = _FilterExpressionTag;
+
+  @FreezedUnionValue('VirtualTag')
+  const factory FilterExpression.virtualTag({
+    required String tag,
+    @Default(false) bool exclude,
+  }) = _FilterExpressionVirtualTag;
+
+  @FreezedUnionValue('EqualsFilter')
+  const factory FilterExpression.equals({
+    @JsonKey(toJson: _propertyToJson) required TaskPropertyRef property,
+    required dynamic value,
+  }) = _FilterExpressionEquals;
+
+  @FreezedUnionValue('NotEqualsFilter')
+  const factory FilterExpression.notEquals({
+    @JsonKey(toJson: _propertyToJson) required TaskPropertyRef property,
+    required dynamic value,
+  }) = _FilterExpressionNotEquals;
+
+  @FreezedUnionValue('InFilter')
+  const factory FilterExpression.inValues({
+    @JsonKey(toJson: _propertyToJson) required TaskPropertyRef property,
+    required List<dynamic> values,
+  }) = _FilterExpressionInValues;
+
+  @FreezedUnionValue('NotInFilter')
+  const factory FilterExpression.notInValues({
+    @JsonKey(toJson: _propertyToJson) required TaskPropertyRef property,
+    required List<dynamic> values,
+  }) = _FilterExpressionNotInValues;
+
+  @FreezedUnionValue('ContainsFilter')
+  const factory FilterExpression.contains({
+    @JsonKey(toJson: _propertyToJson) required TaskPropertyRef property,
+    required String value,
+    @Default(false)
+    @JsonKey(name: 'case_sensitive')
+    bool caseSensitive,
+  }) = _FilterExpressionContains;
+
+  @FreezedUnionValue('NotContainsFilter')
+  const factory FilterExpression.notContains({
+    @JsonKey(toJson: _propertyToJson) required TaskPropertyRef property,
+    required String value,
+    @Default(false)
+    @JsonKey(name: 'case_sensitive')
+    bool caseSensitive,
+  }) = _FilterExpressionNotContains;
+
+  @FreezedUnionValue('StartsWithFilter')
+  const factory FilterExpression.startsWith({
+    @JsonKey(toJson: _propertyToJson) required TaskPropertyRef property,
+    required String value,
+    @Default(false)
+    @JsonKey(name: 'case_sensitive')
+    bool caseSensitive,
+  }) = _FilterExpressionStartsWith;
+
+  @FreezedUnionValue('EndsWithFilter')
+  const factory FilterExpression.endsWith({
+    @JsonKey(toJson: _propertyToJson) required TaskPropertyRef property,
+    required String value,
+    @Default(false)
+    @JsonKey(name: 'case_sensitive')
+    bool caseSensitive,
+  }) = _FilterExpressionEndsWith;
+
+  @FreezedUnionValue('WordFilter')
+  const factory FilterExpression.word({
+    @JsonKey(toJson: _propertyToJson) required TaskPropertyRef property,
+    required String value,
+    @Default(false)
+    @JsonKey(name: 'case_sensitive')
+    bool caseSensitive,
+  }) = _FilterExpressionWord;
+
+  @FreezedUnionValue('NoWordFilter')
+  const factory FilterExpression.noWord({
+    @JsonKey(toJson: _propertyToJson) required TaskPropertyRef property,
+    required String value,
+    @Default(false)
+    @JsonKey(name: 'case_sensitive')
+    bool caseSensitive,
+  }) = _FilterExpressionNoWord;
+
+  @FreezedUnionValue('RegexFilter')
+  const factory FilterExpression.regex({
+    @JsonKey(toJson: _propertyToJson) required TaskPropertyRef property,
+    required String pattern,
+    @Default(false)
+    @JsonKey(name: 'case_sensitive')
+    bool caseSensitive,
+  }) = _FilterExpressionRegex;
+
+  @FreezedUnionValue('NoneFilter')
+  const factory FilterExpression.none({
+    @JsonKey(toJson: _propertyToJson) required TaskPropertyRef property,
+  }) = _FilterExpressionNone;
+
+  @FreezedUnionValue('AnyFilter')
+  const factory FilterExpression.any({
+    @JsonKey(toJson: _propertyToJson) required TaskPropertyRef property,
+  }) = _FilterExpressionAny;
+
+  @FreezedUnionValue('DateBeforeFilter')
+  const factory FilterExpression.dateBefore({
+    @JsonKey(toJson: _propertyToJson) required TaskPropertyRef property,
+    required DateTime date,
+  }) = _FilterExpressionDateBefore;
+
+  @FreezedUnionValue('DateAfterFilter')
+  const factory FilterExpression.dateAfter({
+    @JsonKey(toJson: _propertyToJson) required TaskPropertyRef property,
+    required DateTime date,
+  }) = _FilterExpressionDateAfter;
+
+  @FreezedUnionValue('DateByFilter')
+  const factory FilterExpression.dateBy({
+    @JsonKey(toJson: _propertyToJson) required TaskPropertyRef property,
+    required DateTime date,
+  }) = _FilterExpressionDateBy;
+
+  @FreezedUnionValue('DateFromFilter')
+  const factory FilterExpression.dateFrom({
+    @JsonKey(toJson: _propertyToJson) required TaskPropertyRef property,
+    required DateTime from,
+  }) = _FilterExpressionDateFrom;
+
+  @FreezedUnionValue('DateToFilter')
+  const factory FilterExpression.dateTo({
+    @JsonKey(toJson: _propertyToJson) required TaskPropertyRef property,
+    required DateTime to,
+  }) = _FilterExpressionDateTo;
+
+  @FreezedUnionValue('LessThanFilter')
+  const factory FilterExpression.lessThan({
+    @JsonKey(toJson: _propertyToJson) required TaskPropertyRef property,
+    required double value,
+  }) = _FilterExpressionLessThan;
+
+  @FreezedUnionValue('LessThanOrEqualFilter')
+  const factory FilterExpression.lessThanOrEqual({
+    @JsonKey(toJson: _propertyToJson) required TaskPropertyRef property,
+    required double value,
+  }) = _FilterExpressionLessThanOrEqual;
+
+  @FreezedUnionValue('GreaterThanFilter')
+  const factory FilterExpression.greaterThan({
+    @JsonKey(toJson: _propertyToJson) required TaskPropertyRef property,
+    required double value,
+  }) = _FilterExpressionGreaterThan;
+
+  @FreezedUnionValue('GreaterThanOrEqualFilter')
+  const factory FilterExpression.greaterThanOrEqual({
+    @JsonKey(toJson: _propertyToJson) required TaskPropertyRef property,
+    required double value,
+  }) = _FilterExpressionGreaterThanOrEqual;
+
+  factory FilterExpression.fromJson(Map<String, dynamic> json) =>
+      _$FilterExpressionFromJson(json);
+}
 
 /// Main filter class that wraps a filter expression
 class TaskFilter {
@@ -9,84 +220,36 @@ class TaskFilter {
   const TaskFilter(this.filter);
 
   /// Match all tasks (empty filter)
-  static const TaskFilter matchAll = TaskFilter(AndFilterGroup([]));
+  static const TaskFilter matchAll = TaskFilter(
+    FilterExpression.andGroup(filters: []),
+  );
 
   /// Create a filter that matches tasks with a specific tag
   static TaskFilter hasTag(String tag) =>
-      TaskFilter(TagFilter(tag: tag, exclude: false));
+      TaskFilter(FilterExpression.tag(tag: tag, exclude: false));
 
   /// Create a filter that excludes tasks with a specific tag
   static TaskFilter excludeTag(String tag) =>
-      TaskFilter(TagFilter(tag: tag, exclude: true));
+      TaskFilter(FilterExpression.tag(tag: tag, exclude: true));
 
   /// Create a filter for virtual tags (e.g., ACTIVE, PENDING, BLOCKED)
-  static TaskFilter virtualTag(String tag, {bool exclude = false}) =>
-      TaskFilter(VirtualTagFilter(tag: tag.toUpperCase(), exclude: exclude));
+  static TaskFilter virtualTag(String tag, {bool exclude = false}) => TaskFilter(
+        FilterExpression.virtualTag(
+          tag: tag.toUpperCase(),
+          exclude: exclude,
+        ),
+      );
 
   /// Serialize filter to JSON string for passing to Rust
-  String toJson() => jsonEncode(filter.toJson());
-}
+  String toJson() => jsonEncode({'filter': filter.toJson()});
 
-/// Base sealed class for all filter expressions
-sealed class FilterExpression {
-  const FilterExpression();
-
-  Map<String, dynamic> toJson();
-}
-
-/// A container for a list of property filters combined with a logical operator
-sealed class FilterGroup extends FilterExpression {
-  final List<FilterExpression> filters;
-
-  const FilterGroup(this.filters);
-
-  @override
-  String toString() => 'FilterGroup(${filters.length} filters)';
-
-  @override
-  Map<String, dynamic> toJson();
-}
-
-/// Combines all contained filters with logical AND
-final class AndFilterGroup extends FilterGroup {
-  const AndFilterGroup(super.filters);
-
-  @override
-  Map<String, dynamic> toJson() => {
-    'type': 'AndGroup',
-    'filters': filters.map((f) => f.toJson()).toList(),
-  };
-}
-
-/// Combines all contained filters with logical OR
-final class OrFilterGroup extends FilterGroup {
-  const OrFilterGroup(super.filters);
-
-  @override
-  Map<String, dynamic> toJson() => {
-    'type': 'OrGroup',
-    'filters': filters.map((f) => f.toJson()).toList(),
-  };
-}
-
-/// Negates a single filter expression
-final class NotFilter extends FilterExpression {
-  final FilterExpression inner;
-
-  const NotFilter(this.inner);
-
-  @override
-  Map<String, dynamic> toJson() => {'type': 'Not', 'inner': inner.toJson()};
-}
-
-/// Base class for filters on a property of type T
-sealed class PropertyFilter<T> extends FilterExpression {
-  final TaskPropertyRef<T> property;
-
-  const PropertyFilter(this.property);
-
-  @override
-  Map<String, dynamic> toJson();
+  /// Deserialize filter from JSON string received from Rust
+  factory TaskFilter.fromJson(String jsonString) {
+    final decoded = jsonDecode(jsonString) as Map<String, dynamic>;
+    return TaskFilter(
+      FilterExpression.fromJson(decoded['filter'] as Map<String, dynamic>),
+    );
+  }
 }
 
 /// Common property references
@@ -103,468 +266,4 @@ extension TaskPropertyRefs on TaskFilter {
   static const until = DateTimePropertyRef('until');
   static const id = IntPropertyRef('id');
   static const urgency = DoublePropertyRef('urgency');
-}
-
-// ============================================================================
-// String Comparison Filters (taskwarrior attribute modifiers)
-// ============================================================================
-
-/// Matches if the property value is exactly equal to [value] (==)
-/// Equivalent to `.is:` or `=` modifier in taskwarrior
-final class EqualsFilter<T> extends PropertyFilter<T> {
-  final T value;
-
-  const EqualsFilter({
-    required TaskPropertyRef<T> property,
-    required this.value,
-  }) : super(property);
-
-  @override
-  Map<String, dynamic> toJson() => {
-    'type': 'EqualsFilter',
-    'property': property.toJson(),
-    'value': value is DateTime ? (value as DateTime).toIso8601String() : value,
-  };
-}
-
-/// Matches if the property value is NOT equal to [value] (!=)
-/// Equivalent to `.isnt:`, `.not:`, or `!=` modifier in taskwarrior
-final class NotEqualsFilter<T> extends PropertyFilter<T> {
-  final T value;
-
-  const NotEqualsFilter({
-    required TaskPropertyRef<T> property,
-    required this.value,
-  }) : super(property);
-
-  @override
-  Map<String, dynamic> toJson() => {
-    'type': 'NotEqualsFilter',
-    'property': property.toJson(),
-    'value': value is DateTime ? (value as DateTime).toIso8601String() : value,
-  };
-}
-
-/// Matches if the property value is in the set [values]
-final class InFilter<T> extends PropertyFilter<T> {
-  final Set<T> values;
-
-  const InFilter({required TaskPropertyRef<T> property, required this.values})
-    : super(property);
-
-  @override
-  Map<String, dynamic> toJson() => {
-    'type': 'InFilter',
-    'property': property.toJson(),
-    'values': values
-        .map((v) => v is DateTime ? (v as DateTime).toIso8601String() : v)
-        .toList(),
-  };
-}
-
-/// Matches if the property value is NOT in the set [values]
-final class NotInFilter<T> extends PropertyFilter<T> {
-  final Set<T> values;
-
-  const NotInFilter({
-    required TaskPropertyRef<T> property,
-    required this.values,
-  }) : super(property);
-
-  @override
-  Map<String, dynamic> toJson() => {
-    'type': 'NotInFilter',
-    'property': property.toJson(),
-    'values': values
-        .map((v) => v is DateTime ? (v as DateTime).toIso8601String() : v)
-        .toList(),
-  };
-}
-
-// ============================================================================
-// String Pattern Matching Filters
-// ============================================================================
-
-/// Matches if the string value contains [value] as a substring
-/// Equivalent to `.has:`, `.contains:` modifier in taskwarrior
-final class ContainsFilter extends PropertyFilter<String> {
-  final String value;
-  final bool caseSensitive;
-
-  const ContainsFilter({
-    required TaskPropertyRef<String> property,
-    required this.value,
-    this.caseSensitive = false,
-  }) : super(property);
-
-  @override
-  Map<String, dynamic> toJson() => {
-    'type': 'ContainsFilter',
-    'property': property.toJson(),
-    'value': value,
-    'case_sensitive': caseSensitive,
-  };
-}
-
-/// Matches if the string value does NOT contain [value] as a substring
-/// Equivalent to `.hasnt:` modifier in taskwarrior
-final class NotContainsFilter extends PropertyFilter<String> {
-  final String value;
-  final bool caseSensitive;
-
-  const NotContainsFilter({
-    required TaskPropertyRef<String> property,
-    required this.value,
-    this.caseSensitive = false,
-  }) : super(property);
-
-  @override
-  Map<String, dynamic> toJson() => {
-    'type': 'NotContainsFilter',
-    'property': property.toJson(),
-    'value': value,
-    'case_sensitive': caseSensitive,
-  };
-}
-
-/// Matches if the string value starts with [value]
-/// Equivalent to `.startswith:`, `.left:` modifier in taskwarrior
-final class StartsWithFilter extends PropertyFilter<String> {
-  final String value;
-  final bool caseSensitive;
-
-  const StartsWithFilter({
-    required TaskPropertyRef<String> property,
-    required this.value,
-    this.caseSensitive = false,
-  }) : super(property);
-
-  @override
-  Map<String, dynamic> toJson() => {
-    'type': 'StartsWithFilter',
-    'property': property.toJson(),
-    'value': value,
-    'case_sensitive': caseSensitive,
-  };
-}
-
-/// Matches if the string value ends with [value]
-/// Equivalent to `.endswith:`, `.right:` modifier in taskwarrior
-final class EndsWithFilter extends PropertyFilter<String> {
-  final String value;
-  final bool caseSensitive;
-
-  const EndsWithFilter({
-    required TaskPropertyRef<String> property,
-    required this.value,
-    this.caseSensitive = false,
-  }) : super(property);
-
-  @override
-  Map<String, dynamic> toJson() => {
-    'type': 'EndsWithFilter',
-    'property': property.toJson(),
-    'value': value,
-    'case_sensitive': caseSensitive,
-  };
-}
-
-/// Matches if the string value contains [value] as a whole word
-/// Equivalent to `.word:` modifier in taskwarrior
-final class WordFilter extends PropertyFilter<String> {
-  final String value;
-  final bool caseSensitive;
-
-  const WordFilter({
-    required TaskPropertyRef<String> property,
-    required this.value,
-    this.caseSensitive = false,
-  }) : super(property);
-
-  @override
-  Map<String, dynamic> toJson() => {
-    'type': 'WordFilter',
-    'property': property.toJson(),
-    'value': value,
-    'case_sensitive': caseSensitive,
-  };
-}
-
-/// Matches if the string value does NOT contain [value] as a whole word
-/// Equivalent to `.noword:` modifier in taskwarrior
-final class NoWordFilter extends PropertyFilter<String> {
-  final String value;
-  final bool caseSensitive;
-
-  const NoWordFilter({
-    required TaskPropertyRef<String> property,
-    required this.value,
-    this.caseSensitive = false,
-  }) : super(property);
-
-  @override
-  Map<String, dynamic> toJson() => {
-    'type': 'NoWordFilter',
-    'property': property.toJson(),
-    'value': value,
-    'case_sensitive': caseSensitive,
-  };
-}
-
-// ============================================================================
-// Presence Filters (none/any modifiers)
-// ============================================================================
-
-/// Matches if the property has NO value (is empty/null)
-/// Equivalent to `.none:` modifier in taskwarrior
-final class NoneFilter<T> extends PropertyFilter<T> {
-  const NoneFilter({required TaskPropertyRef<T> property}) : super(property);
-
-  @override
-  Map<String, dynamic> toJson() => {
-    'type': 'NoneFilter',
-    'property': property.toJson(),
-  };
-}
-
-/// Matches if the property has ANY value (is not empty/null)
-/// Equivalent to `.any:` modifier in taskwarrior
-final class AnyFilter<T> extends PropertyFilter<T> {
-  const AnyFilter({required TaskPropertyRef<T> property}) : super(property);
-
-  @override
-  Map<String, dynamic> toJson() => {
-    'type': 'AnyFilter',
-    'property': property.toJson(),
-  };
-}
-
-// ============================================================================
-// Date/Time Comparison Filters
-// ============================================================================
-
-/// Matches if the date property is before [date] (<)
-/// Equivalent to `.before:`, `.under:`, `.below:` modifier in taskwarrior
-final class DateBeforeFilter extends PropertyFilter<DateTime> {
-  final DateTime date;
-
-  const DateBeforeFilter({
-    required TaskPropertyRef<DateTime> property,
-    required this.date,
-  }) : super(property);
-
-  @override
-  Map<String, dynamic> toJson() => {
-    'type': 'DateBeforeFilter',
-    'property': property.toJson(),
-    'date': date.toIso8601String(),
-  };
-}
-
-/// Matches if the date property is after [date] (>)
-/// Equivalent to `.after:`, `.over:`, `.above:` modifier in taskwarrior
-final class DateAfterFilter extends PropertyFilter<DateTime> {
-  final DateTime date;
-
-  const DateAfterFilter({
-    required TaskPropertyRef<DateTime> property,
-    required this.date,
-  }) : super(property);
-
-  @override
-  Map<String, dynamic> toJson() => {
-    'type': 'DateAfterFilter',
-    'property': property.toJson(),
-    'date': date.toIso8601String(),
-  };
-}
-
-/// Matches if the date property is on or before [date] (<=)
-/// Equivalent to `.by:` modifier in taskwarrior (inclusive before)
-final class DateByFilter extends PropertyFilter<DateTime> {
-  final DateTime date;
-
-  const DateByFilter({
-    required TaskPropertyRef<DateTime> property,
-    required this.date,
-  }) : super(property);
-
-  @override
-  Map<String, dynamic> toJson() => {
-    'type': 'DateByFilter',
-    'property': property.toJson(),
-    'date': date.toIso8601String(),
-  };
-}
-
-/// Matches tasks where the property value is greater than or equal to [date]
-final class DateFromFilter extends PropertyFilter<DateTime> {
-  final DateTime from;
-
-  const DateFromFilter({
-    required TaskPropertyRef<DateTime> property,
-    required this.from,
-  }) : super(property);
-
-  @override
-  Map<String, dynamic> toJson() => {
-    'type': 'DateFromFilter',
-    'property': property.toJson(),
-    'from': from.toIso8601String(),
-  };
-}
-
-/// Matches tasks where the property value is less than or equal to [date]
-final class DateToFilter extends PropertyFilter<DateTime> {
-  final DateTime to;
-
-  const DateToFilter({
-    required TaskPropertyRef<DateTime> property,
-    required this.to,
-  }) : super(property);
-
-  @override
-  Map<String, dynamic> toJson() => {
-    'type': 'DateToFilter',
-    'property': property.toJson(),
-    'to': to.toIso8601String(),
-  };
-}
-
-// ============================================================================
-// Numeric Comparison Filters
-// ============================================================================
-
-/// Matches if the numeric property is less than [value] (<)
-final class LessThanFilter extends PropertyFilter<num> {
-  final num value;
-
-  const LessThanFilter({
-    required TaskPropertyRef<num> property,
-    required this.value,
-  }) : super(property);
-
-  @override
-  Map<String, dynamic> toJson() => {
-    'type': 'LessThanFilter',
-    'property': property.toJson(),
-    'value': value,
-  };
-}
-
-/// Matches if the numeric property is less than or equal to [value] (<=)
-final class LessThanOrEqualFilter extends PropertyFilter<num> {
-  final num value;
-
-  const LessThanOrEqualFilter({
-    required TaskPropertyRef<num> property,
-    required this.value,
-  }) : super(property);
-
-  @override
-  Map<String, dynamic> toJson() => {
-    'type': 'LessThanOrEqualFilter',
-    'property': property.toJson(),
-    'value': value,
-  };
-}
-
-/// Matches if the numeric property is greater than [value] (>)
-final class GreaterThanFilter extends PropertyFilter<num> {
-  final num value;
-
-  const GreaterThanFilter({
-    required TaskPropertyRef<num> property,
-    required this.value,
-  }) : super(property);
-
-  @override
-  Map<String, dynamic> toJson() => {
-    'type': 'GreaterThanFilter',
-    'property': property.toJson(),
-    'value': value,
-  };
-}
-
-/// Matches if the numeric property is greater than or equal to [value] (>=)
-final class GreaterThanOrEqualFilter extends PropertyFilter<num> {
-  final num value;
-
-  const GreaterThanOrEqualFilter({
-    required TaskPropertyRef<num> property,
-    required this.value,
-  }) : super(property);
-
-  @override
-  Map<String, dynamic> toJson() => {
-    'type': 'GreaterThanOrEqualFilter',
-    'property': property.toJson(),
-    'value': value,
-  };
-}
-
-// ============================================================================
-// Tag Filters (taskwarrior +tag / -tag syntax)
-// ============================================================================
-
-/// Filter for tasks that have (or don't have) a specific tag
-final class TagFilter extends FilterExpression {
-  final String tag;
-  final bool exclude;
-
-  const TagFilter({required this.tag, this.exclude = false});
-
-  @override
-  Map<String, dynamic> toJson() => {
-    'type': 'Tag',
-    'tag': tag,
-    'exclude': exclude,
-  };
-}
-
-// ============================================================================
-// Virtual Tag Filters (taskwarrior +ACTIVE, -DELETED, etc.)
-// ============================================================================
-
-/// Filter for virtual tags that are computed from task state
-/// Virtual tags include: ACTIVE, ANNOTATED, BLOCKED, BLOCKING, COMPLETED,
-/// DELETED, DUE, DUETODAY, INSTANCE, LATEST, MONTH, ORPHAN, OVERDUE, PARENT,
-/// PENDING, PRIORITY, PROJECT, QUARTER, READY, SCHEDULED, TAGGED, TEMPLATE,
-/// TODAY, TOMORROW, UDA, UNBLOCKED, UNTIL, WAITING, WEEK, YEAR, YESTERDAY
-final class VirtualTagFilter extends FilterExpression {
-  final String tag;
-  final bool exclude;
-
-  const VirtualTagFilter({required this.tag, this.exclude = false});
-
-  @override
-  Map<String, dynamic> toJson() => {
-    'type': 'VirtualTag',
-    'tag': tag.toUpperCase(),
-    'exclude': exclude,
-  };
-}
-
-// ============================================================================
-// Regex Filter (for advanced pattern matching)
-// ============================================================================
-
-/// Matches if the string value matches a regex pattern
-final class RegexFilter extends PropertyFilter<String> {
-  final String pattern;
-  final bool caseSensitive;
-
-  const RegexFilter({
-    required TaskPropertyRef<String> property,
-    required this.pattern,
-    this.caseSensitive = false,
-  }) : super(property);
-
-  @override
-  Map<String, dynamic> toJson() => {
-    'type': 'RegexFilter',
-    'property': property.toJson(),
-    'pattern': pattern,
-    'case_sensitive': caseSensitive,
-  };
 }

@@ -36,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // Add status filter if selected
     if (_filterStatus != null) {
       filters.add(
-        EqualsFilter(
+        FilterExpression.equals(
           property: const StringPropertyRef('status'),
           value: _filterStatus!.name,
         ),
@@ -46,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // Add search filter if query is not empty
     if (_searchQuery.isNotEmpty) {
       filters.add(
-        ContainsFilter(
+        FilterExpression.contains(
           property: const StringPropertyRef('description'),
           value: _searchQuery,
           caseSensitive: false,
@@ -60,7 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
     } else if (filters.length == 1) {
       return TaskFilter(filters.first);
     } else {
-      return TaskFilter(AndFilterGroup(filters));
+      return TaskFilter(FilterExpression.andGroup(filters: filters));
     }
   }
 

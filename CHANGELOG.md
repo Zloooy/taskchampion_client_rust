@@ -34,5 +34,14 @@
 - Fixed `importTasks`: per-row import errors are now properly reported instead of silently returning partial counts
 
 ## 0.4.1
+
 - Bumped Flutter version to 3.47.0
 - Bumped taskchampion version to 3.1.0
+
+## 0.5.0
+
+- Migrated `FilterExpression` to freezed code generation (sealed union class with typed factory constructors per filter variant, JSON union key `type` with PascalCase values)
+- Added many new filter variants (`not`, xor group, tag/virtual tag, notEquals, notContains, startsWith, endsWith, word, noWord, regex, none/any, dateBefore/dateAfter/dateBy, lessThan/lessThanOrEqual/greaterThan/greaterThanOrEqual)
+- `TaskPropertyRef` is now a sealed Equatable hierarchy (String/DateTime/Int/Double) with value-based equality; removed generics
+- Added convenience constructors `TaskFilter.matchAll`, `.hasTag()`, `.excludeTag()`, `.virtualTag()`
+- Extended property references with project, scheduled, until, id, urgency
