@@ -45,3 +45,7 @@
 - `TaskPropertyRef` is now a sealed Equatable hierarchy (String/DateTime/Int/Double) with value-based equality; removed generics
 - Added convenience constructors `TaskFilter.matchAll`, `.hasTag()`, `.excludeTag()`, `.virtualTag()`
 - Extended property references with project, scheduled, until, id, urgency
+
+## 0.5.1
+
+- Migrated `TaskFilter` to freezed together with serialization fix

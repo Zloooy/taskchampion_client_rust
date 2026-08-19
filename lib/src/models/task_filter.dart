@@ -214,10 +214,14 @@ abstract class FilterExpression with _$FilterExpression {
 }
 
 /// Main filter class that wraps a filter expression
-class TaskFilter {
-  final FilterExpression filter;
+@Freezed(toJson: false, fromJson: false)
+abstract class TaskFilter with _$TaskFilter {
+  // Private constructor enabling the generated concrete class to extend
+  // (rather than implement) this class, so custom members like [toJson]
+  // are inherited by all instances.
+  const TaskFilter._();
 
-  const TaskFilter(this.filter);
+  const factory TaskFilter(FilterExpression filter) = _TaskFilter;
 
   /// Match all tasks (empty filter)
   static const TaskFilter matchAll = TaskFilter(
@@ -241,14 +245,12 @@ class TaskFilter {
       );
 
   /// Serialize filter to JSON string for passing to Rust
-  String toJson() => jsonEncode({'filter': filter.toJson()});
+  String toJson() => jsonEncode(filter.toJson());
 
   /// Deserialize filter from JSON string received from Rust
   factory TaskFilter.fromJson(String jsonString) {
     final decoded = jsonDecode(jsonString) as Map<String, dynamic>;
-    return TaskFilter(
-      FilterExpression.fromJson(decoded['filter'] as Map<String, dynamic>),
-    );
+    return TaskFilter(FilterExpression.fromJson(decoded));
   }
 }
 

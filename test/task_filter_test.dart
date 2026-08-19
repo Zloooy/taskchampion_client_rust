@@ -997,7 +997,8 @@ void main() {
       final json = TaskFilter.matchAll.toJson();
       final decoded = jsonDecode(json) as Map<String, dynamic>;
       expect(decoded, {
-        'filter': {'type': 'AndGroup', 'filters': <Map<String, Object?>>[]},
+        'type': 'AndGroup',
+        'filters': <Map<String, Object?>>[],
       });
     });
 
@@ -1005,11 +1006,9 @@ void main() {
       final tf = TaskFilter.hasTag('work');
       final decoded = jsonDecode(tf.toJson()) as Map<String, dynamic>;
       expect(decoded, {
-        'filter': {
-          'type': 'Tag',
-          'tag': 'work',
-          'exclude': false,
-        },
+        'type': 'Tag',
+        'tag': 'work',
+        'exclude': false,
       });
     });
 
@@ -1017,17 +1016,14 @@ void main() {
       final tf = TaskFilter.virtualTag('BLOCKED', exclude: true);
       final decoded = jsonDecode(tf.toJson()) as Map<String, dynamic>;
       expect(decoded, {
-        'filter': {
-          'type': 'VirtualTag',
-          'tag': 'BLOCKED',
-          'exclude': true,
-        },
+        'type': 'VirtualTag',
+        'tag': 'BLOCKED',
+        'exclude': true,
       });
     });
 
     test('fromJson returns expected variant', () {
-      const jsonStr =
-          '{"filter":{"type":"Tag","tag":"home","exclude":false}}';
+      const jsonStr = '{"type":"Tag","tag":"home","exclude":false}';
       final tf = TaskFilter.fromJson(jsonStr);
       expect(
         tf.filter.maybeWhen(
