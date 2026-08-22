@@ -16,6 +16,7 @@ use crate::filter::{
 use crate::global_repo_cache;
 use crate::models::SyncResultData;
 use crate::runtime::get_runtime;
+use crate::sync_stats::sync_with_stats;
 use crate::task_ops::{create_task_from_map, task_to_map, update_task_in_replica};
 
 /// Open the cached [`crate::TaskRepo`] for `taskdb_dir_path` (ticket R4).
@@ -342,7 +343,12 @@ pub fn update_task_dto(
 /// * `encryption_secret` - Secret key for encrypting sync data
 ///
 /// # Returns
-/// Sync result as JSON with status and statistics
+/// `SyncResultData` with accurate change statistics:
+/// * `versions_synced` — version segments exchanged with the server
+///   (published + fetched).
+/// * `tasks_added` / `tasks_updated` / `tasks_deleted` — changes applied to
+///   the local database by the sync, in **both directions** (remote versions
+///   pulled down as well as locally pending operations pushed/transformed).
 #[frb]
 pub fn sync_with_server(
     taskdb_dir_path: String,
@@ -359,22 +365,25 @@ pub fn sync_with_server(
             client_id: Uuid::parse_str(&client_id)?,
             encryption_secret: encryption_secret.into_bytes(),
         };
-        let mut server = server_config.into_server().await?;
+        let server = server_config.into_server().await?;
 
         repo.with_replica(|replica| {
             Box::pin(async move {
-                let num_local_operations = replica.num_local_operations().await.unwrap_or(0) as u64;
-                // Perform synchronization
-                replica.sync(&mut server, true).await?;
+                // Perform synchronization while recording how many versions
+                // were exchanged and how the local task set changed. The
+                // pre/post snapshots are taken inside this closure so they
+                // observe exactly the state before/after `sync`.
+                let (stats, started) = sync_with_stats(replica, server, true).await?;
+                let duration_ms = started.elapsed().as_millis() as u64;
 
                 Ok::<SyncResultData, anyhow::Error>(SyncResultData {
                     success: true,
-                    versions_synced: num_local_operations,
-                    tasks_added: 0,
-                    tasks_updated: 0,
-                    tasks_deleted: 0,
+                    versions_synced: stats.versions_synced,
+                    tasks_added: stats.tasks_added,
+                    tasks_updated: stats.tasks_updated,
+                    tasks_deleted: stats.tasks_deleted,
                     error_message: None,
-                    duration_ms: None,
+                    duration_ms: Some(duration_ms),
                 })
             })
         })

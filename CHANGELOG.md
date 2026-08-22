@@ -49,3 +49,7 @@
 ## 0.5.1
 
 - Migrated `TaskFilter` to freezed together with serialization fix
+
+## 0.5.2
+
+- Updated `SyncResult` and Rust backend to correctly report successful sync status

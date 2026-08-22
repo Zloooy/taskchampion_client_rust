@@ -1679,7 +1679,9 @@ name = "tc_helper"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async-trait",
  "chrono",
+ "flate2",
  "flutter_rust_bridge",
  "flutter_rust_bridge_macros",
  "phf",

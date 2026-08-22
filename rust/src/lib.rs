@@ -27,6 +27,7 @@ pub mod properties;
 pub mod repo;
 pub mod runtime;
 pub mod storage;
+pub mod sync_stats;
 mod task_ops;
 pub mod virtual_tags;
 

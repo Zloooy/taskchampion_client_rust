@@ -71,8 +71,14 @@ abstract class SyncResult with _$SyncResult {
 
 /// Extension methods for SyncResult
 extension SyncResultExtensions on SyncResult {
-  /// Get total number of changes
-  int get totalChanges => tasksAdded + tasksUpdated + tasksDeleted;
+  /// Get total number of changes.
+  ///
+  /// A sync that transferred at least one version (i.e. new task data was
+  /// exchanged with the server) counts as having changes, even when the
+  /// per-category counters ([tasksAdded], [tasksUpdated], [tasksDeleted])
+  /// are not yet populated by the Rust side.
+  int get totalChanges =>
+      tasksAdded + tasksUpdated + tasksDeleted + versionsSynced;
 
   /// Get a human-readable summary
   String get summary {
@@ -80,14 +86,15 @@ extension SyncResultExtensions on SyncResult {
       return 'Sync failed: $errorMessage';
     }
 
-    if (totalChanges == 0) {
-      return 'Sync completed: No changes';
-    }
-
     final parts = <String>[];
+    if (versionsSynced > 0) parts.add('$versionsSynced versions synced');
     if (tasksAdded > 0) parts.add('+$tasksAdded added');
     if (tasksUpdated > 0) parts.add('$tasksUpdated updated');
     if (tasksDeleted > 0) parts.add('-$tasksDeleted deleted');
+
+    if (parts.isEmpty) {
+      return 'Sync completed: No changes';
+    }
 
     return 'Sync completed: ${parts.join(', ')}';
   }
