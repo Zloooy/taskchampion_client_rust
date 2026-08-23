@@ -34,10 +34,10 @@
 ///   final tasks = await client.getAllTasks();
 ///
 ///   // Create a new task
-///   final task = await client.createTask(
+///   final task = await client.createTask(TaskParams(
 ///     description: 'Buy milk',
 ///     priority: TaskPriority.high,
-///   );
+///   ));
 /// }
 /// ```
 ///

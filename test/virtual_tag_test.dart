@@ -14,8 +14,7 @@ void main() {
 
     // Create a task with user-defined tags.
     await taskService.createTask(
-      description: 'Test task',
-      tags: ['home', 'important'],
+      const TaskParams(description: 'Test task', tags: ['home', 'important']),
     );
 
     // Retrieve all tasks.

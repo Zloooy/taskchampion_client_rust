@@ -73,6 +73,20 @@ class RustTaskStorage implements TaskStorage {
   }
 
   @override
+  Future<String> addTaskDto(TaskDto dto) {
+    return frb_api.addTaskDto(taskdbDirPath: taskdbDirPath, dto: dto);
+  }
+
+  @override
+  Future<void> updateTaskDto(String uuid, TaskDto dto) {
+    return frb_api.updateTaskDto(
+      taskdbDirPath: taskdbDirPath,
+      uuidStr: uuid,
+      dto: dto,
+    );
+  }
+
+  @override
   Future<void> deleteTask(String uuid) {
     return frb_api.deleteTask(taskdbDirPath: taskdbDirPath, uuidStr: uuid);
   }

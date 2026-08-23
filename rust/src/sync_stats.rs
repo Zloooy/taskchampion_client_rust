@@ -51,7 +51,11 @@ pub struct SyncStats {
 
 impl SyncStats {
     /// Fill in the task counters by diffing the pre/post-sync snapshots.
-    pub fn compute_task_diff(&mut self, before: &HashMap<Uuid, TaskData>, after: &HashMap<Uuid, TaskData>) {
+    pub fn compute_task_diff(
+        &mut self,
+        before: &HashMap<Uuid, TaskData>,
+        after: &HashMap<Uuid, TaskData>,
+    ) {
         for (uuid, after_data) in after {
             match before.get(uuid) {
                 None => self.tasks_added += 1,
@@ -128,7 +132,10 @@ impl Server for CountingServer {
         ),
         TcError,
     > {
-        let result = self.inner.add_version(parent_version_id, history_segment).await?;
+        let result = self
+            .inner
+            .add_version(parent_version_id, history_segment)
+            .await?;
         // Only count the version once the server has accepted it.
         if matches!(result.0, taskchampion::server::AddVersionResult::Ok(_)) {
             self.versions.set(self.versions.get() + 1);
@@ -141,7 +148,10 @@ impl Server for CountingServer {
         parent_version_id: taskchampion::server::VersionId,
     ) -> Result<taskchampion::server::GetVersionResult, TcError> {
         let result = self.inner.get_child_version(parent_version_id).await?;
-        if matches!(result, taskchampion::server::GetVersionResult::Version { .. }) {
+        if matches!(
+            result,
+            taskchampion::server::GetVersionResult::Version { .. }
+        ) {
             self.versions.set(self.versions.get() + 1);
         }
         Ok(result)
@@ -157,7 +167,13 @@ impl Server for CountingServer {
 
     async fn get_snapshot(
         &mut self,
-    ) -> Result<Option<(taskchampion::server::VersionId, taskchampion::server::Snapshot)>, TcError> {
+    ) -> Result<
+        Option<(
+            taskchampion::server::VersionId,
+            taskchampion::server::Snapshot,
+        )>,
+        TcError,
+    > {
         self.inner.get_snapshot().await
     }
 }
@@ -168,7 +184,7 @@ type TaskSnapshot = HashMap<Uuid, TaskData>;
 async fn snapshot_of<S: taskchampion::storage::Storage>(
     replica: &mut Replica<S>,
 ) -> Result<TaskSnapshot, TcError> {
-    Ok(replica.all_task_data().await?)
+    replica.all_task_data().await
 }
 
 /// Run `replica.sync(server, avoid_snapshots)` while recording statistics.
@@ -259,7 +275,10 @@ mod tests {
             _parent_version_id: Uuid,
             _history_segment: Vec<u8>,
         ) -> Result<
-            (taskchampion::server::AddVersionResult, taskchampion::server::SnapshotUrgency),
+            (
+                taskchampion::server::AddVersionResult,
+                taskchampion::server::SnapshotUrgency,
+            ),
             TcError,
         > {
             Ok((
@@ -317,7 +336,8 @@ mod tests {
             let mut ops = Operations::new();
             let local_uuid = Uuid::new_v4();
             let mut task = replica.create_task(local_uuid, &mut ops).await.unwrap();
-            task.set_description("local task".to_string(), &mut ops).unwrap();
+            task.set_description("local task".to_string(), &mut ops)
+                .unwrap();
             task.set_status(Status::Pending, &mut ops).unwrap();
             replica.commit_operations(ops).await.unwrap();
         }
@@ -386,7 +406,10 @@ mod tests {
         let mut before = HashMap::new();
         before.insert(
             old_task,
-            make_task(old_task, &[("description", "old description"), ("status", "pending")]),
+            make_task(
+                old_task,
+                &[("description", "old description"), ("status", "pending")],
+            ),
         );
         before.insert(gone_task, make_task(gone_task, &[("description", "bye")]));
 
@@ -394,10 +417,16 @@ mod tests {
         // Modify the surviving task in a meaningful way.
         after.insert(
             old_task,
-            make_task(old_task, &[("description", "new description"), ("status", "pending")]),
+            make_task(
+                old_task,
+                &[("description", "new description"), ("status", "pending")],
+            ),
         );
         // Add a brand-new task.
-        after.insert(new_task, make_task(new_task, &[("description", "brand new")]));
+        after.insert(
+            new_task,
+            make_task(new_task, &[("description", "brand new")]),
+        );
         // Purge one task.
         after.remove(&gone_task);
 

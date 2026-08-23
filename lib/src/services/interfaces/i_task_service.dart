@@ -11,26 +11,26 @@ abstract interface class ITaskService {
   /// Get a single task by UUID.
   Future<Task?> getTaskByUuid(String uuid);
 
-  /// Create a new task.
-  Future<Task> createTask({
-    required String description,
-    TaskPriority priority = TaskPriority.none,
-    String? project,
-    List<String>? tags,
-    DateTime? due,
-    DateTime? wait,
-  });
+  /// Create a new task from [params].
+  ///
+  /// Returns the created task (re-fetched from storage so the backend-
+  /// generated UUID and timestamps are included).
+  Future<Task> createTask(TaskParams params);
 
-  /// Update an existing task.
-  Future<Task> updateTask({
-    required String uuid,
-    String? description,
-    TaskStatus? status,
-    TaskPriority? priority,
-    String? project,
-    List<String>? tags,
-    DateTime? due,
-  });
+  /// Update an existing task with the full desired state of [task].
+  ///
+  /// The task is addressed by [Task.uuid], which acts as a **read-only
+  /// identity**: it selects which task to update and cannot be changed —
+  /// every other field on [task] represents the *new complete state* and is
+  /// written wholesale. Multi-valued fields ([Task.tags], [Task.depends])
+  /// are REPLACED entirely (not merged), matching the Rust replace semantics;
+  /// omitting a value clears it.
+  ///
+  /// Typical usage: load a task, apply changes via [Task.copyWith], pass the
+  /// result here.
+  ///
+  /// Returns the updated task (re-fetched from storage).
+  Future<Task> updateTask(Task task);
 
   /// Delete a task by UUID.
   Future<void> deleteTask(String uuid);

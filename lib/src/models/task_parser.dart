@@ -1,3 +1,4 @@
+import 'annotation.dart';
 import 'task.dart';
 
 /// Responsible for parsing raw JSON maps from Rust FFI into [Task] instances.
@@ -41,10 +42,20 @@ class TaskParser {
   /// Parse a raw JSON map into a [Task].
   Task parse(Map<String, dynamic> json) {
     final knownProps = _extractKnownProperties(json);
+    final annotations = _extractAnnotations(json);
     final udas = _extractUdas(json, knownProps);
 
     _applyTypeConversions(knownProps);
     _mergeUdaProperties(knownProps, udas);
+
+    // `Task.fromJson` deserializes the list element-wise from maps, so hand
+    // it plain JSON-shaped values (not already-constructed [Annotation]s).
+    if (annotations.isNotEmpty) {
+      knownProps['annotations'] = [
+        for (final a in annotations)
+          {'entry': a.entry.toIso8601String(), 'description': a.description},
+      ];
+    }
 
     final task = Task.fromJson(knownProps);
 
@@ -66,7 +77,7 @@ class TaskParser {
       final value = entry.value;
 
       if (key.startsWith('annotation_')) {
-        // Skip annotations — handled in Rust only.
+        // Annotations are collected separately by [_extractAnnotations].
         continue;
       }
 
@@ -78,6 +89,39 @@ class TaskParser {
     }
 
     return knownProps;
+  }
+
+  /// Collect the `annotation_<unixSeconds>` keys into [Annotation] values,
+  /// sorted ascending by entry timestamp.
+  ///
+  /// The Rust read path (`task_to_map`) emits one flat key per annotation:
+  /// `annotation_{entry.timestamp()}` mapping to the description string.
+  /// Keys whose trailing integer cannot be parsed are skipped defensively.
+  List<Annotation> _extractAnnotations(Map<String, dynamic> json) {
+    final annotations = <Annotation>[];
+
+    for (final entry in json.entries) {
+      final key = entry.key;
+
+      if (!key.startsWith('annotation_') || entry.value is! String) {
+        continue;
+      }
+
+      final ts = int.tryParse(key.substring('annotation_'.length));
+      if (ts == null) {
+        continue;
+      }
+
+      annotations.add(
+        Annotation(
+          entry: DateTime.fromMillisecondsSinceEpoch(ts * 1000).toUtc(),
+          description: entry.value as String,
+        ),
+      );
+    }
+
+    annotations.sort((a, b) => a.entry.compareTo(b.entry));
+    return annotations;
   }
 
   /// Extract everything that is *not* a known property as a UDA.

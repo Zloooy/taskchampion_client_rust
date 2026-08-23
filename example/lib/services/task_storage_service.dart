@@ -132,27 +132,12 @@ class TaskStorageService {
           // Check if task with this UUID already exists
           final existingTask = await client!.getTask(task.uuid);
           if (existingTask != null) {
-            // Update existing task
-            await client!.updateTask(
-              uuid: task.uuid,
-              description: task.description,
-              status: task.status,
-              priority: task.priority,
-              project: task.project,
-              tags: task.tags,
-              due: task.due,
-            );
+            // Update existing task with the full imported state.
+            await client!.updateTask(task);
             skippedCount++;
           } else {
-            // Create new task
-            await client!.createTask(
-              description: task.description,
-              priority: task.priority,
-              project: task.project,
-              tags: task.tags,
-              due: task.due,
-              wait: task.wait,
-            );
+            // Create new task from all user-settable attributes.
+            await client!.createTask(TaskParams.fromTask(task));
             importedCount++;
           }
         } catch (e) {

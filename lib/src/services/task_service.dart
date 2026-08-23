@@ -71,27 +71,12 @@ class TaskService implements ITaskService {
   }
 
   @override
-  Future<Task> createTask({
-    required String description,
-    TaskPriority priority = TaskPriority.none,
-    String? project,
-    List<String>? tags,
-    DateTime? due,
-    DateTime? wait,
-  }) async {
+  Future<Task> createTask(TaskParams params) async {
     try {
-      final taskData = <String, String>{
-        'description': description,
-        'status': 'pending',
-        if (priority != TaskPriority.none) 'priority': priority.name,
-        ...((project != null) ? {'project': project} : {}),
-        if (tags != null && tags.isNotEmpty) 'tags': tags.join(' '),
-      };
+      // `uuid` is left empty — the backend allocates it.
+      final dto = params.toTaskDto();
 
-      if (due != null) taskData['due'] = due.toIso8601String();
-      if (wait != null) taskData['wait'] = wait.toIso8601String();
-
-      final uuid = await _storage.addTask(taskData);
+      final uuid = await _storage.addTaskDto(dto);
 
       final task = await getTaskByUuid(uuid);
       if (task == null) {
@@ -108,33 +93,21 @@ class TaskService implements ITaskService {
   }
 
   @override
-  Future<Task> updateTask({
-    required String uuid,
-    String? description,
-    TaskStatus? status,
-    TaskPriority? priority,
-    String? project,
-    List<String>? tags,
-    DateTime? due,
-  }) async {
+  Future<Task> updateTask(Task task) async {
     try {
-      final taskData = <String, String>{};
+      // The task is addressed by its own [Task.uuid] (read-only identity).
+      // All other fields describe the new full state and are replaced
+      // wholesale on the backend.
+      final dto = TaskParams.fromTask(task).toTaskDto(uuid: task.uuid);
 
-      if (description != null) taskData['description'] = description;
-      if (status != null) taskData['status'] = status.name;
-      if (priority != null) taskData['priority'] = priority.name;
-      if (project != null) taskData['project'] = project;
-      if (tags != null) taskData['tags'] = tags.join(' ');
-      if (due != null) taskData['due'] = due.toIso8601String();
+      await _storage.updateTaskDto(task.uuid, dto);
 
-      await _storage.updateTask(uuid, taskData);
-
-      final task = await getTaskByUuid(uuid);
-      if (task == null) {
+      final updated = await getTaskByUuid(task.uuid);
+      if (updated == null) {
         throw const TaskStorageException('Failed to retrieve updated task');
       }
 
-      return task;
+      return updated;
     } on TaskChampionException {
       rethrow;
     } catch (e, st) {

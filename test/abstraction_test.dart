@@ -81,18 +81,65 @@ void main() {
       expect(task.until, isNull);
     });
 
-    test('skips annotation_ prefixed keys', () {
+    test('skips annotation_ prefixed keys when collecting UDAs', () {
       final json = {
         'uuid': 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         'description': 'Test',
         'status': 'pending',
         'entry': '2024-01-01T00:00:00.000Z',
-        'annotation_1': 'foo',
+        'annotation_1700000000': 'note A',
+        'custom': 'kept',
       };
 
       final task = TaskParser().parse(json);
 
-      expect(task.udas.containsKey('annotation_1'), isFalse);
+      expect(task.udas.containsKey('annotation_1700000000'), isFalse);
+      expect(task.udas, {'custom': 'kept'});
+    });
+
+    test(
+      'collects annotation_ keys as annotations in ascending entry order',
+      () {
+        final json = {
+          'uuid': 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+          'description': 'Test',
+          'status': 'pending',
+          'priority': 'none',
+          'entry': '2024-01-01T00:00:00.000Z',
+          // Deliberately out of key order to prove sorting by timestamp.
+          'annotation_1700000001': 'note B',
+          'annotation_1700000000': 'note A',
+        };
+
+        final task = TaskParser().parse(json);
+
+        expect(task.annotations, hasLength(2));
+        expect(
+          task.annotations[0].entry,
+          DateTime.fromMillisecondsSinceEpoch(1700000000 * 1000).toUtc(),
+        );
+        expect(task.annotations[0].description, 'note A');
+        expect(
+          task.annotations[1].entry,
+          DateTime.fromMillisecondsSinceEpoch(1700000001 * 1000).toUtc(),
+        );
+        expect(task.annotations[1].description, 'note B');
+      },
+    );
+
+    test('defaults annotations to empty and skips malformed keys', () {
+      final json = {
+        'uuid': 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+        'description': 'Test',
+        'status': 'pending',
+        'entry': '2024-01-01T00:00:00.000Z',
+        'annotation_notanumber': 'ignored',
+      };
+
+      final task = Task.fromRawJson(json);
+
+      expect(task.annotations, isEmpty);
+      expect(task.udas, isEmpty);
     });
   });
 

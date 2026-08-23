@@ -103,19 +103,16 @@ if (authResult.success) {
 // Get all pending tasks
 final tasks = await client.getPendingTasks();
 
-// Create a new task
-final task = await client.createTask(
+// Create a new task (all user-settable attributes via TaskParams)
+final task = await client.createTask(TaskParams(
   description: 'Buy milk',
   priority: TaskPriority.high,
   due: DateTime.now().add(const Duration(days: 1)),
   tags: ['shopping', 'urgent'],
-);
+));
 
-// Update a task
-await client.updateTask(
-  uuid: task.uuid,
-  status: TaskStatus.completed,
-);
+// Update a task (full state; addressed by task.uuid, which is read-only)
+await client.updateTask(task.copyWith(status: TaskStatus.completed));
 
 // Delete a task
 await client.deleteTask(task.uuid);
@@ -152,8 +149,8 @@ TaskChampionClient({
 | `getTask(uuid)` | Get a single task by UUID |
 | `getPendingTasks()` | Get all pending tasks |
 | `getCompletedTasks()` | Get all completed tasks |
-| `createTask(...)` | Create a new task |
-| `updateTask(...)` | Update an existing task |
+| `createTask(TaskParams)` | Create a new task from fully-typed parameters |
+| `updateTask(Task)` | Update an existing task with its full desired state |
 | `deleteTask(uuid)` | Delete a task |
 | `completeTask(uuid)` | Mark a task as completed |
 | `reopenTask(uuid)` | Mark a completed task as pending |

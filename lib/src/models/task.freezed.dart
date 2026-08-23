@@ -36,7 +36,8 @@ mixin _$Task {
  Map<String, String> get udas;/// Urgency score (stored as UDA in TaskChampion, calculated by clients)
  double? get urgency;/// Parent task UUID (for subtasks) - stored as UDA in TaskChampion
  String? get parent;/// List of dependent task UUIDs
- List<String> get depends;
+ List<String> get depends;/// Annotations attached to the task, oldest-first.
+ List<Annotation> get annotations;
 /// Create a copy of Task
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -49,16 +50,16 @@ $TaskCopyWith<Task> get copyWith => _$TaskCopyWithImpl<Task>(this as Task, _$ide
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Task&&(identical(other.uuid, uuid) || other.uuid == uuid)&&(identical(other.description, description) || other.description == description)&&(identical(other.status, status) || other.status == status)&&(identical(other.priority, priority) || other.priority == priority)&&(identical(other.project, project) || other.project == project)&&const DeepCollectionEquality().equals(other.tags, tags)&&(identical(other.due, due) || other.due == due)&&(identical(other.wait, wait) || other.wait == wait)&&(identical(other.scheduled, scheduled) || other.scheduled == scheduled)&&(identical(other.until, until) || other.until == until)&&(identical(other.entry, entry) || other.entry == entry)&&(identical(other.modified, modified) || other.modified == modified)&&(identical(other.end, end) || other.end == end)&&const DeepCollectionEquality().equals(other.udas, udas)&&(identical(other.urgency, urgency) || other.urgency == urgency)&&(identical(other.parent, parent) || other.parent == parent)&&const DeepCollectionEquality().equals(other.depends, depends));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Task&&(identical(other.uuid, uuid) || other.uuid == uuid)&&(identical(other.description, description) || other.description == description)&&(identical(other.status, status) || other.status == status)&&(identical(other.priority, priority) || other.priority == priority)&&(identical(other.project, project) || other.project == project)&&const DeepCollectionEquality().equals(other.tags, tags)&&(identical(other.due, due) || other.due == due)&&(identical(other.wait, wait) || other.wait == wait)&&(identical(other.scheduled, scheduled) || other.scheduled == scheduled)&&(identical(other.until, until) || other.until == until)&&(identical(other.entry, entry) || other.entry == entry)&&(identical(other.modified, modified) || other.modified == modified)&&(identical(other.end, end) || other.end == end)&&const DeepCollectionEquality().equals(other.udas, udas)&&(identical(other.urgency, urgency) || other.urgency == urgency)&&(identical(other.parent, parent) || other.parent == parent)&&const DeepCollectionEquality().equals(other.depends, depends)&&const DeepCollectionEquality().equals(other.annotations, annotations));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,uuid,description,status,priority,project,const DeepCollectionEquality().hash(tags),due,wait,scheduled,until,entry,modified,end,const DeepCollectionEquality().hash(udas),urgency,parent,const DeepCollectionEquality().hash(depends));
+int get hashCode => Object.hash(runtimeType,uuid,description,status,priority,project,const DeepCollectionEquality().hash(tags),due,wait,scheduled,until,entry,modified,end,const DeepCollectionEquality().hash(udas),urgency,parent,const DeepCollectionEquality().hash(depends),const DeepCollectionEquality().hash(annotations));
 
 @override
 String toString() {
-  return 'Task(uuid: $uuid, description: $description, status: $status, priority: $priority, project: $project, tags: $tags, due: $due, wait: $wait, scheduled: $scheduled, until: $until, entry: $entry, modified: $modified, end: $end, udas: $udas, urgency: $urgency, parent: $parent, depends: $depends)';
+  return 'Task(uuid: $uuid, description: $description, status: $status, priority: $priority, project: $project, tags: $tags, due: $due, wait: $wait, scheduled: $scheduled, until: $until, entry: $entry, modified: $modified, end: $end, udas: $udas, urgency: $urgency, parent: $parent, depends: $depends, annotations: $annotations)';
 }
 
 
@@ -69,7 +70,7 @@ abstract mixin class $TaskCopyWith<$Res>  {
   factory $TaskCopyWith(Task value, $Res Function(Task) _then) = _$TaskCopyWithImpl;
 @useResult
 $Res call({
- String uuid, String description,@JsonKey(unknownEnumValue: TaskStatus.pending) TaskStatus status,@JsonKey(unknownEnumValue: TaskPriority.none) TaskPriority priority, String? project, List<String> tags, DateTime? due, DateTime? wait, DateTime? scheduled, DateTime? until, DateTime entry, DateTime? modified, DateTime? end, Map<String, String> udas, double? urgency, String? parent, List<String> depends
+ String uuid, String description,@JsonKey(unknownEnumValue: TaskStatus.pending) TaskStatus status,@JsonKey(unknownEnumValue: TaskPriority.none) TaskPriority priority, String? project, List<String> tags, DateTime? due, DateTime? wait, DateTime? scheduled, DateTime? until, DateTime entry, DateTime? modified, DateTime? end, Map<String, String> udas, double? urgency, String? parent, List<String> depends, List<Annotation> annotations
 });
 
 
@@ -86,7 +87,7 @@ class _$TaskCopyWithImpl<$Res>
 
 /// Create a copy of Task
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? uuid = null,Object? description = null,Object? status = null,Object? priority = null,Object? project = freezed,Object? tags = null,Object? due = freezed,Object? wait = freezed,Object? scheduled = freezed,Object? until = freezed,Object? entry = null,Object? modified = freezed,Object? end = freezed,Object? udas = null,Object? urgency = freezed,Object? parent = freezed,Object? depends = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? uuid = null,Object? description = null,Object? status = null,Object? priority = null,Object? project = freezed,Object? tags = null,Object? due = freezed,Object? wait = freezed,Object? scheduled = freezed,Object? until = freezed,Object? entry = null,Object? modified = freezed,Object? end = freezed,Object? udas = null,Object? urgency = freezed,Object? parent = freezed,Object? depends = null,Object? annotations = null,}) {
   return _then(_self.copyWith(
 uuid: null == uuid ? _self.uuid : uuid // ignore: cast_nullable_to_non_nullable
 as String,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
@@ -105,7 +106,8 @@ as DateTime?,udas: null == udas ? _self.udas : udas // ignore: cast_nullable_to_
 as Map<String, String>,urgency: freezed == urgency ? _self.urgency : urgency // ignore: cast_nullable_to_non_nullable
 as double?,parent: freezed == parent ? _self.parent : parent // ignore: cast_nullable_to_non_nullable
 as String?,depends: null == depends ? _self.depends : depends // ignore: cast_nullable_to_non_nullable
-as List<String>,
+as List<String>,annotations: null == annotations ? _self.annotations : annotations // ignore: cast_nullable_to_non_nullable
+as List<Annotation>,
   ));
 }
 
@@ -190,10 +192,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String uuid,  String description, @JsonKey(unknownEnumValue: TaskStatus.pending)  TaskStatus status, @JsonKey(unknownEnumValue: TaskPriority.none)  TaskPriority priority,  String? project,  List<String> tags,  DateTime? due,  DateTime? wait,  DateTime? scheduled,  DateTime? until,  DateTime entry,  DateTime? modified,  DateTime? end,  Map<String, String> udas,  double? urgency,  String? parent,  List<String> depends)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String uuid,  String description, @JsonKey(unknownEnumValue: TaskStatus.pending)  TaskStatus status, @JsonKey(unknownEnumValue: TaskPriority.none)  TaskPriority priority,  String? project,  List<String> tags,  DateTime? due,  DateTime? wait,  DateTime? scheduled,  DateTime? until,  DateTime entry,  DateTime? modified,  DateTime? end,  Map<String, String> udas,  double? urgency,  String? parent,  List<String> depends,  List<Annotation> annotations)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Task() when $default != null:
-return $default(_that.uuid,_that.description,_that.status,_that.priority,_that.project,_that.tags,_that.due,_that.wait,_that.scheduled,_that.until,_that.entry,_that.modified,_that.end,_that.udas,_that.urgency,_that.parent,_that.depends);case _:
+return $default(_that.uuid,_that.description,_that.status,_that.priority,_that.project,_that.tags,_that.due,_that.wait,_that.scheduled,_that.until,_that.entry,_that.modified,_that.end,_that.udas,_that.urgency,_that.parent,_that.depends,_that.annotations);case _:
   return orElse();
 
 }
@@ -211,10 +213,10 @@ return $default(_that.uuid,_that.description,_that.status,_that.priority,_that.p
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String uuid,  String description, @JsonKey(unknownEnumValue: TaskStatus.pending)  TaskStatus status, @JsonKey(unknownEnumValue: TaskPriority.none)  TaskPriority priority,  String? project,  List<String> tags,  DateTime? due,  DateTime? wait,  DateTime? scheduled,  DateTime? until,  DateTime entry,  DateTime? modified,  DateTime? end,  Map<String, String> udas,  double? urgency,  String? parent,  List<String> depends)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String uuid,  String description, @JsonKey(unknownEnumValue: TaskStatus.pending)  TaskStatus status, @JsonKey(unknownEnumValue: TaskPriority.none)  TaskPriority priority,  String? project,  List<String> tags,  DateTime? due,  DateTime? wait,  DateTime? scheduled,  DateTime? until,  DateTime entry,  DateTime? modified,  DateTime? end,  Map<String, String> udas,  double? urgency,  String? parent,  List<String> depends,  List<Annotation> annotations)  $default,) {final _that = this;
 switch (_that) {
 case _Task():
-return $default(_that.uuid,_that.description,_that.status,_that.priority,_that.project,_that.tags,_that.due,_that.wait,_that.scheduled,_that.until,_that.entry,_that.modified,_that.end,_that.udas,_that.urgency,_that.parent,_that.depends);case _:
+return $default(_that.uuid,_that.description,_that.status,_that.priority,_that.project,_that.tags,_that.due,_that.wait,_that.scheduled,_that.until,_that.entry,_that.modified,_that.end,_that.udas,_that.urgency,_that.parent,_that.depends,_that.annotations);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -231,10 +233,10 @@ return $default(_that.uuid,_that.description,_that.status,_that.priority,_that.p
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String uuid,  String description, @JsonKey(unknownEnumValue: TaskStatus.pending)  TaskStatus status, @JsonKey(unknownEnumValue: TaskPriority.none)  TaskPriority priority,  String? project,  List<String> tags,  DateTime? due,  DateTime? wait,  DateTime? scheduled,  DateTime? until,  DateTime entry,  DateTime? modified,  DateTime? end,  Map<String, String> udas,  double? urgency,  String? parent,  List<String> depends)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String uuid,  String description, @JsonKey(unknownEnumValue: TaskStatus.pending)  TaskStatus status, @JsonKey(unknownEnumValue: TaskPriority.none)  TaskPriority priority,  String? project,  List<String> tags,  DateTime? due,  DateTime? wait,  DateTime? scheduled,  DateTime? until,  DateTime entry,  DateTime? modified,  DateTime? end,  Map<String, String> udas,  double? urgency,  String? parent,  List<String> depends,  List<Annotation> annotations)?  $default,) {final _that = this;
 switch (_that) {
 case _Task() when $default != null:
-return $default(_that.uuid,_that.description,_that.status,_that.priority,_that.project,_that.tags,_that.due,_that.wait,_that.scheduled,_that.until,_that.entry,_that.modified,_that.end,_that.udas,_that.urgency,_that.parent,_that.depends);case _:
+return $default(_that.uuid,_that.description,_that.status,_that.priority,_that.project,_that.tags,_that.due,_that.wait,_that.scheduled,_that.until,_that.entry,_that.modified,_that.end,_that.udas,_that.urgency,_that.parent,_that.depends,_that.annotations);case _:
   return null;
 
 }
@@ -246,7 +248,7 @@ return $default(_that.uuid,_that.description,_that.status,_that.priority,_that.p
 @JsonSerializable()
 
 class _Task implements Task {
-  const _Task({required this.uuid, required this.description, @JsonKey(unknownEnumValue: TaskStatus.pending) this.status = TaskStatus.pending, @JsonKey(unknownEnumValue: TaskPriority.none) this.priority = TaskPriority.none, this.project, final  List<String> tags = const [], this.due, this.wait, this.scheduled, this.until, required this.entry, this.modified, this.end, final  Map<String, String> udas = const {}, this.urgency, this.parent, final  List<String> depends = const []}): _tags = tags,_udas = udas,_depends = depends;
+  const _Task({required this.uuid, required this.description, @JsonKey(unknownEnumValue: TaskStatus.pending) this.status = TaskStatus.pending, @JsonKey(unknownEnumValue: TaskPriority.none) this.priority = TaskPriority.none, this.project, final  List<String> tags = const [], this.due, this.wait, this.scheduled, this.until, required this.entry, this.modified, this.end, final  Map<String, String> udas = const {}, this.urgency, this.parent, final  List<String> depends = const [], final  List<Annotation> annotations = const []}): _tags = tags,_udas = udas,_depends = depends,_annotations = annotations;
   factory _Task.fromJson(Map<String, dynamic> json) => _$TaskFromJson(json);
 
 /// Unique identifier for the task (UUID v4)
@@ -310,6 +312,15 @@ class _Task implements Task {
   return EqualUnmodifiableListView(_depends);
 }
 
+/// Annotations attached to the task, oldest-first.
+ final  List<Annotation> _annotations;
+/// Annotations attached to the task, oldest-first.
+@override@JsonKey() List<Annotation> get annotations {
+  if (_annotations is EqualUnmodifiableListView) return _annotations;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_annotations);
+}
+
 
 /// Create a copy of Task
 /// with the given fields replaced by the non-null parameter values.
@@ -324,16 +335,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Task&&(identical(other.uuid, uuid) || other.uuid == uuid)&&(identical(other.description, description) || other.description == description)&&(identical(other.status, status) || other.status == status)&&(identical(other.priority, priority) || other.priority == priority)&&(identical(other.project, project) || other.project == project)&&const DeepCollectionEquality().equals(other._tags, _tags)&&(identical(other.due, due) || other.due == due)&&(identical(other.wait, wait) || other.wait == wait)&&(identical(other.scheduled, scheduled) || other.scheduled == scheduled)&&(identical(other.until, until) || other.until == until)&&(identical(other.entry, entry) || other.entry == entry)&&(identical(other.modified, modified) || other.modified == modified)&&(identical(other.end, end) || other.end == end)&&const DeepCollectionEquality().equals(other._udas, _udas)&&(identical(other.urgency, urgency) || other.urgency == urgency)&&(identical(other.parent, parent) || other.parent == parent)&&const DeepCollectionEquality().equals(other._depends, _depends));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Task&&(identical(other.uuid, uuid) || other.uuid == uuid)&&(identical(other.description, description) || other.description == description)&&(identical(other.status, status) || other.status == status)&&(identical(other.priority, priority) || other.priority == priority)&&(identical(other.project, project) || other.project == project)&&const DeepCollectionEquality().equals(other._tags, _tags)&&(identical(other.due, due) || other.due == due)&&(identical(other.wait, wait) || other.wait == wait)&&(identical(other.scheduled, scheduled) || other.scheduled == scheduled)&&(identical(other.until, until) || other.until == until)&&(identical(other.entry, entry) || other.entry == entry)&&(identical(other.modified, modified) || other.modified == modified)&&(identical(other.end, end) || other.end == end)&&const DeepCollectionEquality().equals(other._udas, _udas)&&(identical(other.urgency, urgency) || other.urgency == urgency)&&(identical(other.parent, parent) || other.parent == parent)&&const DeepCollectionEquality().equals(other._depends, _depends)&&const DeepCollectionEquality().equals(other._annotations, _annotations));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,uuid,description,status,priority,project,const DeepCollectionEquality().hash(_tags),due,wait,scheduled,until,entry,modified,end,const DeepCollectionEquality().hash(_udas),urgency,parent,const DeepCollectionEquality().hash(_depends));
+int get hashCode => Object.hash(runtimeType,uuid,description,status,priority,project,const DeepCollectionEquality().hash(_tags),due,wait,scheduled,until,entry,modified,end,const DeepCollectionEquality().hash(_udas),urgency,parent,const DeepCollectionEquality().hash(_depends),const DeepCollectionEquality().hash(_annotations));
 
 @override
 String toString() {
-  return 'Task(uuid: $uuid, description: $description, status: $status, priority: $priority, project: $project, tags: $tags, due: $due, wait: $wait, scheduled: $scheduled, until: $until, entry: $entry, modified: $modified, end: $end, udas: $udas, urgency: $urgency, parent: $parent, depends: $depends)';
+  return 'Task(uuid: $uuid, description: $description, status: $status, priority: $priority, project: $project, tags: $tags, due: $due, wait: $wait, scheduled: $scheduled, until: $until, entry: $entry, modified: $modified, end: $end, udas: $udas, urgency: $urgency, parent: $parent, depends: $depends, annotations: $annotations)';
 }
 
 
@@ -344,7 +355,7 @@ abstract mixin class _$TaskCopyWith<$Res> implements $TaskCopyWith<$Res> {
   factory _$TaskCopyWith(_Task value, $Res Function(_Task) _then) = __$TaskCopyWithImpl;
 @override @useResult
 $Res call({
- String uuid, String description,@JsonKey(unknownEnumValue: TaskStatus.pending) TaskStatus status,@JsonKey(unknownEnumValue: TaskPriority.none) TaskPriority priority, String? project, List<String> tags, DateTime? due, DateTime? wait, DateTime? scheduled, DateTime? until, DateTime entry, DateTime? modified, DateTime? end, Map<String, String> udas, double? urgency, String? parent, List<String> depends
+ String uuid, String description,@JsonKey(unknownEnumValue: TaskStatus.pending) TaskStatus status,@JsonKey(unknownEnumValue: TaskPriority.none) TaskPriority priority, String? project, List<String> tags, DateTime? due, DateTime? wait, DateTime? scheduled, DateTime? until, DateTime entry, DateTime? modified, DateTime? end, Map<String, String> udas, double? urgency, String? parent, List<String> depends, List<Annotation> annotations
 });
 
 
@@ -361,7 +372,7 @@ class __$TaskCopyWithImpl<$Res>
 
 /// Create a copy of Task
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? uuid = null,Object? description = null,Object? status = null,Object? priority = null,Object? project = freezed,Object? tags = null,Object? due = freezed,Object? wait = freezed,Object? scheduled = freezed,Object? until = freezed,Object? entry = null,Object? modified = freezed,Object? end = freezed,Object? udas = null,Object? urgency = freezed,Object? parent = freezed,Object? depends = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? uuid = null,Object? description = null,Object? status = null,Object? priority = null,Object? project = freezed,Object? tags = null,Object? due = freezed,Object? wait = freezed,Object? scheduled = freezed,Object? until = freezed,Object? entry = null,Object? modified = freezed,Object? end = freezed,Object? udas = null,Object? urgency = freezed,Object? parent = freezed,Object? depends = null,Object? annotations = null,}) {
   return _then(_Task(
 uuid: null == uuid ? _self.uuid : uuid // ignore: cast_nullable_to_non_nullable
 as String,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
@@ -380,7 +391,8 @@ as DateTime?,udas: null == udas ? _self._udas : udas // ignore: cast_nullable_to
 as Map<String, String>,urgency: freezed == urgency ? _self.urgency : urgency // ignore: cast_nullable_to_non_nullable
 as double?,parent: freezed == parent ? _self.parent : parent // ignore: cast_nullable_to_non_nullable
 as String?,depends: null == depends ? _self._depends : depends // ignore: cast_nullable_to_non_nullable
-as List<String>,
+as List<String>,annotations: null == annotations ? _self._annotations : annotations // ignore: cast_nullable_to_non_nullable
+as List<Annotation>,
   ));
 }
 

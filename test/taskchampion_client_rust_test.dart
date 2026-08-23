@@ -85,24 +85,32 @@ void main() {
       expect(task.depends, isEmpty);
     });
 
-    test('Task.fromRawJson handles annotations with annotation_ prefix', () {
-      final now = DateTime.now();
+    test('Task.fromRawJson collects annotations from annotation_ keys', () {
+      final entry = DateTime.utc(2024, 1, 1);
       final rawJson = {
         'uuid': '12345678-1234-1234-1234-123456789012',
         'description': 'Test task',
         'status': 'pending',
         'priority': 'none',
-        'entry': now.toIso8601String(),
+        'entry': entry.toIso8601String(),
         'tags': '',
         'depends': '',
-        // Annotations should be skipped (not extracted as properties)
-        'annotation_${now.millisecondsSinceEpoch}': 'Test annotation',
+        // Rust emits one flat key per annotation:
+        // annotation_<unixSeconds> -> description.
+        'annotation_1700000000': 'Test annotation',
       };
 
       final task = Task.fromRawJson(rawJson);
 
       expect(task.uuid, equals('12345678-1234-1234-1234-123456789012'));
-      // Annotations are not stored in the task model - they're in Rust only
+      expect(task.annotations, hasLength(1));
+      expect(
+        task.annotations.single.entry,
+        DateTime.fromMillisecondsSinceEpoch(1700000000 * 1000).toUtc(),
+      );
+      expect(task.annotations.single.description, 'Test annotation');
+      // Annotation keys must never leak into the UDA map.
+      expect(task.udas, isEmpty);
     });
   });
 }

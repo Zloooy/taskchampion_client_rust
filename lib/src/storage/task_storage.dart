@@ -29,10 +29,22 @@ abstract interface class TaskStorage {
   Future<String?> getTaskByUuid(String uuid);
 
   /// Add a new task and return the created task's UUID.
+  @Deprecated('Use addTaskDto with a fully-typed TaskDto instead')
   Future<String> addTask(Map<String, String> taskData);
 
   /// Update an existing task.
+  @Deprecated('Use updateTaskDto with a fully-typed TaskDto instead')
   Future<void> updateTask(String uuid, Map<String, String> taskData);
+
+  /// Add a new task from a typed [dto] and return the created task's UUID.
+  ///
+  /// The `uuid` field of [dto] is ignored; the backend allocates it.
+  Future<String> addTaskDto(TaskDto dto);
+
+  /// Replace an existing task's mutable fields from a typed [dto].
+  ///
+  /// The task is addressed by [uuid]; the `uuid` field of [dto] is ignored.
+  Future<void> updateTaskDto(String uuid, TaskDto dto);
 
   /// Delete a task by its UUID.
   Future<void> deleteTask(String uuid);

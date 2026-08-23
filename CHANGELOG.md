@@ -53,3 +53,12 @@
 ## 0.5.2
 
 - Updated `SyncResult` and Rust backend to correctly report successful sync status
+
+## 0.6.0
+
+- `createTask` now takes a single `TaskParams` object instead of scattered named arguments (`description`, `priority`, `project`, `tags`, `due`, `wait`)
+- `updateTask` now takes a full `Task` instance (addressed by its read-only `uuid`) instead of named arguments; all other fields describe the new full state and are replaced wholesale
+- Added `TaskParams` model supporting every user-settable attribute: `description`, `status`, `priority`, `project`, `tags`, `depends`, `due`, `wait`, `scheduled`, `until`, `entry`, `end`, `recur`, and arbitrary `udas`; provides `toTaskDto()` and `fromTask(task)`
+- Extended task create/update to set additional attributes on the Rust side: `entry`, `modified`, `end`, `scheduled`, `until`, and `recur` (the latter three stored as conventional UDAs)
+- `uuid` is now read-only on update — it can no longer be reassigned through an update, preventing a fully different task from being passed as an "update"
+- added `annotations` field to `Task`; annotations are now parsed from the FFI payload and round-trip through load/edit/save

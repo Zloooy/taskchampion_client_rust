@@ -36,9 +36,10 @@ pub type SyncResult = SyncResultData;
 ///
 /// Stored as the lowercase Taskwarrior string in the wire form so the Dart
 /// side matches the rest of the crate's vocabulary.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum TaskStatusDto {
+    #[default]
     Pending,
     Completed,
     Deleted,
@@ -122,8 +123,32 @@ pub struct AnnotationDto {
 ///
 /// Datetimes are carried as RFC-3339 strings to stay wire-compatible with
 /// the existing Dart consumers without forcing a chrono-aware FRB regen.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+///
+/// Field groups:
+/// * **Identity** — `uuid`. Generated on create; read-only on update (the
+///   update path addresses the task by a separately-passed uuid and ignores
+///   this field entirely).
+/// * **Settable built-ins** — `description`, `status`, `priority`, `due`,
+///   `wait`, `entry`, `modified`, `end`, `tags`, `depends`, `annotations`.
+/// * **Promoted UDA fields** — `scheduled`, `until`, `recur`. These have no
+///   dedicated TaskChampion setter and are stored as conventional UDAs of the
+///   same name (Taskwarrior convention). They are first-class DTO fields so
+///   callers do not need to know they are UDAs in storage; they must NOT also
+///   appear in `udas` when writing (the apply functions skip any `udas` key
+///   that matches a promoted field so nothing is double-written).
+///
+/// Read-only columns (id, imask, mask, parent, urgency, component) are
+/// intentionally NOT settable inputs here; they surface on read through
+/// `udas` / existing getters.
+///
+/// `#[serde(default)]` keeps JSON deserialization of older payloads (which
+/// predate `scheduled`/`until`/`recur`) working; the derived [`Default`]
+/// backs it.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
 pub struct TaskDto {
+    /// Task uuid. Generated server-side on create; READ-ONLY on update (the
+    /// update path ignores this field entirely).
     pub uuid: String,
     pub description: String,
     pub status: TaskStatusDto,
@@ -136,17 +161,40 @@ pub struct TaskDto {
     pub wait: Option<String>,
     /// RFC-3339 creation timestamp, if set.
     pub entry: Option<String>,
-    /// RFC-3339 last-modified timestamp, if set.
+    /// RFC-3339 last-modified timestamp, if set. When absent on update the
+    /// library-managed value is left alone (commit refreshes it anyway).
     pub modified: Option<String>,
-    /// RFC-3339 completion/deletion timestamp, if set.
+    /// RFC-3339 completion/deletion timestamp, if set. Stored via the generic
+    /// property setter so an explicit value round-trips (normally `end` is
+    /// derived from status changes).
     pub end: Option<String>,
+    /// RFC-3339 scheduled-start timestamp, if set. Stored as the conventional
+    /// "scheduled" UDA.
+    pub scheduled: Option<String>,
+    /// RFC-3339 until/expiry timestamp, if set. Stored as the conventional
+    /// "until" UDA.
+    pub until: Option<String>,
+    /// Recurrence rule/duration string (e.g. `"weekly"`), if set. Stored as
+    /// the conventional "recur" UDA — there is no dedicated
+    /// TaskChampion setter.
+    pub recur: Option<String>,
     /// User tags. Each tag is a separate element; spaces are preserved.
     pub tags: Vec<String>,
     /// Dependency UUIDs (string form).
     pub depends: Vec<String>,
     /// Annotations, oldest-first.
-    pub annotations: Vec<AnnotationDto>,
+    ///
+    /// * `Some(list)` — replace the task's annotations with exactly this list
+    ///   (an empty `Some(vec![])` clears all annotations).
+    /// * `None` — leave the task's existing annotations untouched.
+    #[serde(default)]
+    pub annotations: Option<Vec<AnnotationDto>>,
     /// User-defined attributes, keyed by their Taskwarrior name.
+    ///
+    /// Keys matching a promoted field (`scheduled`/`until`/`recur`) are
+    /// owned by those dedicated fields: the dedicated field wins on write,
+    /// and an absent dedicated field clears the stored UDA. Such keys in
+    /// this map are therefore ignored — use the dedicated fields instead.
     pub udas: HashMap<String, String>,
 }
 
@@ -202,9 +250,12 @@ mod tests {
             entry: None,
             modified: None,
             end: None,
+            scheduled: None,
+            until: None,
+            recur: None,
             tags: vec!["home".into(), "with space".into()],
             depends: vec![],
-            annotations: vec![],
+            annotations: Some(vec![]),
             udas: HashMap::new(),
         };
         assert!(dto.has_tag("home"));
@@ -224,12 +275,15 @@ mod tests {
             entry: None,
             modified: None,
             end: None,
+            scheduled: None,
+            until: None,
+            recur: None,
             tags: vec!["a".into(), "b".into()],
             depends: vec![],
-            annotations: vec![AnnotationDto {
+            annotations: Some(vec![AnnotationDto {
                 entry: "2024-01-01T00:00:00Z".into(),
                 description: "note".into(),
-            }],
+            }]),
             udas: HashMap::new(),
         };
         let json = serde_json::to_string(&dto).unwrap();

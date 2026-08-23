@@ -48,6 +48,11 @@ _Task _$TaskFromJson(Map<String, dynamic> json) => _Task(
   depends:
       (json['depends'] as List<dynamic>?)?.map((e) => e as String).toList() ??
       const [],
+  annotations:
+      (json['annotations'] as List<dynamic>?)
+          ?.map((e) => Annotation.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
 );
 
 Map<String, dynamic> _$TaskToJson(_Task instance) => <String, dynamic>{
@@ -68,6 +73,7 @@ Map<String, dynamic> _$TaskToJson(_Task instance) => <String, dynamic>{
   'urgency': instance.urgency,
   'parent': instance.parent,
   'depends': instance.depends,
+  'annotations': instance.annotations,
 };
 
 const _$TaskStatusEnumMap = {

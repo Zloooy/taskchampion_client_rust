@@ -1,4 +1,6 @@
+export 'annotation.dart';
 export 'task.dart';
+export 'task_params.dart';
 export 'task_parser.dart';
 export 'task_status.dart';
 export 'task_priority.dart';

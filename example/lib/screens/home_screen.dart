@@ -270,7 +270,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ? TaskStatus.completed
         : TaskStatus.pending;
 
-    await config.client?.updateTask(uuid: task.uuid, status: newStatus);
+    await config.client?.updateTask(task.copyWith(status: newStatus));
 
     if (mounted) {
       setState(() {});

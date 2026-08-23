@@ -46,18 +46,15 @@ import 'storage/task_storage.dart';
 /// // Get all tasks
 /// final tasks = await client.getAllTasks();
 ///
-/// // Create a new task
-/// final task = await client.createTask(
-///   description: 'Buy milk',
-///   priority: TaskPriority.high,
-///   due: DateTime.now().add(Duration(days: 1)),
-/// );
-///
-/// // Update a task
-/// await client.updateTask(
-///   uuid: task.uuid,
-///   status: TaskStatus.completed,
-/// );
+ /// // Create a new task
+ /// final task = await client.createTask(TaskParams(
+ ///   description: 'Buy milk',
+ ///   priority: TaskPriority.high,
+ ///   due: DateTime.now().add(const Duration(days: 1)),
+ /// ));
+ ///
+ /// // Update a task (full state; addressed by task.uuid)
+ /// await client.updateTask(task.copyWith(status: TaskStatus.completed));
 ///
 /// // Delete a task
 /// await client.deleteTask(task.uuid);
@@ -398,32 +395,15 @@ class TaskChampionClient {
     return _taskService.getTaskByUuid(uuid);
   }
 
-  /// Create a new task
+  /// Create a new task from [params].
   ///
-  /// [description] - Task description (required)
-  /// [priority] - Task priority (default: none)
-  /// [project] - Project name (optional)
-  /// [tags] - List of tags (optional)
-  /// [due] - Due date (optional)
-  /// [wait] - Wait until date (optional)
+  /// Supports every user-settable attribute: description, status, priority,
+  /// project, tags, depends, due, wait, scheduled, until, entry, end, recur
+  /// and arbitrary UDAs — see [TaskParams].
   ///
   /// Returns the created task.
-  Future<Task> createTask({
-    required String description,
-    TaskPriority priority = TaskPriority.none,
-    String? project,
-    List<String>? tags,
-    DateTime? due,
-    DateTime? wait,
-  }) async {
-    final task = await _taskService.createTask(
-      description: description,
-      priority: priority,
-      project: project,
-      tags: tags ?? [],
-      due: due,
-      wait: wait,
-    );
+  Future<Task> createTask(TaskParams params) async {
+    final task = await _taskService.createTask(params);
 
     // Emit task change event
     _eventManager.emitTaskChange(task);
@@ -433,42 +413,33 @@ class TaskChampionClient {
     return task;
   }
 
-  /// Update an existing task
+  /// Update an existing task with the full desired state of [task].
   ///
-  /// [uuid] - Task UUID to update
-  /// [description] - New description (optional)
-  /// [status] - New status (optional)
-  /// [priority] - New priority (optional)
-  /// [project] - New project (optional)
-  /// [tags] - New tags (optional, replaces existing)
-  /// [due] - New due date (optional)
+  /// The task is addressed by [Task.uuid], which acts as a **read-only
+  /// identity**: it selects which task to update and cannot be changed. All
+  /// other fields represent the *new complete state* and are written
+  /// wholesale — multi-valued fields ([Task.tags], [Task.depends]) are
+  /// REPLACED entirely, and omitting a value clears it.
+  ///
+  /// Typical usage: load a task, apply changes via [Task.copyWith], pass the
+  /// result here:
+  ///
+  /// ```dart
+  /// final updated = await client.updateTask(
+  ///   task.copyWith(status: TaskStatus.completed),
+  /// );
+  /// ```
   ///
   /// Returns the updated task.
-  Future<Task> updateTask({
-    required String uuid,
-    String? description,
-    TaskStatus? status,
-    TaskPriority? priority,
-    String? project,
-    List<String>? tags,
-    DateTime? due,
-  }) async {
-    final task = await _taskService.updateTask(
-      uuid: uuid,
-      description: description,
-      status: status,
-      priority: priority,
-      project: project,
-      tags: tags,
-      due: due,
-    );
+  Future<Task> updateTask(Task task) async {
+    final updated = await _taskService.updateTask(task);
 
     // Emit task change event
-    _eventManager.emitTaskChange(task);
+    _eventManager.emitTaskChange(updated);
 
     // Auto-sync is handled by the event listener when connected
 
-    return task;
+    return updated;
   }
 
   /// Delete a task

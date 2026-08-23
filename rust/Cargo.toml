@@ -10,8 +10,8 @@ crate-type = ["cdylib", "staticlib"]
 path = "src/lib.rs"
 
 [dependencies]
-flutter_rust_bridge = "=2.12.0"
-flutter_rust_bridge_macros = "=2.12.0"
+flutter_rust_bridge = "=2.13.0"
+flutter_rust_bridge_macros = "=2.13.0"
 taskchampion = { version = "3.1", default-features = false, features = ["bundled", "storage-sqlite", "server-sync", "server-local", "encryption", "tls-webpki-roots"] }
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync"] }
 flate2 = "1"

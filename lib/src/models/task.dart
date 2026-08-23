@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'annotation.dart';
 import 'task_parser.dart';
 import 'task_status.dart';
 import 'task_priority.dart';
@@ -71,6 +72,9 @@ abstract class Task with _$Task {
 
     /// List of dependent task UUIDs
     @Default([]) List<String> depends,
+
+    /// Annotations attached to the task, oldest-first.
+    @Default([]) List<Annotation> annotations,
   }) = _Task;
 
   /// Create a Task from a JSON map
