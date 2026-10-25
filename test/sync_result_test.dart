@@ -78,14 +78,14 @@ void main() {
     /// regression in field names or `.toInt()` on the BigInt FFI values is
     /// caught here without needing the Rust bridge.
     SyncResult mapFromFfi(SyncResultData data) => SyncResult(
-          success: data.success,
-          versionsSynced: data.versionsSynced.toInt(),
-          tasksAdded: data.tasksAdded.toInt(),
-          tasksUpdated: data.tasksUpdated.toInt(),
-          tasksDeleted: data.tasksDeleted.toInt(),
-          errorMessage: data.errorMessage,
-          durationMs: data.durationMs?.toInt(),
-        );
+      success: data.success,
+      versionsSynced: data.versionsSynced.toInt(),
+      tasksAdded: data.tasksAdded.toInt(),
+      tasksUpdated: data.tasksUpdated.toInt(),
+      tasksDeleted: data.tasksDeleted.toInt(),
+      errorMessage: data.errorMessage,
+      durationMs: data.durationMs?.toInt(),
+    );
 
     test('maps every counter from the FFI payload', () {
       final ffi = SyncResultData(
@@ -144,15 +144,17 @@ void main() {
       expect(result.totalChanges, 6);
     });
 
-    test('counts synced versions as changes even with no per-task counters',
-        () {
-      // Regression guard: the Rust side currently only reports
-      // `versions_synced`; a sync that pulled new tasks from the server must
-      // not look like "no changes".
-      const result = SyncResult(success: true, versionsSynced: 4);
+    test(
+      'counts synced versions as changes even with no per-task counters',
+      () {
+        // Regression guard: the Rust side currently only reports
+        // `versions_synced`; a sync that pulled new tasks from the server must
+        // not look like "no changes".
+        const result = SyncResult(success: true, versionsSynced: 4);
 
-      expect(result.totalChanges, 4);
-    });
+        expect(result.totalChanges, 4);
+      },
+    );
   });
 
   group('SyncResultExtensions.summary', () {

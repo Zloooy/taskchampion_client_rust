@@ -3,10 +3,10 @@ import '../../models/models.dart';
 /// Abstract interface for task management operations.
 abstract interface class ITaskService {
   /// Get all tasks from the database.
-  Future<List<Task>> getAllTasks({TaskSort? sort});
+  Future<List<Task>> getAllTasks({List<TaskSort>? sort});
 
   /// Get tasks matching a custom filter expression.
-  Future<List<Task>> filterTasks(TaskFilter filter, {TaskSort? sort});
+  Future<List<Task>> filterTasks(TaskFilter filter, {List<TaskSort>? sort});
 
   /// Get a single task by UUID.
   Future<Task?> getTaskByUuid(String uuid);

@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'sync_config.dart';
@@ -9,6 +9,7 @@ part of 'sync_config.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -31,16 +32,21 @@ $SyncConfigCopyWith<SyncConfig> get copyWith => _$SyncConfigCopyWithImpl<SyncCon
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SyncConfig&&(identical(other.serverUrl, serverUrl) || other.serverUrl == serverUrl)&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.encryptionSecret, encryptionSecret) || other.encryptionSecret == encryptionSecret));
+  final _this = this as SyncConfig;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SyncConfig&&(identical(other.serverUrl, _this.serverUrl) || other.serverUrl == _this.serverUrl)&&(identical(other.clientId, _this.clientId) || other.clientId == _this.clientId)&&(identical(other.encryptionSecret, _this.encryptionSecret) || other.encryptionSecret == _this.encryptionSecret));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,serverUrl,clientId,encryptionSecret);
+int get hashCode {
+  final _this = this as SyncConfig;
+  return Object.hash(runtimeType,_this.serverUrl,_this.clientId,_this.encryptionSecret);
+}
 
 @override
 String toString() {
-  return 'SyncConfig(serverUrl: $serverUrl, clientId: $clientId, encryptionSecret: $encryptionSecret)';
+  final _this = this as SyncConfig;
+  return 'SyncConfig(serverUrl: ${_this.serverUrl}, clientId: ${_this.clientId}, encryptionSecret: ${_this.encryptionSecret})';
 }
 
 
@@ -69,7 +75,7 @@ class _$SyncConfigCopyWithImpl<$Res>
 /// Create a copy of SyncConfig
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? serverUrl = null,Object? clientId = null,Object? encryptionSecret = null,}) {
-  return _then(_self.copyWith(
+  return _then(SyncConfig(
 serverUrl: null == serverUrl ? _self.serverUrl : serverUrl // ignore: cast_nullable_to_non_nullable
 as String,clientId: null == clientId ? _self.clientId : clientId // ignore: cast_nullable_to_non_nullable
 as String,encryptionSecret: null == encryptionSecret ? _self.encryptionSecret : encryptionSecret // ignore: cast_nullable_to_non_nullable
@@ -237,16 +243,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SyncConfig&&(identical(other.serverUrl, serverUrl) || other.serverUrl == serverUrl)&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.encryptionSecret, encryptionSecret) || other.encryptionSecret == encryptionSecret));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _SyncConfig&&(identical(other.serverUrl, serverUrl) || other.serverUrl == serverUrl)&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.encryptionSecret, encryptionSecret) || other.encryptionSecret == encryptionSecret));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,serverUrl,clientId,encryptionSecret);
+int get hashCode {
+    return Object.hash(runtimeType,serverUrl,clientId,encryptionSecret);
+}
 
 @override
 String toString() {
-  return 'SyncConfig(serverUrl: $serverUrl, clientId: $clientId, encryptionSecret: $encryptionSecret)';
+    return 'SyncConfig(serverUrl: $serverUrl, clientId: $clientId, encryptionSecret: $encryptionSecret)';
 }
 
 

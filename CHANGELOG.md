@@ -62,3 +62,11 @@
 - Extended task create/update to set additional attributes on the Rust side: `entry`, `modified`, `end`, `scheduled`, `until`, and `recur` (the latter three stored as conventional UDAs)
 - `uuid` is now read-only on update — it can no longer be reassigned through an update, preventing a fully different task from being passed as an "update"
 - added `annotations` field to `Task`; annotations are now parsed from the FFI payload and round-trip through load/edit/save
+
+## 0.6.1
+
+- Added multi-sort support with SQL `ORDER BY` semantics: `getAllTasks`, `filterTasks`, `getPropertyValues`, and `getStoredPropertyValues` now accept `List<TaskSort>?` instead of a single `TaskSort?`, and sorts are applied in list order
+- `TaskSort` now holds a typed `TaskPropertyRef` instead of a raw property name string, keeping the sort type consistent with the filter property references
+- Rust backend: added `TaskSortList` (JSON array of `TaskSort`) with `compare_tasks_multi`; the legacy single-object sort form is still accepted for backward compatibility and treated as a one-element list
+- Property-value queries (`getPropertyValues` / `getStoredPropertyValues`) accept a list of sorts but apply only the first one
+- Added `TaskSort` unit tests covering the JSON wire shape, list encoding, and `asc()` / `desc()` helpers on property references

@@ -6,7 +6,7 @@ abstract interface class ITaskPropertyService {
   Future<List<String>> getPropertyValues({
     required String property,
     TaskFilter? filter,
-    TaskSort? sort,
+    List<TaskSort>? sort,
   });
 
   /// Retrieve distinct property values stored in the database
@@ -14,7 +14,7 @@ abstract interface class ITaskPropertyService {
   Future<List<T>> getStoredPropertyValues<T>({
     required String property,
     TaskFilter? filter,
-    TaskSort? sort,
+    List<TaskSort>? sort,
   });
 
   /// Retrieve all possible enum values for a given type.

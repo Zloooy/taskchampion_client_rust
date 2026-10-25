@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'task.dart';
@@ -9,6 +9,7 @@ part of 'task.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -50,16 +51,21 @@ $TaskCopyWith<Task> get copyWith => _$TaskCopyWithImpl<Task>(this as Task, _$ide
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Task&&(identical(other.uuid, uuid) || other.uuid == uuid)&&(identical(other.description, description) || other.description == description)&&(identical(other.status, status) || other.status == status)&&(identical(other.priority, priority) || other.priority == priority)&&(identical(other.project, project) || other.project == project)&&const DeepCollectionEquality().equals(other.tags, tags)&&(identical(other.due, due) || other.due == due)&&(identical(other.wait, wait) || other.wait == wait)&&(identical(other.scheduled, scheduled) || other.scheduled == scheduled)&&(identical(other.until, until) || other.until == until)&&(identical(other.entry, entry) || other.entry == entry)&&(identical(other.modified, modified) || other.modified == modified)&&(identical(other.end, end) || other.end == end)&&const DeepCollectionEquality().equals(other.udas, udas)&&(identical(other.urgency, urgency) || other.urgency == urgency)&&(identical(other.parent, parent) || other.parent == parent)&&const DeepCollectionEquality().equals(other.depends, depends)&&const DeepCollectionEquality().equals(other.annotations, annotations));
+  final _this = this as Task;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Task&&(identical(other.uuid, _this.uuid) || other.uuid == _this.uuid)&&(identical(other.description, _this.description) || other.description == _this.description)&&(identical(other.status, _this.status) || other.status == _this.status)&&(identical(other.priority, _this.priority) || other.priority == _this.priority)&&(identical(other.project, _this.project) || other.project == _this.project)&&const DeepCollectionEquality().equals(other.tags, _this.tags)&&(identical(other.due, _this.due) || other.due == _this.due)&&(identical(other.wait, _this.wait) || other.wait == _this.wait)&&(identical(other.scheduled, _this.scheduled) || other.scheduled == _this.scheduled)&&(identical(other.until, _this.until) || other.until == _this.until)&&(identical(other.entry, _this.entry) || other.entry == _this.entry)&&(identical(other.modified, _this.modified) || other.modified == _this.modified)&&(identical(other.end, _this.end) || other.end == _this.end)&&const DeepCollectionEquality().equals(other.udas, _this.udas)&&(identical(other.urgency, _this.urgency) || other.urgency == _this.urgency)&&(identical(other.parent, _this.parent) || other.parent == _this.parent)&&const DeepCollectionEquality().equals(other.depends, _this.depends)&&const DeepCollectionEquality().equals(other.annotations, _this.annotations));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,uuid,description,status,priority,project,const DeepCollectionEquality().hash(tags),due,wait,scheduled,until,entry,modified,end,const DeepCollectionEquality().hash(udas),urgency,parent,const DeepCollectionEquality().hash(depends),const DeepCollectionEquality().hash(annotations));
+int get hashCode {
+  final _this = this as Task;
+  return Object.hash(runtimeType,_this.uuid,_this.description,_this.status,_this.priority,_this.project,const DeepCollectionEquality().hash(_this.tags),_this.due,_this.wait,_this.scheduled,_this.until,_this.entry,_this.modified,_this.end,const DeepCollectionEquality().hash(_this.udas),_this.urgency,_this.parent,const DeepCollectionEquality().hash(_this.depends),const DeepCollectionEquality().hash(_this.annotations));
+}
 
 @override
 String toString() {
-  return 'Task(uuid: $uuid, description: $description, status: $status, priority: $priority, project: $project, tags: $tags, due: $due, wait: $wait, scheduled: $scheduled, until: $until, entry: $entry, modified: $modified, end: $end, udas: $udas, urgency: $urgency, parent: $parent, depends: $depends, annotations: $annotations)';
+  final _this = this as Task;
+  return 'Task(uuid: ${_this.uuid}, description: ${_this.description}, status: ${_this.status}, priority: ${_this.priority}, project: ${_this.project}, tags: ${_this.tags}, due: ${_this.due}, wait: ${_this.wait}, scheduled: ${_this.scheduled}, until: ${_this.until}, entry: ${_this.entry}, modified: ${_this.modified}, end: ${_this.end}, udas: ${_this.udas}, urgency: ${_this.urgency}, parent: ${_this.parent}, depends: ${_this.depends}, annotations: ${_this.annotations})';
 }
 
 
@@ -88,7 +94,7 @@ class _$TaskCopyWithImpl<$Res>
 /// Create a copy of Task
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? uuid = null,Object? description = null,Object? status = null,Object? priority = null,Object? project = freezed,Object? tags = null,Object? due = freezed,Object? wait = freezed,Object? scheduled = freezed,Object? until = freezed,Object? entry = null,Object? modified = freezed,Object? end = freezed,Object? udas = null,Object? urgency = freezed,Object? parent = freezed,Object? depends = null,Object? annotations = null,}) {
-  return _then(_self.copyWith(
+  return _then(Task(
 uuid: null == uuid ? _self.uuid : uuid // ignore: cast_nullable_to_non_nullable
 as String,description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
@@ -248,7 +254,7 @@ return $default(_that.uuid,_that.description,_that.status,_that.priority,_that.p
 @JsonSerializable()
 
 class _Task implements Task {
-  const _Task({required this.uuid, required this.description, @JsonKey(unknownEnumValue: TaskStatus.pending) this.status = TaskStatus.pending, @JsonKey(unknownEnumValue: TaskPriority.none) this.priority = TaskPriority.none, this.project, final  List<String> tags = const [], this.due, this.wait, this.scheduled, this.until, required this.entry, this.modified, this.end, final  Map<String, String> udas = const {}, this.urgency, this.parent, final  List<String> depends = const [], final  List<Annotation> annotations = const []}): _tags = tags,_udas = udas,_depends = depends,_annotations = annotations;
+  const _Task({required this.uuid, required this.description, @JsonKey(unknownEnumValue: TaskStatus.pending) this.status = TaskStatus.pending, @JsonKey(unknownEnumValue: TaskPriority.none) this.priority = TaskPriority.none, this.project,  List<String> tags = const [], this.due, this.wait, this.scheduled, this.until, required this.entry, this.modified, this.end,  Map<String, String> udas = const {}, this.urgency, this.parent,  List<String> depends = const [],  List<Annotation> annotations = const []}): _tags = tags,_udas = udas,_depends = depends,_annotations = annotations;
   factory _Task.fromJson(Map<String, dynamic> json) => _$TaskFromJson(json);
 
 /// Unique identifier for the task (UUID v4)
@@ -335,16 +341,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Task&&(identical(other.uuid, uuid) || other.uuid == uuid)&&(identical(other.description, description) || other.description == description)&&(identical(other.status, status) || other.status == status)&&(identical(other.priority, priority) || other.priority == priority)&&(identical(other.project, project) || other.project == project)&&const DeepCollectionEquality().equals(other._tags, _tags)&&(identical(other.due, due) || other.due == due)&&(identical(other.wait, wait) || other.wait == wait)&&(identical(other.scheduled, scheduled) || other.scheduled == scheduled)&&(identical(other.until, until) || other.until == until)&&(identical(other.entry, entry) || other.entry == entry)&&(identical(other.modified, modified) || other.modified == modified)&&(identical(other.end, end) || other.end == end)&&const DeepCollectionEquality().equals(other._udas, _udas)&&(identical(other.urgency, urgency) || other.urgency == urgency)&&(identical(other.parent, parent) || other.parent == parent)&&const DeepCollectionEquality().equals(other._depends, _depends)&&const DeepCollectionEquality().equals(other._annotations, _annotations));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Task&&(identical(other.uuid, uuid) || other.uuid == uuid)&&(identical(other.description, description) || other.description == description)&&(identical(other.status, status) || other.status == status)&&(identical(other.priority, priority) || other.priority == priority)&&(identical(other.project, project) || other.project == project)&&const DeepCollectionEquality().equals(other.tags, _tags)&&(identical(other.due, due) || other.due == due)&&(identical(other.wait, wait) || other.wait == wait)&&(identical(other.scheduled, scheduled) || other.scheduled == scheduled)&&(identical(other.until, until) || other.until == until)&&(identical(other.entry, entry) || other.entry == entry)&&(identical(other.modified, modified) || other.modified == modified)&&(identical(other.end, end) || other.end == end)&&const DeepCollectionEquality().equals(other.udas, _udas)&&(identical(other.urgency, urgency) || other.urgency == urgency)&&(identical(other.parent, parent) || other.parent == parent)&&const DeepCollectionEquality().equals(other.depends, _depends)&&const DeepCollectionEquality().equals(other.annotations, _annotations));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,uuid,description,status,priority,project,const DeepCollectionEquality().hash(_tags),due,wait,scheduled,until,entry,modified,end,const DeepCollectionEquality().hash(_udas),urgency,parent,const DeepCollectionEquality().hash(_depends),const DeepCollectionEquality().hash(_annotations));
+int get hashCode {
+    return Object.hash(runtimeType,uuid,description,status,priority,project,const DeepCollectionEquality().hash(_tags),due,wait,scheduled,until,entry,modified,end,const DeepCollectionEquality().hash(_udas),urgency,parent,const DeepCollectionEquality().hash(_depends),const DeepCollectionEquality().hash(_annotations));
+}
 
 @override
 String toString() {
-  return 'Task(uuid: $uuid, description: $description, status: $status, priority: $priority, project: $project, tags: $tags, due: $due, wait: $wait, scheduled: $scheduled, until: $until, entry: $entry, modified: $modified, end: $end, udas: $udas, urgency: $urgency, parent: $parent, depends: $depends, annotations: $annotations)';
+    return 'Task(uuid: $uuid, description: $description, status: $status, priority: $priority, project: $project, tags: $tags, due: $due, wait: $wait, scheduled: $scheduled, until: $until, entry: $entry, modified: $modified, end: $end, udas: $udas, urgency: $urgency, parent: $parent, depends: $depends, annotations: $annotations)';
 }
 
 

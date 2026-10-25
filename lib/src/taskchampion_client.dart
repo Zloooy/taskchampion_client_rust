@@ -46,15 +46,15 @@ import 'storage/task_storage.dart';
 /// // Get all tasks
 /// final tasks = await client.getAllTasks();
 ///
- /// // Create a new task
- /// final task = await client.createTask(TaskParams(
- ///   description: 'Buy milk',
- ///   priority: TaskPriority.high,
- ///   due: DateTime.now().add(const Duration(days: 1)),
- /// ));
- ///
- /// // Update a task (full state; addressed by task.uuid)
- /// await client.updateTask(task.copyWith(status: TaskStatus.completed));
+/// // Create a new task
+/// final task = await client.createTask(TaskParams(
+///   description: 'Buy milk',
+///   priority: TaskPriority.high,
+///   due: DateTime.now().add(const Duration(days: 1)),
+/// ));
+///
+/// // Update a task (full state; addressed by task.uuid)
+/// await client.updateTask(task.copyWith(status: TaskStatus.completed));
 ///
 /// // Delete a task
 /// await client.deleteTask(task.uuid);
@@ -254,11 +254,15 @@ class TaskChampionClient {
 
   /// Get all tasks from the local database
   ///
-  /// Optionally filter by status and sort by a property.
+  /// Optionally filter by status and sort by one or more properties
+  /// (SQL `ORDER BY` semantics: sorts are applied in list order).
   ///
-  /// [sort] - Optional [TaskSort] to sort the results.
+  /// [sort] - Optional [List<TaskSort>] to sort the results.
   ///          If not provided, tasks are returned in their natural order.
-  Future<List<Task>> getAllTasks({TaskStatus? status, TaskSort? sort}) async {
+  Future<List<Task>> getAllTasks({
+    TaskStatus? status,
+    List<TaskSort>? sort,
+  }) async {
     final tasks = await _taskService.getAllTasks(sort: sort);
 
     if (status != null) {
@@ -271,7 +275,8 @@ class TaskChampionClient {
   /// Get tasks matching a custom filter expression
   ///
   /// [filter] - A [TaskFilter] defining the filter criteria
-  /// [sort] - Optional [TaskSort] to sort the results
+  /// [sort] - Optional [List<TaskSort>] to sort the results
+  ///          (SQL `ORDER BY` semantics: sorts are applied in list order)
   ///
   /// This method allows for complex filtering using composable filter expressions
   /// such as [FilterExpression.equals], [FilterExpression.inValues],
@@ -311,7 +316,10 @@ class TaskChampionClient {
   /// - [TaskFilter.wait] - Wait until date
   /// - [TaskFilter.entry] - Creation date
   /// - [TaskFilter.modified] - Last modified date
-  Future<List<Task>> filterTasks(TaskFilter filter, {TaskSort? sort}) async {
+  Future<List<Task>> filterTasks(
+    TaskFilter filter, {
+    List<TaskSort>? sort,
+  }) async {
     return _taskService.filterTasks(filter, sort: sort);
   }
 
@@ -319,13 +327,14 @@ class TaskChampionClient {
   ///
   /// [property] – name of the property to query.
   /// [filter] – optional [TaskFilter] to limit the tasks considered.
-  /// [sort] – optional [TaskSort] that may affect the order of the returned list.
+  /// [sort] – optional [List<TaskSort>] that may affect the order of the
+  ///          returned list (only the first sort is applied).
   ///
   /// Returns a sorted list of distinct string values, or an empty list on failure.
   Future<List<String>> getPropertyValues({
     required String property,
     TaskFilter? filter,
-    TaskSort? sort,
+    List<TaskSort>? sort,
   }) async {
     return await _taskPropertyService.getPropertyValues(
       property: property,
@@ -350,7 +359,7 @@ class TaskChampionClient {
   Future<List<T>> getStoredPropertyValues<T>({
     required String property,
     TaskFilter? filter,
-    TaskSort? sort,
+    List<TaskSort>? sort,
   }) async {
     return await _taskPropertyService.getStoredPropertyValues<T>(
       property: property,

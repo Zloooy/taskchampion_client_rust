@@ -19,7 +19,7 @@ class TaskService implements ITaskService {
     : _logger = logger ?? const DebugPrintLogger();
 
   @override
-  Future<List<Task>> getAllTasks({TaskSort? sort}) async {
+  Future<List<Task>> getAllTasks({List<TaskSort>? sort}) async {
     try {
       final jsonStr = sort != null
           ? await _storage.getAllTasksWithSortJson(sort)
@@ -36,7 +36,10 @@ class TaskService implements ITaskService {
   }
 
   @override
-  Future<List<Task>> filterTasks(TaskFilter filter, {TaskSort? sort}) async {
+  Future<List<Task>> filterTasks(
+    TaskFilter filter, {
+    List<TaskSort>? sort,
+  }) async {
     try {
       final jsonStr = await _storage.getTasksWithFilterAndSortJson(
         filter,

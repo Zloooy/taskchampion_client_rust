@@ -720,6 +720,43 @@ See the `example/` directory for complete example applications demonstrating:
   final now = DateTime.now().toUtc();
   ```
 
+### build_runner Infinite Loop ("Starting build #N with updated builders")
+
+If `build_runner build` (or `flutter pub run build_runner build`) loops forever, printing
+`Starting build #2 with updated builders.`, `Starting build #3 with updated builders.`, and so on
+without ever completing, the build entrypoint script (`.dart_tool/build/entrypoint/build.dart`) is
+out of sync with the compiled builder snapshot. Each iteration the child process detects that the
+generated script differs from the one it was compiled from, exits with a "recompile builders"
+signal, and the parent regenerates and re-runs it — forever.
+
+This can happen after:
+- Bumping `build_runner` (or any code-generation dependency) in `pubspec.yaml`
+- Switching Flutter/Dart SDK versions (e.g. via `fvm`)
+- Interrupting a previous build mid-compilation
+
+**Fix — clean the build cache and re-resolve dependencies:**
+
+```bash
+# 1. Delete the entire .dart_tool directory (not just .dart_tool/build)
+rm -rf .dart_tool
+
+# 2. Re-resolve dependencies to regenerate package_config.json and the
+#    build_runner snapshot
+flutter pub get   # or: dart pub get
+
+# 3. Run the build again
+flutter pub run build_runner build
+```
+
+**Prevention:**
+- After bumping `build_runner` or `dart_style` in `pubspec.yaml`, always run `rm -rf .dart_tool && flutter pub get` before running `build_runner build`.
+- Do not mix different Flutter/Dart SDK versions (e.g. `fvm` vs system `dart`) within the same `.dart_tool` state. If you switch SDKs, clean `.dart_tool` first.
+- If a build is interrupted (Ctrl+C, timeout), clean `.dart_tool/build` before re-running.
+
+> **Note:** `rm -rf .dart_tool/build` alone is **not sufficient** — the stale state also lives in
+> `.dart_tool/pub/` (the compiled build_runner snapshot) and `.dart_tool/package_config.json`.
+> Deleting the entire `.dart_tool` directory and re-running `pub get` is the reliable fix.
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

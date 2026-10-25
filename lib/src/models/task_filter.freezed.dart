@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'task_filter.dart';
@@ -9,6 +9,7 @@ part of 'task_filter.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 FilterExpression _$FilterExpressionFromJson(
@@ -150,7 +151,7 @@ mixin _$FilterExpression {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FilterExpression);
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is FilterExpression);
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -159,7 +160,7 @@ int get hashCode => runtimeType.hashCode;
 
 @override
 String toString() {
-  return 'FilterExpression()';
+    return 'FilterExpression()';
 }
 
 
@@ -467,7 +468,7 @@ return greaterThanOrEqual(_that.property,_that.value);case _:
 @JsonSerializable()
 
 class _FilterExpressionAndGroup implements FilterExpression {
-  const _FilterExpressionAndGroup({@JsonKey(toJson: _filtersToJson) required final  List<FilterExpression> filters, final  String? $type}): _filters = filters,$type = $type ?? 'AndGroup';
+  const _FilterExpressionAndGroup({@JsonKey(toJson: _filtersToJson) required  List<FilterExpression> filters,  String? $type}): _filters = filters,$type = $type ?? 'AndGroup';
   factory _FilterExpressionAndGroup.fromJson(Map<String, dynamic> json) => _$FilterExpressionAndGroupFromJson(json);
 
  final  List<FilterExpression> _filters;
@@ -495,16 +496,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionAndGroup&&const DeepCollectionEquality().equals(other._filters, _filters));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionAndGroup&&const DeepCollectionEquality().equals(other.filters, _filters));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_filters));
+int get hashCode {
+    return Object.hash(runtimeType,const DeepCollectionEquality().hash(_filters));
+}
 
 @override
 String toString() {
-  return 'FilterExpression.andGroup(filters: $filters)';
+    return 'FilterExpression.andGroup(filters: $filters)';
 }
 
 
@@ -546,7 +549,7 @@ as List<FilterExpression>,
 @JsonSerializable()
 
 class _FilterExpressionOrGroup implements FilterExpression {
-  const _FilterExpressionOrGroup({@JsonKey(toJson: _filtersToJson) required final  List<FilterExpression> filters, final  String? $type}): _filters = filters,$type = $type ?? 'OrGroup';
+  const _FilterExpressionOrGroup({@JsonKey(toJson: _filtersToJson) required  List<FilterExpression> filters,  String? $type}): _filters = filters,$type = $type ?? 'OrGroup';
   factory _FilterExpressionOrGroup.fromJson(Map<String, dynamic> json) => _$FilterExpressionOrGroupFromJson(json);
 
  final  List<FilterExpression> _filters;
@@ -574,16 +577,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionOrGroup&&const DeepCollectionEquality().equals(other._filters, _filters));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionOrGroup&&const DeepCollectionEquality().equals(other.filters, _filters));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_filters));
+int get hashCode {
+    return Object.hash(runtimeType,const DeepCollectionEquality().hash(_filters));
+}
 
 @override
 String toString() {
-  return 'FilterExpression.orGroup(filters: $filters)';
+    return 'FilterExpression.orGroup(filters: $filters)';
 }
 
 
@@ -625,7 +630,7 @@ as List<FilterExpression>,
 @JsonSerializable()
 
 class _FilterExpressionXorGroup implements FilterExpression {
-  const _FilterExpressionXorGroup({@JsonKey(toJson: _filtersToJson) required final  List<FilterExpression> filters, final  String? $type}): _filters = filters,$type = $type ?? 'XorGroup';
+  const _FilterExpressionXorGroup({@JsonKey(toJson: _filtersToJson) required  List<FilterExpression> filters,  String? $type}): _filters = filters,$type = $type ?? 'XorGroup';
   factory _FilterExpressionXorGroup.fromJson(Map<String, dynamic> json) => _$FilterExpressionXorGroupFromJson(json);
 
  final  List<FilterExpression> _filters;
@@ -653,16 +658,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionXorGroup&&const DeepCollectionEquality().equals(other._filters, _filters));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionXorGroup&&const DeepCollectionEquality().equals(other.filters, _filters));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_filters));
+int get hashCode {
+    return Object.hash(runtimeType,const DeepCollectionEquality().hash(_filters));
+}
 
 @override
 String toString() {
-  return 'FilterExpression.xorGroup(filters: $filters)';
+    return 'FilterExpression.xorGroup(filters: $filters)';
 }
 
 
@@ -704,7 +711,7 @@ as List<FilterExpression>,
 @JsonSerializable()
 
 class _FilterExpressionNot implements FilterExpression {
-  const _FilterExpressionNot({@JsonKey(toJson: _innerToJson) required this.inner, final  String? $type}): $type = $type ?? 'Not';
+  const _FilterExpressionNot({@JsonKey(toJson: _innerToJson) required this.inner,  String? $type}): $type = $type ?? 'Not';
   factory _FilterExpressionNot.fromJson(Map<String, dynamic> json) => _$FilterExpressionNotFromJson(json);
 
 @JsonKey(toJson: _innerToJson) final  FilterExpression inner;
@@ -726,16 +733,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionNot&&(identical(other.inner, inner) || other.inner == inner));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionNot&&(identical(other.inner, inner) || other.inner == inner));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,inner);
+int get hashCode {
+    return Object.hash(runtimeType,inner);
+}
 
 @override
 String toString() {
-  return 'FilterExpression.not(inner: $inner)';
+    return 'FilterExpression.not(inner: $inner)';
 }
 
 
@@ -786,7 +795,7 @@ $FilterExpressionCopyWith<$Res> get inner {
 @JsonSerializable()
 
 class _FilterExpressionTag implements FilterExpression {
-  const _FilterExpressionTag({required this.tag, this.exclude = false, final  String? $type}): $type = $type ?? 'Tag';
+  const _FilterExpressionTag({required this.tag, this.exclude = false,  String? $type}): $type = $type ?? 'Tag';
   factory _FilterExpressionTag.fromJson(Map<String, dynamic> json) => _$FilterExpressionTagFromJson(json);
 
  final  String tag;
@@ -809,16 +818,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionTag&&(identical(other.tag, tag) || other.tag == tag)&&(identical(other.exclude, exclude) || other.exclude == exclude));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionTag&&(identical(other.tag, tag) || other.tag == tag)&&(identical(other.exclude, exclude) || other.exclude == exclude));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,tag,exclude);
+int get hashCode {
+    return Object.hash(runtimeType,tag,exclude);
+}
 
 @override
 String toString() {
-  return 'FilterExpression.tag(tag: $tag, exclude: $exclude)';
+    return 'FilterExpression.tag(tag: $tag, exclude: $exclude)';
 }
 
 
@@ -861,7 +872,7 @@ as bool,
 @JsonSerializable()
 
 class _FilterExpressionVirtualTag implements FilterExpression {
-  const _FilterExpressionVirtualTag({required this.tag, this.exclude = false, final  String? $type}): $type = $type ?? 'VirtualTag';
+  const _FilterExpressionVirtualTag({required this.tag, this.exclude = false,  String? $type}): $type = $type ?? 'VirtualTag';
   factory _FilterExpressionVirtualTag.fromJson(Map<String, dynamic> json) => _$FilterExpressionVirtualTagFromJson(json);
 
  final  String tag;
@@ -884,16 +895,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionVirtualTag&&(identical(other.tag, tag) || other.tag == tag)&&(identical(other.exclude, exclude) || other.exclude == exclude));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionVirtualTag&&(identical(other.tag, tag) || other.tag == tag)&&(identical(other.exclude, exclude) || other.exclude == exclude));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,tag,exclude);
+int get hashCode {
+    return Object.hash(runtimeType,tag,exclude);
+}
 
 @override
 String toString() {
-  return 'FilterExpression.virtualTag(tag: $tag, exclude: $exclude)';
+    return 'FilterExpression.virtualTag(tag: $tag, exclude: $exclude)';
 }
 
 
@@ -936,7 +949,7 @@ as bool,
 @JsonSerializable()
 
 class _FilterExpressionEquals implements FilterExpression {
-  const _FilterExpressionEquals({@JsonKey(toJson: _propertyToJson) required this.property, required this.value, final  String? $type}): $type = $type ?? 'EqualsFilter';
+  const _FilterExpressionEquals({@JsonKey(toJson: _propertyToJson) required this.property, required this.value,  String? $type}): $type = $type ?? 'EqualsFilter';
   factory _FilterExpressionEquals.fromJson(Map<String, dynamic> json) => _$FilterExpressionEqualsFromJson(json);
 
 @JsonKey(toJson: _propertyToJson) final  TaskPropertyRef property;
@@ -959,16 +972,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionEquals&&(identical(other.property, property) || other.property == property)&&const DeepCollectionEquality().equals(other.value, value));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionEquals&&(identical(other.property, property) || other.property == property)&&const DeepCollectionEquality().equals(other.value, value));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,property,const DeepCollectionEquality().hash(value));
+int get hashCode {
+    return Object.hash(runtimeType,property,const DeepCollectionEquality().hash(value));
+}
 
 @override
 String toString() {
-  return 'FilterExpression.equals(property: $property, value: $value)';
+    return 'FilterExpression.equals(property: $property, value: $value)';
 }
 
 
@@ -1011,7 +1026,7 @@ as dynamic,
 @JsonSerializable()
 
 class _FilterExpressionNotEquals implements FilterExpression {
-  const _FilterExpressionNotEquals({@JsonKey(toJson: _propertyToJson) required this.property, required this.value, final  String? $type}): $type = $type ?? 'NotEqualsFilter';
+  const _FilterExpressionNotEquals({@JsonKey(toJson: _propertyToJson) required this.property, required this.value,  String? $type}): $type = $type ?? 'NotEqualsFilter';
   factory _FilterExpressionNotEquals.fromJson(Map<String, dynamic> json) => _$FilterExpressionNotEqualsFromJson(json);
 
 @JsonKey(toJson: _propertyToJson) final  TaskPropertyRef property;
@@ -1034,16 +1049,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionNotEquals&&(identical(other.property, property) || other.property == property)&&const DeepCollectionEquality().equals(other.value, value));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionNotEquals&&(identical(other.property, property) || other.property == property)&&const DeepCollectionEquality().equals(other.value, value));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,property,const DeepCollectionEquality().hash(value));
+int get hashCode {
+    return Object.hash(runtimeType,property,const DeepCollectionEquality().hash(value));
+}
 
 @override
 String toString() {
-  return 'FilterExpression.notEquals(property: $property, value: $value)';
+    return 'FilterExpression.notEquals(property: $property, value: $value)';
 }
 
 
@@ -1086,7 +1103,7 @@ as dynamic,
 @JsonSerializable()
 
 class _FilterExpressionInValues implements FilterExpression {
-  const _FilterExpressionInValues({@JsonKey(toJson: _propertyToJson) required this.property, required final  List<dynamic> values, final  String? $type}): _values = values,$type = $type ?? 'InFilter';
+  const _FilterExpressionInValues({@JsonKey(toJson: _propertyToJson) required this.property, required  List<dynamic> values,  String? $type}): _values = values,$type = $type ?? 'InFilter';
   factory _FilterExpressionInValues.fromJson(Map<String, dynamic> json) => _$FilterExpressionInValuesFromJson(json);
 
 @JsonKey(toJson: _propertyToJson) final  TaskPropertyRef property;
@@ -1115,16 +1132,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionInValues&&(identical(other.property, property) || other.property == property)&&const DeepCollectionEquality().equals(other._values, _values));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionInValues&&(identical(other.property, property) || other.property == property)&&const DeepCollectionEquality().equals(other.values, _values));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,property,const DeepCollectionEquality().hash(_values));
+int get hashCode {
+    return Object.hash(runtimeType,property,const DeepCollectionEquality().hash(_values));
+}
 
 @override
 String toString() {
-  return 'FilterExpression.inValues(property: $property, values: $values)';
+    return 'FilterExpression.inValues(property: $property, values: $values)';
 }
 
 
@@ -1167,7 +1186,7 @@ as List<dynamic>,
 @JsonSerializable()
 
 class _FilterExpressionNotInValues implements FilterExpression {
-  const _FilterExpressionNotInValues({@JsonKey(toJson: _propertyToJson) required this.property, required final  List<dynamic> values, final  String? $type}): _values = values,$type = $type ?? 'NotInFilter';
+  const _FilterExpressionNotInValues({@JsonKey(toJson: _propertyToJson) required this.property, required  List<dynamic> values,  String? $type}): _values = values,$type = $type ?? 'NotInFilter';
   factory _FilterExpressionNotInValues.fromJson(Map<String, dynamic> json) => _$FilterExpressionNotInValuesFromJson(json);
 
 @JsonKey(toJson: _propertyToJson) final  TaskPropertyRef property;
@@ -1196,16 +1215,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionNotInValues&&(identical(other.property, property) || other.property == property)&&const DeepCollectionEquality().equals(other._values, _values));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionNotInValues&&(identical(other.property, property) || other.property == property)&&const DeepCollectionEquality().equals(other.values, _values));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,property,const DeepCollectionEquality().hash(_values));
+int get hashCode {
+    return Object.hash(runtimeType,property,const DeepCollectionEquality().hash(_values));
+}
 
 @override
 String toString() {
-  return 'FilterExpression.notInValues(property: $property, values: $values)';
+    return 'FilterExpression.notInValues(property: $property, values: $values)';
 }
 
 
@@ -1248,7 +1269,7 @@ as List<dynamic>,
 @JsonSerializable()
 
 class _FilterExpressionContains implements FilterExpression {
-  const _FilterExpressionContains({@JsonKey(toJson: _propertyToJson) required this.property, required this.value, @JsonKey(name: 'case_sensitive') this.caseSensitive = false, final  String? $type}): $type = $type ?? 'ContainsFilter';
+  const _FilterExpressionContains({@JsonKey(toJson: _propertyToJson) required this.property, required this.value, @JsonKey(name: 'case_sensitive') this.caseSensitive = false,  String? $type}): $type = $type ?? 'ContainsFilter';
   factory _FilterExpressionContains.fromJson(Map<String, dynamic> json) => _$FilterExpressionContainsFromJson(json);
 
 @JsonKey(toJson: _propertyToJson) final  TaskPropertyRef property;
@@ -1272,16 +1293,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionContains&&(identical(other.property, property) || other.property == property)&&(identical(other.value, value) || other.value == value)&&(identical(other.caseSensitive, caseSensitive) || other.caseSensitive == caseSensitive));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionContains&&(identical(other.property, property) || other.property == property)&&(identical(other.value, value) || other.value == value)&&(identical(other.caseSensitive, caseSensitive) || other.caseSensitive == caseSensitive));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,property,value,caseSensitive);
+int get hashCode {
+    return Object.hash(runtimeType,property,value,caseSensitive);
+}
 
 @override
 String toString() {
-  return 'FilterExpression.contains(property: $property, value: $value, caseSensitive: $caseSensitive)';
+    return 'FilterExpression.contains(property: $property, value: $value, caseSensitive: $caseSensitive)';
 }
 
 
@@ -1325,7 +1348,7 @@ as bool,
 @JsonSerializable()
 
 class _FilterExpressionNotContains implements FilterExpression {
-  const _FilterExpressionNotContains({@JsonKey(toJson: _propertyToJson) required this.property, required this.value, @JsonKey(name: 'case_sensitive') this.caseSensitive = false, final  String? $type}): $type = $type ?? 'NotContainsFilter';
+  const _FilterExpressionNotContains({@JsonKey(toJson: _propertyToJson) required this.property, required this.value, @JsonKey(name: 'case_sensitive') this.caseSensitive = false,  String? $type}): $type = $type ?? 'NotContainsFilter';
   factory _FilterExpressionNotContains.fromJson(Map<String, dynamic> json) => _$FilterExpressionNotContainsFromJson(json);
 
 @JsonKey(toJson: _propertyToJson) final  TaskPropertyRef property;
@@ -1349,16 +1372,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionNotContains&&(identical(other.property, property) || other.property == property)&&(identical(other.value, value) || other.value == value)&&(identical(other.caseSensitive, caseSensitive) || other.caseSensitive == caseSensitive));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionNotContains&&(identical(other.property, property) || other.property == property)&&(identical(other.value, value) || other.value == value)&&(identical(other.caseSensitive, caseSensitive) || other.caseSensitive == caseSensitive));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,property,value,caseSensitive);
+int get hashCode {
+    return Object.hash(runtimeType,property,value,caseSensitive);
+}
 
 @override
 String toString() {
-  return 'FilterExpression.notContains(property: $property, value: $value, caseSensitive: $caseSensitive)';
+    return 'FilterExpression.notContains(property: $property, value: $value, caseSensitive: $caseSensitive)';
 }
 
 
@@ -1402,7 +1427,7 @@ as bool,
 @JsonSerializable()
 
 class _FilterExpressionStartsWith implements FilterExpression {
-  const _FilterExpressionStartsWith({@JsonKey(toJson: _propertyToJson) required this.property, required this.value, @JsonKey(name: 'case_sensitive') this.caseSensitive = false, final  String? $type}): $type = $type ?? 'StartsWithFilter';
+  const _FilterExpressionStartsWith({@JsonKey(toJson: _propertyToJson) required this.property, required this.value, @JsonKey(name: 'case_sensitive') this.caseSensitive = false,  String? $type}): $type = $type ?? 'StartsWithFilter';
   factory _FilterExpressionStartsWith.fromJson(Map<String, dynamic> json) => _$FilterExpressionStartsWithFromJson(json);
 
 @JsonKey(toJson: _propertyToJson) final  TaskPropertyRef property;
@@ -1426,16 +1451,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionStartsWith&&(identical(other.property, property) || other.property == property)&&(identical(other.value, value) || other.value == value)&&(identical(other.caseSensitive, caseSensitive) || other.caseSensitive == caseSensitive));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionStartsWith&&(identical(other.property, property) || other.property == property)&&(identical(other.value, value) || other.value == value)&&(identical(other.caseSensitive, caseSensitive) || other.caseSensitive == caseSensitive));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,property,value,caseSensitive);
+int get hashCode {
+    return Object.hash(runtimeType,property,value,caseSensitive);
+}
 
 @override
 String toString() {
-  return 'FilterExpression.startsWith(property: $property, value: $value, caseSensitive: $caseSensitive)';
+    return 'FilterExpression.startsWith(property: $property, value: $value, caseSensitive: $caseSensitive)';
 }
 
 
@@ -1479,7 +1506,7 @@ as bool,
 @JsonSerializable()
 
 class _FilterExpressionEndsWith implements FilterExpression {
-  const _FilterExpressionEndsWith({@JsonKey(toJson: _propertyToJson) required this.property, required this.value, @JsonKey(name: 'case_sensitive') this.caseSensitive = false, final  String? $type}): $type = $type ?? 'EndsWithFilter';
+  const _FilterExpressionEndsWith({@JsonKey(toJson: _propertyToJson) required this.property, required this.value, @JsonKey(name: 'case_sensitive') this.caseSensitive = false,  String? $type}): $type = $type ?? 'EndsWithFilter';
   factory _FilterExpressionEndsWith.fromJson(Map<String, dynamic> json) => _$FilterExpressionEndsWithFromJson(json);
 
 @JsonKey(toJson: _propertyToJson) final  TaskPropertyRef property;
@@ -1503,16 +1530,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionEndsWith&&(identical(other.property, property) || other.property == property)&&(identical(other.value, value) || other.value == value)&&(identical(other.caseSensitive, caseSensitive) || other.caseSensitive == caseSensitive));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionEndsWith&&(identical(other.property, property) || other.property == property)&&(identical(other.value, value) || other.value == value)&&(identical(other.caseSensitive, caseSensitive) || other.caseSensitive == caseSensitive));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,property,value,caseSensitive);
+int get hashCode {
+    return Object.hash(runtimeType,property,value,caseSensitive);
+}
 
 @override
 String toString() {
-  return 'FilterExpression.endsWith(property: $property, value: $value, caseSensitive: $caseSensitive)';
+    return 'FilterExpression.endsWith(property: $property, value: $value, caseSensitive: $caseSensitive)';
 }
 
 
@@ -1556,7 +1585,7 @@ as bool,
 @JsonSerializable()
 
 class _FilterExpressionWord implements FilterExpression {
-  const _FilterExpressionWord({@JsonKey(toJson: _propertyToJson) required this.property, required this.value, @JsonKey(name: 'case_sensitive') this.caseSensitive = false, final  String? $type}): $type = $type ?? 'WordFilter';
+  const _FilterExpressionWord({@JsonKey(toJson: _propertyToJson) required this.property, required this.value, @JsonKey(name: 'case_sensitive') this.caseSensitive = false,  String? $type}): $type = $type ?? 'WordFilter';
   factory _FilterExpressionWord.fromJson(Map<String, dynamic> json) => _$FilterExpressionWordFromJson(json);
 
 @JsonKey(toJson: _propertyToJson) final  TaskPropertyRef property;
@@ -1580,16 +1609,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionWord&&(identical(other.property, property) || other.property == property)&&(identical(other.value, value) || other.value == value)&&(identical(other.caseSensitive, caseSensitive) || other.caseSensitive == caseSensitive));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionWord&&(identical(other.property, property) || other.property == property)&&(identical(other.value, value) || other.value == value)&&(identical(other.caseSensitive, caseSensitive) || other.caseSensitive == caseSensitive));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,property,value,caseSensitive);
+int get hashCode {
+    return Object.hash(runtimeType,property,value,caseSensitive);
+}
 
 @override
 String toString() {
-  return 'FilterExpression.word(property: $property, value: $value, caseSensitive: $caseSensitive)';
+    return 'FilterExpression.word(property: $property, value: $value, caseSensitive: $caseSensitive)';
 }
 
 
@@ -1633,7 +1664,7 @@ as bool,
 @JsonSerializable()
 
 class _FilterExpressionNoWord implements FilterExpression {
-  const _FilterExpressionNoWord({@JsonKey(toJson: _propertyToJson) required this.property, required this.value, @JsonKey(name: 'case_sensitive') this.caseSensitive = false, final  String? $type}): $type = $type ?? 'NoWordFilter';
+  const _FilterExpressionNoWord({@JsonKey(toJson: _propertyToJson) required this.property, required this.value, @JsonKey(name: 'case_sensitive') this.caseSensitive = false,  String? $type}): $type = $type ?? 'NoWordFilter';
   factory _FilterExpressionNoWord.fromJson(Map<String, dynamic> json) => _$FilterExpressionNoWordFromJson(json);
 
 @JsonKey(toJson: _propertyToJson) final  TaskPropertyRef property;
@@ -1657,16 +1688,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionNoWord&&(identical(other.property, property) || other.property == property)&&(identical(other.value, value) || other.value == value)&&(identical(other.caseSensitive, caseSensitive) || other.caseSensitive == caseSensitive));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionNoWord&&(identical(other.property, property) || other.property == property)&&(identical(other.value, value) || other.value == value)&&(identical(other.caseSensitive, caseSensitive) || other.caseSensitive == caseSensitive));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,property,value,caseSensitive);
+int get hashCode {
+    return Object.hash(runtimeType,property,value,caseSensitive);
+}
 
 @override
 String toString() {
-  return 'FilterExpression.noWord(property: $property, value: $value, caseSensitive: $caseSensitive)';
+    return 'FilterExpression.noWord(property: $property, value: $value, caseSensitive: $caseSensitive)';
 }
 
 
@@ -1710,7 +1743,7 @@ as bool,
 @JsonSerializable()
 
 class _FilterExpressionRegex implements FilterExpression {
-  const _FilterExpressionRegex({@JsonKey(toJson: _propertyToJson) required this.property, required this.pattern, @JsonKey(name: 'case_sensitive') this.caseSensitive = false, final  String? $type}): $type = $type ?? 'RegexFilter';
+  const _FilterExpressionRegex({@JsonKey(toJson: _propertyToJson) required this.property, required this.pattern, @JsonKey(name: 'case_sensitive') this.caseSensitive = false,  String? $type}): $type = $type ?? 'RegexFilter';
   factory _FilterExpressionRegex.fromJson(Map<String, dynamic> json) => _$FilterExpressionRegexFromJson(json);
 
 @JsonKey(toJson: _propertyToJson) final  TaskPropertyRef property;
@@ -1734,16 +1767,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionRegex&&(identical(other.property, property) || other.property == property)&&(identical(other.pattern, pattern) || other.pattern == pattern)&&(identical(other.caseSensitive, caseSensitive) || other.caseSensitive == caseSensitive));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionRegex&&(identical(other.property, property) || other.property == property)&&(identical(other.pattern, pattern) || other.pattern == pattern)&&(identical(other.caseSensitive, caseSensitive) || other.caseSensitive == caseSensitive));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,property,pattern,caseSensitive);
+int get hashCode {
+    return Object.hash(runtimeType,property,pattern,caseSensitive);
+}
 
 @override
 String toString() {
-  return 'FilterExpression.regex(property: $property, pattern: $pattern, caseSensitive: $caseSensitive)';
+    return 'FilterExpression.regex(property: $property, pattern: $pattern, caseSensitive: $caseSensitive)';
 }
 
 
@@ -1787,7 +1822,7 @@ as bool,
 @JsonSerializable()
 
 class _FilterExpressionNone implements FilterExpression {
-  const _FilterExpressionNone({@JsonKey(toJson: _propertyToJson) required this.property, final  String? $type}): $type = $type ?? 'NoneFilter';
+  const _FilterExpressionNone({@JsonKey(toJson: _propertyToJson) required this.property,  String? $type}): $type = $type ?? 'NoneFilter';
   factory _FilterExpressionNone.fromJson(Map<String, dynamic> json) => _$FilterExpressionNoneFromJson(json);
 
 @JsonKey(toJson: _propertyToJson) final  TaskPropertyRef property;
@@ -1809,16 +1844,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionNone&&(identical(other.property, property) || other.property == property));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionNone&&(identical(other.property, property) || other.property == property));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,property);
+int get hashCode {
+    return Object.hash(runtimeType,property);
+}
 
 @override
 String toString() {
-  return 'FilterExpression.none(property: $property)';
+    return 'FilterExpression.none(property: $property)';
 }
 
 
@@ -1860,7 +1897,7 @@ as TaskPropertyRef,
 @JsonSerializable()
 
 class _FilterExpressionAny implements FilterExpression {
-  const _FilterExpressionAny({@JsonKey(toJson: _propertyToJson) required this.property, final  String? $type}): $type = $type ?? 'AnyFilter';
+  const _FilterExpressionAny({@JsonKey(toJson: _propertyToJson) required this.property,  String? $type}): $type = $type ?? 'AnyFilter';
   factory _FilterExpressionAny.fromJson(Map<String, dynamic> json) => _$FilterExpressionAnyFromJson(json);
 
 @JsonKey(toJson: _propertyToJson) final  TaskPropertyRef property;
@@ -1882,16 +1919,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionAny&&(identical(other.property, property) || other.property == property));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionAny&&(identical(other.property, property) || other.property == property));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,property);
+int get hashCode {
+    return Object.hash(runtimeType,property);
+}
 
 @override
 String toString() {
-  return 'FilterExpression.any(property: $property)';
+    return 'FilterExpression.any(property: $property)';
 }
 
 
@@ -1933,7 +1972,7 @@ as TaskPropertyRef,
 @JsonSerializable()
 
 class _FilterExpressionDateBefore implements FilterExpression {
-  const _FilterExpressionDateBefore({@JsonKey(toJson: _propertyToJson) required this.property, required this.date, final  String? $type}): $type = $type ?? 'DateBeforeFilter';
+  const _FilterExpressionDateBefore({@JsonKey(toJson: _propertyToJson) required this.property, required this.date,  String? $type}): $type = $type ?? 'DateBeforeFilter';
   factory _FilterExpressionDateBefore.fromJson(Map<String, dynamic> json) => _$FilterExpressionDateBeforeFromJson(json);
 
 @JsonKey(toJson: _propertyToJson) final  TaskPropertyRef property;
@@ -1956,16 +1995,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionDateBefore&&(identical(other.property, property) || other.property == property)&&(identical(other.date, date) || other.date == date));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionDateBefore&&(identical(other.property, property) || other.property == property)&&(identical(other.date, date) || other.date == date));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,property,date);
+int get hashCode {
+    return Object.hash(runtimeType,property,date);
+}
 
 @override
 String toString() {
-  return 'FilterExpression.dateBefore(property: $property, date: $date)';
+    return 'FilterExpression.dateBefore(property: $property, date: $date)';
 }
 
 
@@ -2008,7 +2049,7 @@ as DateTime,
 @JsonSerializable()
 
 class _FilterExpressionDateAfter implements FilterExpression {
-  const _FilterExpressionDateAfter({@JsonKey(toJson: _propertyToJson) required this.property, required this.date, final  String? $type}): $type = $type ?? 'DateAfterFilter';
+  const _FilterExpressionDateAfter({@JsonKey(toJson: _propertyToJson) required this.property, required this.date,  String? $type}): $type = $type ?? 'DateAfterFilter';
   factory _FilterExpressionDateAfter.fromJson(Map<String, dynamic> json) => _$FilterExpressionDateAfterFromJson(json);
 
 @JsonKey(toJson: _propertyToJson) final  TaskPropertyRef property;
@@ -2031,16 +2072,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionDateAfter&&(identical(other.property, property) || other.property == property)&&(identical(other.date, date) || other.date == date));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionDateAfter&&(identical(other.property, property) || other.property == property)&&(identical(other.date, date) || other.date == date));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,property,date);
+int get hashCode {
+    return Object.hash(runtimeType,property,date);
+}
 
 @override
 String toString() {
-  return 'FilterExpression.dateAfter(property: $property, date: $date)';
+    return 'FilterExpression.dateAfter(property: $property, date: $date)';
 }
 
 
@@ -2083,7 +2126,7 @@ as DateTime,
 @JsonSerializable()
 
 class _FilterExpressionDateBy implements FilterExpression {
-  const _FilterExpressionDateBy({@JsonKey(toJson: _propertyToJson) required this.property, required this.date, final  String? $type}): $type = $type ?? 'DateByFilter';
+  const _FilterExpressionDateBy({@JsonKey(toJson: _propertyToJson) required this.property, required this.date,  String? $type}): $type = $type ?? 'DateByFilter';
   factory _FilterExpressionDateBy.fromJson(Map<String, dynamic> json) => _$FilterExpressionDateByFromJson(json);
 
 @JsonKey(toJson: _propertyToJson) final  TaskPropertyRef property;
@@ -2106,16 +2149,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionDateBy&&(identical(other.property, property) || other.property == property)&&(identical(other.date, date) || other.date == date));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionDateBy&&(identical(other.property, property) || other.property == property)&&(identical(other.date, date) || other.date == date));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,property,date);
+int get hashCode {
+    return Object.hash(runtimeType,property,date);
+}
 
 @override
 String toString() {
-  return 'FilterExpression.dateBy(property: $property, date: $date)';
+    return 'FilterExpression.dateBy(property: $property, date: $date)';
 }
 
 
@@ -2158,7 +2203,7 @@ as DateTime,
 @JsonSerializable()
 
 class _FilterExpressionDateFrom implements FilterExpression {
-  const _FilterExpressionDateFrom({@JsonKey(toJson: _propertyToJson) required this.property, required this.from, final  String? $type}): $type = $type ?? 'DateFromFilter';
+  const _FilterExpressionDateFrom({@JsonKey(toJson: _propertyToJson) required this.property, required this.from,  String? $type}): $type = $type ?? 'DateFromFilter';
   factory _FilterExpressionDateFrom.fromJson(Map<String, dynamic> json) => _$FilterExpressionDateFromFromJson(json);
 
 @JsonKey(toJson: _propertyToJson) final  TaskPropertyRef property;
@@ -2181,16 +2226,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionDateFrom&&(identical(other.property, property) || other.property == property)&&(identical(other.from, from) || other.from == from));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionDateFrom&&(identical(other.property, property) || other.property == property)&&(identical(other.from, from) || other.from == from));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,property,from);
+int get hashCode {
+    return Object.hash(runtimeType,property,from);
+}
 
 @override
 String toString() {
-  return 'FilterExpression.dateFrom(property: $property, from: $from)';
+    return 'FilterExpression.dateFrom(property: $property, from: $from)';
 }
 
 
@@ -2233,7 +2280,7 @@ as DateTime,
 @JsonSerializable()
 
 class _FilterExpressionDateTo implements FilterExpression {
-  const _FilterExpressionDateTo({@JsonKey(toJson: _propertyToJson) required this.property, required this.to, final  String? $type}): $type = $type ?? 'DateToFilter';
+  const _FilterExpressionDateTo({@JsonKey(toJson: _propertyToJson) required this.property, required this.to,  String? $type}): $type = $type ?? 'DateToFilter';
   factory _FilterExpressionDateTo.fromJson(Map<String, dynamic> json) => _$FilterExpressionDateToFromJson(json);
 
 @JsonKey(toJson: _propertyToJson) final  TaskPropertyRef property;
@@ -2256,16 +2303,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionDateTo&&(identical(other.property, property) || other.property == property)&&(identical(other.to, to) || other.to == to));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionDateTo&&(identical(other.property, property) || other.property == property)&&(identical(other.to, to) || other.to == to));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,property,to);
+int get hashCode {
+    return Object.hash(runtimeType,property,to);
+}
 
 @override
 String toString() {
-  return 'FilterExpression.dateTo(property: $property, to: $to)';
+    return 'FilterExpression.dateTo(property: $property, to: $to)';
 }
 
 
@@ -2308,7 +2357,7 @@ as DateTime,
 @JsonSerializable()
 
 class _FilterExpressionLessThan implements FilterExpression {
-  const _FilterExpressionLessThan({@JsonKey(toJson: _propertyToJson) required this.property, required this.value, final  String? $type}): $type = $type ?? 'LessThanFilter';
+  const _FilterExpressionLessThan({@JsonKey(toJson: _propertyToJson) required this.property, required this.value,  String? $type}): $type = $type ?? 'LessThanFilter';
   factory _FilterExpressionLessThan.fromJson(Map<String, dynamic> json) => _$FilterExpressionLessThanFromJson(json);
 
 @JsonKey(toJson: _propertyToJson) final  TaskPropertyRef property;
@@ -2331,16 +2380,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionLessThan&&(identical(other.property, property) || other.property == property)&&(identical(other.value, value) || other.value == value));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionLessThan&&(identical(other.property, property) || other.property == property)&&(identical(other.value, value) || other.value == value));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,property,value);
+int get hashCode {
+    return Object.hash(runtimeType,property,value);
+}
 
 @override
 String toString() {
-  return 'FilterExpression.lessThan(property: $property, value: $value)';
+    return 'FilterExpression.lessThan(property: $property, value: $value)';
 }
 
 
@@ -2383,7 +2434,7 @@ as double,
 @JsonSerializable()
 
 class _FilterExpressionLessThanOrEqual implements FilterExpression {
-  const _FilterExpressionLessThanOrEqual({@JsonKey(toJson: _propertyToJson) required this.property, required this.value, final  String? $type}): $type = $type ?? 'LessThanOrEqualFilter';
+  const _FilterExpressionLessThanOrEqual({@JsonKey(toJson: _propertyToJson) required this.property, required this.value,  String? $type}): $type = $type ?? 'LessThanOrEqualFilter';
   factory _FilterExpressionLessThanOrEqual.fromJson(Map<String, dynamic> json) => _$FilterExpressionLessThanOrEqualFromJson(json);
 
 @JsonKey(toJson: _propertyToJson) final  TaskPropertyRef property;
@@ -2406,16 +2457,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionLessThanOrEqual&&(identical(other.property, property) || other.property == property)&&(identical(other.value, value) || other.value == value));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionLessThanOrEqual&&(identical(other.property, property) || other.property == property)&&(identical(other.value, value) || other.value == value));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,property,value);
+int get hashCode {
+    return Object.hash(runtimeType,property,value);
+}
 
 @override
 String toString() {
-  return 'FilterExpression.lessThanOrEqual(property: $property, value: $value)';
+    return 'FilterExpression.lessThanOrEqual(property: $property, value: $value)';
 }
 
 
@@ -2458,7 +2511,7 @@ as double,
 @JsonSerializable()
 
 class _FilterExpressionGreaterThan implements FilterExpression {
-  const _FilterExpressionGreaterThan({@JsonKey(toJson: _propertyToJson) required this.property, required this.value, final  String? $type}): $type = $type ?? 'GreaterThanFilter';
+  const _FilterExpressionGreaterThan({@JsonKey(toJson: _propertyToJson) required this.property, required this.value,  String? $type}): $type = $type ?? 'GreaterThanFilter';
   factory _FilterExpressionGreaterThan.fromJson(Map<String, dynamic> json) => _$FilterExpressionGreaterThanFromJson(json);
 
 @JsonKey(toJson: _propertyToJson) final  TaskPropertyRef property;
@@ -2481,16 +2534,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionGreaterThan&&(identical(other.property, property) || other.property == property)&&(identical(other.value, value) || other.value == value));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionGreaterThan&&(identical(other.property, property) || other.property == property)&&(identical(other.value, value) || other.value == value));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,property,value);
+int get hashCode {
+    return Object.hash(runtimeType,property,value);
+}
 
 @override
 String toString() {
-  return 'FilterExpression.greaterThan(property: $property, value: $value)';
+    return 'FilterExpression.greaterThan(property: $property, value: $value)';
 }
 
 
@@ -2533,7 +2588,7 @@ as double,
 @JsonSerializable()
 
 class _FilterExpressionGreaterThanOrEqual implements FilterExpression {
-  const _FilterExpressionGreaterThanOrEqual({@JsonKey(toJson: _propertyToJson) required this.property, required this.value, final  String? $type}): $type = $type ?? 'GreaterThanOrEqualFilter';
+  const _FilterExpressionGreaterThanOrEqual({@JsonKey(toJson: _propertyToJson) required this.property, required this.value,  String? $type}): $type = $type ?? 'GreaterThanOrEqualFilter';
   factory _FilterExpressionGreaterThanOrEqual.fromJson(Map<String, dynamic> json) => _$FilterExpressionGreaterThanOrEqualFromJson(json);
 
 @JsonKey(toJson: _propertyToJson) final  TaskPropertyRef property;
@@ -2556,16 +2611,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionGreaterThanOrEqual&&(identical(other.property, property) || other.property == property)&&(identical(other.value, value) || other.value == value));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _FilterExpressionGreaterThanOrEqual&&(identical(other.property, property) || other.property == property)&&(identical(other.value, value) || other.value == value));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,property,value);
+int get hashCode {
+    return Object.hash(runtimeType,property,value);
+}
 
 @override
 String toString() {
-  return 'FilterExpression.greaterThanOrEqual(property: $property, value: $value)';
+    return 'FilterExpression.greaterThanOrEqual(property: $property, value: $value)';
 }
 
 
@@ -2618,16 +2675,21 @@ $TaskFilterCopyWith<TaskFilter> get copyWith => _$TaskFilterCopyWithImpl<TaskFil
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is TaskFilter&&(identical(other.filter, filter) || other.filter == filter));
+  final _this = this as TaskFilter;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TaskFilter&&(identical(other.filter, _this.filter) || other.filter == _this.filter));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,filter);
+int get hashCode {
+  final _this = this as TaskFilter;
+  return Object.hash(runtimeType,_this.filter);
+}
 
 @override
 String toString() {
-  return 'TaskFilter(filter: $filter)';
+  final _this = this as TaskFilter;
+  return 'TaskFilter(filter: ${_this.filter})';
 }
 
 
@@ -2656,8 +2718,8 @@ class _$TaskFilterCopyWithImpl<$Res>
 /// Create a copy of TaskFilter
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? filter = null,}) {
-  return _then(_self.copyWith(
-filter: null == filter ? _self.filter : filter // ignore: cast_nullable_to_non_nullable
+  return _then(TaskFilter(
+null == filter ? _self.filter : filter // ignore: cast_nullable_to_non_nullable
 as FilterExpression,
   ));
 }
@@ -2823,16 +2885,18 @@ _$TaskFilterCopyWith<_TaskFilter> get copyWith => __$TaskFilterCopyWithImpl<_Tas
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TaskFilter&&(identical(other.filter, filter) || other.filter == filter));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _TaskFilter&&(identical(other.filter, filter) || other.filter == filter));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,filter);
+int get hashCode {
+    return Object.hash(runtimeType,filter);
+}
 
 @override
 String toString() {
-  return 'TaskFilter(filter: $filter)';
+    return 'TaskFilter(filter: $filter)';
 }
 
 

@@ -8,10 +8,12 @@ void main() {
     const prop = StringPropertyRef('description');
 
     test('andGroup', () {
-      final expr = FilterExpression.andGroup(filters: [
-        FilterExpression.tag(tag: 't1', exclude: false),
-        FilterExpression.tag(tag: 't2', exclude: true),
-      ]);
+      final expr = FilterExpression.andGroup(
+        filters: [
+          FilterExpression.tag(tag: 't1', exclude: false),
+          FilterExpression.tag(tag: 't2', exclude: true),
+        ],
+      );
       expect(expr.toJson(), {
         'type': 'AndGroup',
         'filters': [
@@ -22,9 +24,9 @@ void main() {
     });
 
     test('orGroup', () {
-      final expr = FilterExpression.orGroup(filters: [
-        FilterExpression.equals(property: prop, value: 'a'),
-      ]);
+      final expr = FilterExpression.orGroup(
+        filters: [FilterExpression.equals(property: prop, value: 'a')],
+      );
       expect(expr.toJson(), {
         'type': 'OrGroup',
         'filters': [
@@ -61,11 +63,7 @@ void main() {
 
     test('tag', () {
       final expr = FilterExpression.tag(tag: 'home', exclude: false);
-      expect(expr.toJson(), {
-        'type': 'Tag',
-        'tag': 'home',
-        'exclude': false,
-      });
+      expect(expr.toJson(), {'type': 'Tag', 'tag': 'home', 'exclude': false});
     });
 
     test('virtualTag', () {
@@ -96,7 +94,10 @@ void main() {
     });
 
     test('inValues', () {
-      final expr = FilterExpression.inValues(property: prop, values: ['a', 'b']);
+      final expr = FilterExpression.inValues(
+        property: prop,
+        values: ['a', 'b'],
+      );
       expect(expr.toJson(), {
         'type': 'InFilter',
         'property': {'name': 'description'},
@@ -105,8 +106,10 @@ void main() {
     });
 
     test('notInValues', () {
-      final expr =
-          FilterExpression.notInValues(property: prop, values: ['a', 'b']);
+      final expr = FilterExpression.notInValues(
+        property: prop,
+        values: ['a', 'b'],
+      );
       expect(expr.toJson(), {
         'type': 'NotInFilter',
         'property': {'name': 'description'},
@@ -354,7 +357,11 @@ void main() {
       final decoded = fromJson({
         'type': 'OrGroup',
         'filters': [
-          {'type': 'EqualsFilter', 'property': {'name': propName}, 'value': 'v'},
+          {
+            'type': 'EqualsFilter',
+            'property': {'name': propName},
+            'value': 'v',
+          },
         ],
       });
       expect(
@@ -387,8 +394,10 @@ void main() {
       });
       expect(
         decoded.maybeWhen(
-          not: (inner) =>
-              inner.maybeWhen(tag: (t, e) => t == 'x' && !e, orElse: () => false),
+          not: (inner) => inner.maybeWhen(
+            tag: (t, e) => t == 'x' && !e,
+            orElse: () => false,
+          ),
           orElse: () => false,
         ),
         isTrue,
@@ -396,11 +405,7 @@ void main() {
     });
 
     test('tag', () {
-      final decoded = fromJson({
-        'type': 'Tag',
-        'tag': 'home',
-        'exclude': true,
-      });
+      final decoded = fromJson({'type': 'Tag', 'tag': 'home', 'exclude': true});
       expect(
         decoded.maybeWhen(
           tag: (tag, exclude) => tag == 'home' && exclude == true,
@@ -590,8 +595,7 @@ void main() {
       });
       expect(
         decoded.maybeWhen(
-          regex: (p, pat, cs) =>
-              p.name == propName && pat == r'^\d+$' && cs,
+          regex: (p, pat, cs) => p.name == propName && pat == r'^\d+$' && cs,
           orElse: () => false,
         ),
         isTrue,
@@ -604,10 +608,7 @@ void main() {
         'property': {'name': propName},
       });
       expect(
-        decoded.maybeWhen(
-          none: (p) => p.name == propName,
-          orElse: () => false,
-        ),
+        decoded.maybeWhen(none: (p) => p.name == propName, orElse: () => false),
         isTrue,
       );
     });
@@ -618,10 +619,7 @@ void main() {
         'property': {'name': propName},
       });
       expect(
-        decoded.maybeWhen(
-          any: (p) => p.name == propName,
-          orElse: () => false,
-        ),
+        decoded.maybeWhen(any: (p) => p.name == propName, orElse: () => false),
         isTrue,
       );
     });
@@ -858,15 +856,19 @@ void main() {
     }
 
     test('andGroup', () {
-      expectRoundTrip(FilterExpression.andGroup(filters: [
-        FilterExpression.tag(tag: 'a', exclude: false),
-      ]));
+      expectRoundTrip(
+        FilterExpression.andGroup(
+          filters: [FilterExpression.tag(tag: 'a', exclude: false)],
+        ),
+      );
     });
 
     test('orGroup', () {
-      expectRoundTrip(FilterExpression.orGroup(filters: [
-        FilterExpression.tag(tag: 'b', exclude: true),
-      ]));
+      expectRoundTrip(
+        FilterExpression.orGroup(
+          filters: [FilterExpression.tag(tag: 'b', exclude: true)],
+        ),
+      );
     });
 
     test('xorGroup', () {
@@ -874,9 +876,11 @@ void main() {
     });
 
     test('not', () {
-      expectRoundTrip(FilterExpression.not(
-        inner: FilterExpression.tag(tag: 'x', exclude: false),
-      ));
+      expectRoundTrip(
+        FilterExpression.not(
+          inner: FilterExpression.tag(tag: 'x', exclude: false),
+        ),
+      );
     });
 
     test('tag', () {
@@ -890,15 +894,11 @@ void main() {
     });
 
     test('equals', () {
-      expectRoundTrip(
-        FilterExpression.equals(property: prop, value: 'val'),
-      );
+      expectRoundTrip(FilterExpression.equals(property: prop, value: 'val'));
     });
 
     test('notEquals', () {
-      expectRoundTrip(
-        FilterExpression.notEquals(property: prop, value: 'val'),
-      );
+      expectRoundTrip(FilterExpression.notEquals(property: prop, value: 'val'));
     });
 
     test('inValues', () {
@@ -955,11 +955,7 @@ void main() {
 
     test('word', () {
       expectRoundTrip(
-        FilterExpression.word(
-          property: prop,
-          value: 'v',
-          caseSensitive: true,
-        ),
+        FilterExpression.word(property: prop, value: 'v', caseSensitive: true),
       );
     });
 
@@ -1005,11 +1001,7 @@ void main() {
     test('hasTag string format', () {
       final tf = TaskFilter.hasTag('work');
       final decoded = jsonDecode(tf.toJson()) as Map<String, dynamic>;
-      expect(decoded, {
-        'type': 'Tag',
-        'tag': 'work',
-        'exclude': false,
-      });
+      expect(decoded, {'type': 'Tag', 'tag': 'work', 'exclude': false});
     });
 
     test('virtualTag string format', () {

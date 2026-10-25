@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'auth_config.dart';
@@ -9,6 +9,7 @@ part of 'auth_config.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -32,16 +33,21 @@ $AuthConfigCopyWith<AuthConfig> get copyWith => _$AuthConfigCopyWithImpl<AuthCon
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthConfig&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.encryptionSecret, encryptionSecret) || other.encryptionSecret == encryptionSecret)&&(identical(other.serverUrl, serverUrl) || other.serverUrl == serverUrl)&&(identical(other.validateCertificates, validateCertificates) || other.validateCertificates == validateCertificates));
+  final _this = this as AuthConfig;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AuthConfig&&(identical(other.clientId, _this.clientId) || other.clientId == _this.clientId)&&(identical(other.encryptionSecret, _this.encryptionSecret) || other.encryptionSecret == _this.encryptionSecret)&&(identical(other.serverUrl, _this.serverUrl) || other.serverUrl == _this.serverUrl)&&(identical(other.validateCertificates, _this.validateCertificates) || other.validateCertificates == _this.validateCertificates));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,clientId,encryptionSecret,serverUrl,validateCertificates);
+int get hashCode {
+  final _this = this as AuthConfig;
+  return Object.hash(runtimeType,_this.clientId,_this.encryptionSecret,_this.serverUrl,_this.validateCertificates);
+}
 
 @override
 String toString() {
-  return 'AuthConfig(clientId: $clientId, encryptionSecret: $encryptionSecret, serverUrl: $serverUrl, validateCertificates: $validateCertificates)';
+  final _this = this as AuthConfig;
+  return 'AuthConfig(clientId: ${_this.clientId}, encryptionSecret: ${_this.encryptionSecret}, serverUrl: ${_this.serverUrl}, validateCertificates: ${_this.validateCertificates})';
 }
 
 
@@ -70,7 +76,7 @@ class _$AuthConfigCopyWithImpl<$Res>
 /// Create a copy of AuthConfig
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? clientId = null,Object? encryptionSecret = null,Object? serverUrl = null,Object? validateCertificates = null,}) {
-  return _then(_self.copyWith(
+  return _then(AuthConfig(
 clientId: null == clientId ? _self.clientId : clientId // ignore: cast_nullable_to_non_nullable
 as String,encryptionSecret: null == encryptionSecret ? _self.encryptionSecret : encryptionSecret // ignore: cast_nullable_to_non_nullable
 as String,serverUrl: null == serverUrl ? _self.serverUrl : serverUrl // ignore: cast_nullable_to_non_nullable
@@ -241,16 +247,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuthConfig&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.encryptionSecret, encryptionSecret) || other.encryptionSecret == encryptionSecret)&&(identical(other.serverUrl, serverUrl) || other.serverUrl == serverUrl)&&(identical(other.validateCertificates, validateCertificates) || other.validateCertificates == validateCertificates));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _AuthConfig&&(identical(other.clientId, clientId) || other.clientId == clientId)&&(identical(other.encryptionSecret, encryptionSecret) || other.encryptionSecret == encryptionSecret)&&(identical(other.serverUrl, serverUrl) || other.serverUrl == serverUrl)&&(identical(other.validateCertificates, validateCertificates) || other.validateCertificates == validateCertificates));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,clientId,encryptionSecret,serverUrl,validateCertificates);
+int get hashCode {
+    return Object.hash(runtimeType,clientId,encryptionSecret,serverUrl,validateCertificates);
+}
 
 @override
 String toString() {
-  return 'AuthConfig(clientId: $clientId, encryptionSecret: $encryptionSecret, serverUrl: $serverUrl, validateCertificates: $validateCertificates)';
+    return 'AuthConfig(clientId: $clientId, encryptionSecret: $encryptionSecret, serverUrl: $serverUrl, validateCertificates: $validateCertificates)';
 }
 
 

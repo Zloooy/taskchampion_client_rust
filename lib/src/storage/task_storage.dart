@@ -17,12 +17,12 @@ abstract interface class TaskStorage {
   Future<String> getAllTasksJson();
 
   /// Get all tasks with sorting as a JSON string.
-  Future<String> getAllTasksWithSortJson(TaskSort sort);
+  Future<String> getAllTasksWithSortJson(List<TaskSort> sort);
 
   /// Get tasks filtered by a [filter] expression with optional [sort].
   Future<String> getTasksWithFilterAndSortJson(
     TaskFilter filter,
-    TaskSort? sort,
+    List<TaskSort>? sort,
   );
 
   /// Get a single task by its UUID, or `null` if not found.
@@ -99,7 +99,7 @@ abstract interface class TaskStorage {
   Future<List<String>> getTaskPropertyValues(
     String property,
     TaskFilter? filter,
-    TaskSort? sort,
+    List<TaskSort>? sort,
   );
 
   /// Retrieve distinct values for a given task property with typed conversion.
@@ -107,7 +107,7 @@ abstract interface class TaskStorage {
     String property,
     PropertyReturnType returnType,
     TaskFilter? filter,
-    TaskSort? sort,
+    List<TaskSort>? sort,
   );
 
   /// Retrieve all possible enum values for a given property type.

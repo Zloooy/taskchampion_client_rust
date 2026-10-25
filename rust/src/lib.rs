@@ -33,7 +33,8 @@ pub mod virtual_tags;
 
 pub use error::{TcError, TcResult};
 pub use filter::{
-    compare_tasks, FilterExpression, PropertyRef, SortDirection, SortProperty, TaskFilter, TaskSort,
+    compare_tasks, compare_tasks_multi, FilterExpression, PropertyRef, SortDirection, SortProperty,
+    TaskFilter, TaskSort, TaskSortList,
 };
 pub use models::SyncResultData;
 pub use properties::{get_all_enum_values, get_task_property_values_typed, PropertyReturnType};

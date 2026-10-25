@@ -58,7 +58,7 @@ mod evaluator;
 mod sort;
 
 pub(crate) use evaluator::evaluate_filter_expression;
-pub use sort::compare_tasks;
+pub use sort::{compare_tasks, compare_tasks_multi};
 
 /// Property reference used both for filtering and for sorting.
 ///
@@ -66,7 +66,7 @@ pub use sort::compare_tasks;
 /// `SortProperty` structs (both were `{ name: String }`) into this single
 /// type. `SortProperty` is kept as a deprecated alias so external/serde
 /// references keep compiling.
-#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Deserialize, serde::Serialize)]
 pub struct PropertyRef {
     pub name: String,
 }
@@ -86,10 +86,58 @@ pub enum SortDirection {
 }
 
 /// Sort specification
-#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Deserialize, serde::Serialize)]
 pub struct TaskSort {
     pub property: SortProperty,
     pub direction: SortDirection,
+}
+
+/// An ordered list of sort specifications (SQL `ORDER BY` semantics).
+///
+/// The wire format is a JSON **array** of [`TaskSort`] objects:
+///
+/// ```json
+/// [
+///   { "property": { "name": "due" }, "direction": "descending" },
+///   { "property": { "name": "project" }, "direction": "ascending" }
+/// ]
+/// ```
+///
+/// For backward compatibility, deserialization also accepts the legacy
+/// **single-object** form (`{ "property": ..., "direction": ... }`) and wraps
+/// it into a one-element list. Serialization always emits the array form.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TaskSortList {
+    pub sorts: Vec<TaskSort>,
+}
+
+impl serde::Serialize for TaskSortList {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        self.sorts.serialize(serializer)
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for TaskSortList {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        // Accept either the array form or the legacy single-object form.
+        // A `Value` buffer lets us inspect the top-level JSON shape without
+        // relying on serde's private unbuffered API.
+        let value = serde_json::Value::deserialize(deserializer)?;
+        match value {
+            serde_json::Value::Array(items) => {
+                let sorts = items
+                    .into_iter()
+                    .map(TaskSort::deserialize)
+                    .collect::<Result<Vec<_>, _>>()
+                    .map_err(serde::de::Error::custom)?;
+                Ok(TaskSortList { sorts })
+            }
+            other => {
+                let sort = TaskSort::deserialize(other).map_err(serde::de::Error::custom)?;
+                Ok(TaskSortList { sorts: vec![sort] })
+            }
+        }
+    }
 }
 
 /// Main filter expression type (taskwarrior-compatible)
@@ -1338,6 +1386,63 @@ mod tests {
     fn test_parse_filter_option_invalid_json() {
         let result = parse_filter_option(Some("not json".to_string()));
         assert!(result.is_err());
+    }
+
+    // ========================================================================
+    // TaskSortList (de)serialization
+    // ========================================================================
+
+    #[test]
+    fn test_task_sort_list_deserialize_array_form() {
+        let json = r#"[
+            { "property": {"name": "due"}, "direction": "descending" },
+            { "property": {"name": "project"}, "direction": "ascending" }
+        ]"#;
+        let list: TaskSortList = serde_json::from_str(json).unwrap();
+        assert_eq!(list.sorts.len(), 2);
+        assert_eq!(list.sorts[0].property.name, "due");
+        assert_eq!(list.sorts[0].direction, SortDirection::Descending);
+        assert_eq!(list.sorts[1].property.name, "project");
+        assert_eq!(list.sorts[1].direction, SortDirection::Ascending);
+    }
+
+    #[test]
+    fn test_task_sort_list_deserialize_legacy_single_object() {
+        // The legacy single-object form must be accepted and wrapped into a
+        // one-element list.
+        let json = r#"{ "property": {"name": "entry"}, "direction": "ascending" }"#;
+        let list: TaskSortList = serde_json::from_str(json).unwrap();
+        assert_eq!(list.sorts.len(), 1);
+        assert_eq!(list.sorts[0].property.name, "entry");
+        assert_eq!(list.sorts[0].direction, SortDirection::Ascending);
+    }
+
+    #[test]
+    fn test_task_sort_list_deserialize_empty_array() {
+        // An empty array is a valid no-op sort.
+        let list: TaskSortList = serde_json::from_str("[]").unwrap();
+        assert!(list.sorts.is_empty());
+    }
+
+    #[test]
+    fn test_task_sort_list_serialize_always_array_form() {
+        // Even a single-element list must serialize as a JSON array.
+        let list = TaskSortList {
+            sorts: vec![TaskSort {
+                property: SortProperty {
+                    name: "due".to_string(),
+                },
+                direction: SortDirection::Descending,
+            }],
+        };
+        let json = serde_json::to_string(&list).unwrap();
+        assert_eq!(
+            json,
+            r#"[{"property":{"name":"due"},"direction":"descending"}]"#
+        );
+        // And it must round-trip back to the same list.
+        let round_tripped: TaskSortList = serde_json::from_str(&json).unwrap();
+        assert_eq!(round_tripped, list);
     }
 
     #[tokio::test]

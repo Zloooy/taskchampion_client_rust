@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'task_params.dart';
@@ -9,6 +9,7 @@ part of 'task_params.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
@@ -51,16 +52,21 @@ $TaskParamsCopyWith<TaskParams> get copyWith => _$TaskParamsCopyWithImpl<TaskPar
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is TaskParams&&(identical(other.description, description) || other.description == description)&&(identical(other.status, status) || other.status == status)&&(identical(other.priority, priority) || other.priority == priority)&&(identical(other.project, project) || other.project == project)&&const DeepCollectionEquality().equals(other.tags, tags)&&const DeepCollectionEquality().equals(other.depends, depends)&&(identical(other.due, due) || other.due == due)&&(identical(other.wait, wait) || other.wait == wait)&&(identical(other.scheduled, scheduled) || other.scheduled == scheduled)&&(identical(other.until, until) || other.until == until)&&(identical(other.entry, entry) || other.entry == entry)&&(identical(other.end, end) || other.end == end)&&(identical(other.recur, recur) || other.recur == recur)&&const DeepCollectionEquality().equals(other.annotations, annotations)&&const DeepCollectionEquality().equals(other.udas, udas));
+  final _this = this as TaskParams;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TaskParams&&(identical(other.description, _this.description) || other.description == _this.description)&&(identical(other.status, _this.status) || other.status == _this.status)&&(identical(other.priority, _this.priority) || other.priority == _this.priority)&&(identical(other.project, _this.project) || other.project == _this.project)&&const DeepCollectionEquality().equals(other.tags, _this.tags)&&const DeepCollectionEquality().equals(other.depends, _this.depends)&&(identical(other.due, _this.due) || other.due == _this.due)&&(identical(other.wait, _this.wait) || other.wait == _this.wait)&&(identical(other.scheduled, _this.scheduled) || other.scheduled == _this.scheduled)&&(identical(other.until, _this.until) || other.until == _this.until)&&(identical(other.entry, _this.entry) || other.entry == _this.entry)&&(identical(other.end, _this.end) || other.end == _this.end)&&(identical(other.recur, _this.recur) || other.recur == _this.recur)&&const DeepCollectionEquality().equals(other.annotations, _this.annotations)&&const DeepCollectionEquality().equals(other.udas, _this.udas));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,description,status,priority,project,const DeepCollectionEquality().hash(tags),const DeepCollectionEquality().hash(depends),due,wait,scheduled,until,entry,end,recur,const DeepCollectionEquality().hash(annotations),const DeepCollectionEquality().hash(udas));
+int get hashCode {
+  final _this = this as TaskParams;
+  return Object.hash(runtimeType,_this.description,_this.status,_this.priority,_this.project,const DeepCollectionEquality().hash(_this.tags),const DeepCollectionEquality().hash(_this.depends),_this.due,_this.wait,_this.scheduled,_this.until,_this.entry,_this.end,_this.recur,const DeepCollectionEquality().hash(_this.annotations),const DeepCollectionEquality().hash(_this.udas));
+}
 
 @override
 String toString() {
-  return 'TaskParams(description: $description, status: $status, priority: $priority, project: $project, tags: $tags, depends: $depends, due: $due, wait: $wait, scheduled: $scheduled, until: $until, entry: $entry, end: $end, recur: $recur, annotations: $annotations, udas: $udas)';
+  final _this = this as TaskParams;
+  return 'TaskParams(description: ${_this.description}, status: ${_this.status}, priority: ${_this.priority}, project: ${_this.project}, tags: ${_this.tags}, depends: ${_this.depends}, due: ${_this.due}, wait: ${_this.wait}, scheduled: ${_this.scheduled}, until: ${_this.until}, entry: ${_this.entry}, end: ${_this.end}, recur: ${_this.recur}, annotations: ${_this.annotations}, udas: ${_this.udas})';
 }
 
 
@@ -89,7 +95,7 @@ class _$TaskParamsCopyWithImpl<$Res>
 /// Create a copy of TaskParams
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? description = null,Object? status = null,Object? priority = null,Object? project = freezed,Object? tags = null,Object? depends = null,Object? due = freezed,Object? wait = freezed,Object? scheduled = freezed,Object? until = freezed,Object? entry = freezed,Object? end = freezed,Object? recur = freezed,Object? annotations = null,Object? udas = null,}) {
-  return _then(_self.copyWith(
+  return _then(TaskParams(
 description: null == description ? _self.description : description // ignore: cast_nullable_to_non_nullable
 as String,status: null == status ? _self.status : status // ignore: cast_nullable_to_non_nullable
 as TaskStatus,priority: null == priority ? _self.priority : priority // ignore: cast_nullable_to_non_nullable
@@ -240,7 +246,7 @@ return $default(_that.description,_that.status,_that.priority,_that.project,_tha
 
 
 class _TaskParams extends TaskParams {
-  const _TaskParams({@Assert('description.trim().isNotEmpty') required this.description, this.status = TaskStatus.pending, this.priority = TaskPriority.none, this.project, final  List<String> tags = const [], final  List<String> depends = const [], this.due, this.wait, this.scheduled, this.until, this.entry, this.end, this.recur, final  List<Annotation> annotations = const [], final  Map<String, String> udas = const {}}): _tags = tags,_depends = depends,_annotations = annotations,_udas = udas,super._();
+  const _TaskParams({@Assert('description.trim().isNotEmpty') required this.description, this.status = TaskStatus.pending, this.priority = TaskPriority.none, this.project,  List<String> tags = const [],  List<String> depends = const [], this.due, this.wait, this.scheduled, this.until, this.entry, this.end, this.recur,  List<Annotation> annotations = const [],  Map<String, String> udas = const {}}): _tags = tags,_depends = depends,_annotations = annotations,_udas = udas,super._();
   
 
 /// Task description (required).
@@ -331,16 +337,18 @@ _$TaskParamsCopyWith<_TaskParams> get copyWith => __$TaskParamsCopyWithImpl<_Tas
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _TaskParams&&(identical(other.description, description) || other.description == description)&&(identical(other.status, status) || other.status == status)&&(identical(other.priority, priority) || other.priority == priority)&&(identical(other.project, project) || other.project == project)&&const DeepCollectionEquality().equals(other._tags, _tags)&&const DeepCollectionEquality().equals(other._depends, _depends)&&(identical(other.due, due) || other.due == due)&&(identical(other.wait, wait) || other.wait == wait)&&(identical(other.scheduled, scheduled) || other.scheduled == scheduled)&&(identical(other.until, until) || other.until == until)&&(identical(other.entry, entry) || other.entry == entry)&&(identical(other.end, end) || other.end == end)&&(identical(other.recur, recur) || other.recur == recur)&&const DeepCollectionEquality().equals(other._annotations, _annotations)&&const DeepCollectionEquality().equals(other._udas, _udas));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _TaskParams&&(identical(other.description, description) || other.description == description)&&(identical(other.status, status) || other.status == status)&&(identical(other.priority, priority) || other.priority == priority)&&(identical(other.project, project) || other.project == project)&&const DeepCollectionEquality().equals(other.tags, _tags)&&const DeepCollectionEquality().equals(other.depends, _depends)&&(identical(other.due, due) || other.due == due)&&(identical(other.wait, wait) || other.wait == wait)&&(identical(other.scheduled, scheduled) || other.scheduled == scheduled)&&(identical(other.until, until) || other.until == until)&&(identical(other.entry, entry) || other.entry == entry)&&(identical(other.end, end) || other.end == end)&&(identical(other.recur, recur) || other.recur == recur)&&const DeepCollectionEquality().equals(other.annotations, _annotations)&&const DeepCollectionEquality().equals(other.udas, _udas));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,description,status,priority,project,const DeepCollectionEquality().hash(_tags),const DeepCollectionEquality().hash(_depends),due,wait,scheduled,until,entry,end,recur,const DeepCollectionEquality().hash(_annotations),const DeepCollectionEquality().hash(_udas));
+int get hashCode {
+    return Object.hash(runtimeType,description,status,priority,project,const DeepCollectionEquality().hash(_tags),const DeepCollectionEquality().hash(_depends),due,wait,scheduled,until,entry,end,recur,const DeepCollectionEquality().hash(_annotations),const DeepCollectionEquality().hash(_udas));
+}
 
 @override
 String toString() {
-  return 'TaskParams(description: $description, status: $status, priority: $priority, project: $project, tags: $tags, depends: $depends, due: $due, wait: $wait, scheduled: $scheduled, until: $until, entry: $entry, end: $end, recur: $recur, annotations: $annotations, udas: $udas)';
+    return 'TaskParams(description: $description, status: $status, priority: $priority, project: $project, tags: $tags, depends: $depends, due: $due, wait: $wait, scheduled: $scheduled, until: $until, entry: $entry, end: $end, recur: $recur, annotations: $annotations, udas: $udas)';
 }
 
 

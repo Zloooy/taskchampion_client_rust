@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'sync_result.dart';
@@ -9,6 +9,7 @@ part of 'sync_result.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -36,16 +37,21 @@ $SyncResultCopyWith<SyncResult> get copyWith => _$SyncResultCopyWithImpl<SyncRes
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SyncResult&&(identical(other.success, success) || other.success == success)&&(identical(other.versionsSynced, versionsSynced) || other.versionsSynced == versionsSynced)&&(identical(other.tasksAdded, tasksAdded) || other.tasksAdded == tasksAdded)&&(identical(other.tasksUpdated, tasksUpdated) || other.tasksUpdated == tasksUpdated)&&(identical(other.tasksDeleted, tasksDeleted) || other.tasksDeleted == tasksDeleted)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.durationMs, durationMs) || other.durationMs == durationMs)&&(identical(other.completedAt, completedAt) || other.completedAt == completedAt));
+  final _this = this as SyncResult;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SyncResult&&(identical(other.success, _this.success) || other.success == _this.success)&&(identical(other.versionsSynced, _this.versionsSynced) || other.versionsSynced == _this.versionsSynced)&&(identical(other.tasksAdded, _this.tasksAdded) || other.tasksAdded == _this.tasksAdded)&&(identical(other.tasksUpdated, _this.tasksUpdated) || other.tasksUpdated == _this.tasksUpdated)&&(identical(other.tasksDeleted, _this.tasksDeleted) || other.tasksDeleted == _this.tasksDeleted)&&(identical(other.errorMessage, _this.errorMessage) || other.errorMessage == _this.errorMessage)&&(identical(other.durationMs, _this.durationMs) || other.durationMs == _this.durationMs)&&(identical(other.completedAt, _this.completedAt) || other.completedAt == _this.completedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,success,versionsSynced,tasksAdded,tasksUpdated,tasksDeleted,errorMessage,durationMs,completedAt);
+int get hashCode {
+  final _this = this as SyncResult;
+  return Object.hash(runtimeType,_this.success,_this.versionsSynced,_this.tasksAdded,_this.tasksUpdated,_this.tasksDeleted,_this.errorMessage,_this.durationMs,_this.completedAt);
+}
 
 @override
 String toString() {
-  return 'SyncResult(success: $success, versionsSynced: $versionsSynced, tasksAdded: $tasksAdded, tasksUpdated: $tasksUpdated, tasksDeleted: $tasksDeleted, errorMessage: $errorMessage, durationMs: $durationMs, completedAt: $completedAt)';
+  final _this = this as SyncResult;
+  return 'SyncResult(success: ${_this.success}, versionsSynced: ${_this.versionsSynced}, tasksAdded: ${_this.tasksAdded}, tasksUpdated: ${_this.tasksUpdated}, tasksDeleted: ${_this.tasksDeleted}, errorMessage: ${_this.errorMessage}, durationMs: ${_this.durationMs}, completedAt: ${_this.completedAt})';
 }
 
 
@@ -74,7 +80,7 @@ class _$SyncResultCopyWithImpl<$Res>
 /// Create a copy of SyncResult
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? success = null,Object? versionsSynced = null,Object? tasksAdded = null,Object? tasksUpdated = null,Object? tasksDeleted = null,Object? errorMessage = freezed,Object? durationMs = freezed,Object? completedAt = freezed,}) {
-  return _then(_self.copyWith(
+  return _then(SyncResult(
 success: null == success ? _self.success : success // ignore: cast_nullable_to_non_nullable
 as bool,versionsSynced: null == versionsSynced ? _self.versionsSynced : versionsSynced // ignore: cast_nullable_to_non_nullable
 as int,tasksAdded: null == tasksAdded ? _self.tasksAdded : tasksAdded // ignore: cast_nullable_to_non_nullable
@@ -257,16 +263,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SyncResult&&(identical(other.success, success) || other.success == success)&&(identical(other.versionsSynced, versionsSynced) || other.versionsSynced == versionsSynced)&&(identical(other.tasksAdded, tasksAdded) || other.tasksAdded == tasksAdded)&&(identical(other.tasksUpdated, tasksUpdated) || other.tasksUpdated == tasksUpdated)&&(identical(other.tasksDeleted, tasksDeleted) || other.tasksDeleted == tasksDeleted)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.durationMs, durationMs) || other.durationMs == durationMs)&&(identical(other.completedAt, completedAt) || other.completedAt == completedAt));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _SyncResult&&(identical(other.success, success) || other.success == success)&&(identical(other.versionsSynced, versionsSynced) || other.versionsSynced == versionsSynced)&&(identical(other.tasksAdded, tasksAdded) || other.tasksAdded == tasksAdded)&&(identical(other.tasksUpdated, tasksUpdated) || other.tasksUpdated == tasksUpdated)&&(identical(other.tasksDeleted, tasksDeleted) || other.tasksDeleted == tasksDeleted)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.durationMs, durationMs) || other.durationMs == durationMs)&&(identical(other.completedAt, completedAt) || other.completedAt == completedAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,success,versionsSynced,tasksAdded,tasksUpdated,tasksDeleted,errorMessage,durationMs,completedAt);
+int get hashCode {
+    return Object.hash(runtimeType,success,versionsSynced,tasksAdded,tasksUpdated,tasksDeleted,errorMessage,durationMs,completedAt);
+}
 
 @override
 String toString() {
-  return 'SyncResult(success: $success, versionsSynced: $versionsSynced, tasksAdded: $tasksAdded, tasksUpdated: $tasksUpdated, tasksDeleted: $tasksDeleted, errorMessage: $errorMessage, durationMs: $durationMs, completedAt: $completedAt)';
+    return 'SyncResult(success: $success, versionsSynced: $versionsSynced, tasksAdded: $tasksAdded, tasksUpdated: $tasksUpdated, tasksDeleted: $tasksDeleted, errorMessage: $errorMessage, durationMs: $durationMs, completedAt: $completedAt)';
 }
 
 

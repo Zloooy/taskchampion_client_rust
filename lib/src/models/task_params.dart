@@ -104,23 +104,23 @@ sealed class TaskParams with _$TaskParams {
   /// preserved verbatim in the resulting [udas] map. The task's annotations
   /// are copied into [annotations] so a save round-trips them unchanged.
   factory TaskParams.fromTask(Task task) => TaskParams(
-        description: task.description,
-        status: task.status,
-        priority: task.priority,
-        project: task.project,
-        tags: [...task.tags],
-        depends: [...task.depends],
-        annotations: [...task.annotations],
-        due: task.due,
-        wait: task.wait,
-        scheduled: task.scheduled,
-        until: task.until,
-        entry: task.entry,
-        end: task.end,
-        // `recur` has no first-class [Task] field; it round-trips through udas.
-        recur: task.udas['recur'],
-        udas: _preservedUdas(task),
-      );
+    description: task.description,
+    status: task.status,
+    priority: task.priority,
+    project: task.project,
+    tags: [...task.tags],
+    depends: [...task.depends],
+    annotations: [...task.annotations],
+    due: task.due,
+    wait: task.wait,
+    scheduled: task.scheduled,
+    until: task.until,
+    entry: task.entry,
+    end: task.end,
+    // `recur` has no first-class [Task] field; it round-trips through udas.
+    recur: task.udas['recur'],
+    udas: _preservedUdas(task),
+  );
 
   /// Map these parameters to the generated FFI [frb.TaskDto].
   ///
@@ -187,17 +187,17 @@ String? _rfc3339(DateTime? value) => value?.toUtc().toIso8601String();
 
 /// Canonical Taskwarrior priority code, or `null` for no priority.
 String? _priorityToCode(TaskPriority priority) => switch (priority) {
-      TaskPriority.high => 'H',
-      TaskPriority.medium => 'M',
-      TaskPriority.low => 'L',
-      TaskPriority.none => null,
-    };
+  TaskPriority.high => 'H',
+  TaskPriority.medium => 'M',
+  TaskPriority.low => 'L',
+  TaskPriority.none => null,
+};
 
 frb.TaskStatusDto _statusToDto(TaskStatus status) => switch (status) {
-      TaskStatus.pending => frb.TaskStatusDto.pending,
-      TaskStatus.completed => frb.TaskStatusDto.completed,
-      TaskStatus.deleted => frb.TaskStatusDto.deleted,
-    };
+  TaskStatus.pending => frb.TaskStatusDto.pending,
+  TaskStatus.completed => frb.TaskStatusDto.completed,
+  TaskStatus.deleted => frb.TaskStatusDto.deleted,
+};
 
 /// UDAs to preserve when round-tripping a [Task] back into parameters.
 ///

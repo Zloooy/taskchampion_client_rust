@@ -29,10 +29,14 @@ class TaskPropertyService implements ITaskPropertyService {
   Future<List<String>> getPropertyValues({
     required String property,
     TaskFilter? filter,
-    TaskSort? sort,
+    List<TaskSort>? sort,
   }) async {
     try {
-      final propertyValues = await _storage.getTaskPropertyValues(property, filter, sort);
+      final propertyValues = await _storage.getTaskPropertyValues(
+        property,
+        filter,
+        sort,
+      );
       return propertyValues;
     } catch (e, st) {
       _logger.error(
@@ -48,7 +52,7 @@ class TaskPropertyService implements ITaskPropertyService {
   Future<List<T>> getStoredPropertyValues<T>({
     required String property,
     TaskFilter? filter,
-    TaskSort? sort,
+    List<TaskSort>? sort,
   }) async {
     final returnType = _propertyRegistry.resolve<T>();
 

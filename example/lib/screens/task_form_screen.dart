@@ -174,21 +174,25 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
 
       if (isEditing) {
         // Full-state update addressed by the original task's uuid.
-        task = await client.updateTask(widget.task!.copyWith(
-          description: _descriptionController.text,
-          priority: _priority,
-          project: project,
-          tags: tags,
-          due: _dueDate,
-        ));
+        task = await client.updateTask(
+          widget.task!.copyWith(
+            description: _descriptionController.text,
+            priority: _priority,
+            project: project,
+            tags: tags,
+            due: _dueDate,
+          ),
+        );
       } else {
-        task = await client.createTask(TaskParams(
-          description: _descriptionController.text,
-          priority: _priority,
-          project: project,
-          tags: tags,
-          due: _dueDate,
-        ));
+        task = await client.createTask(
+          TaskParams(
+            description: _descriptionController.text,
+            priority: _priority,
+            project: project,
+            tags: tags,
+            due: _dueDate,
+          ),
+        );
       }
 
       if (mounted) {

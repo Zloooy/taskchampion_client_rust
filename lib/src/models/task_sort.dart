@@ -11,17 +11,17 @@ enum SortDirection {
 
 /// Reference to a task property for type-safe sorting
 sealed class TaskSort {
-  /// Property name for sorting
-  final String propertyName;
+  /// Property reference for sorting
+  final TaskPropertyRef property;
 
   /// Sort direction
   final SortDirection direction;
 
-  const TaskSort(this.propertyName, [this.direction = SortDirection.ascending]);
+  const TaskSort(this.property, [this.direction = SortDirection.ascending]);
 
   /// Create JSON representation for Rust FFI
   Map<String, dynamic> toJson() => {
-    'property': {'name': propertyName},
+    'property': property.toJson(),
     'direction': direction.name,
   };
 }
@@ -29,7 +29,7 @@ sealed class TaskSort {
 /// Sort by string property (e.g., description, project)
 final class StringPropertySort extends TaskSort {
   const StringPropertySort(
-    super.propertyName, [
+    super.property, [
     super.direction = SortDirection.ascending,
   ]);
 }
@@ -37,7 +37,7 @@ final class StringPropertySort extends TaskSort {
 /// Sort by DateTime property (e.g., due, entry, modified)
 final class DateTimePropertySort extends TaskSort {
   const DateTimePropertySort(
-    super.propertyName, [
+    super.property, [
     super.direction = SortDirection.ascending,
   ]);
 }
@@ -45,7 +45,7 @@ final class DateTimePropertySort extends TaskSort {
 /// Sort by integer property (e.g., id)
 final class IntPropertySort extends TaskSort {
   const IntPropertySort(
-    super.propertyName, [
+    super.property, [
     super.direction = SortDirection.ascending,
   ]);
 }
@@ -53,7 +53,7 @@ final class IntPropertySort extends TaskSort {
 /// Sort by double property (e.g., urgency)
 final class DoublePropertySort extends TaskSort {
   const DoublePropertySort(
-    super.propertyName, [
+    super.property, [
     super.direction = SortDirection.ascending,
   ]);
 }
@@ -70,14 +70,14 @@ extension TaskSortExtensions on TaskPropertyRef {
 /// Helper function to create the appropriate sort type based on property ref type
 TaskSort _createSort(TaskPropertyRef property, SortDirection direction) {
   if (property is StringPropertyRef) {
-    return StringPropertySort(property.name, direction);
+    return StringPropertySort(property, direction);
   } else if (property is DateTimePropertyRef) {
-    return DateTimePropertySort(property.name, direction);
+    return DateTimePropertySort(property, direction);
   } else if (property is IntPropertyRef) {
-    return IntPropertySort(property.name, direction);
+    return IntPropertySort(property, direction);
   } else if (property is DoublePropertyRef) {
-    return DoublePropertySort(property.name, direction);
+    return DoublePropertySort(property, direction);
   }
   // Default to string sort
-  return StringPropertySort(property.name, direction);
+  return StringPropertySort(property, direction);
 }

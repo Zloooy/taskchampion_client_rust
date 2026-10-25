@@ -61,11 +61,11 @@ class RustBridge {
   /// Get all tasks with sorting
   static Future<String> getAllTasksWithSortJson(
     String taskdbDirPath,
-    TaskSort sort,
+    List<TaskSort> sort,
   ) async {
     return frb_api.getAllTasksWithSortJson(
       taskdbDirPath: taskdbDirPath,
-      sortJson: json.encode(sort.toJson()),
+      sortJson: json.encode(sort.map((s) => s.toJson()).toList()),
     );
   }
 
@@ -73,17 +73,19 @@ class RustBridge {
   static Future<String> getTasksWithFilterAndSortJson(
     String taskdbDirPath,
     TaskFilter filter,
-    TaskSort? sort,
+    List<TaskSort>? sort,
   ) async {
     return frb_api.getTasksWithFilterAndSortJson(
       taskdbDirPath: taskdbDirPath,
       filterJson: filter.toJson(),
       sortJson: sort != null
-          ? json.encode(sort.toJson())
-          : json.encode(const {
-              'property': {'name': 'entry'},
-              'direction': 'ascending',
-            }),
+          ? json.encode(sort.map((s) => s.toJson()).toList())
+          : json.encode(const [
+              {
+                'property': {'name': 'entry'},
+                'direction': 'ascending',
+              },
+            ]),
     );
   }
 
@@ -178,13 +180,13 @@ class RustBridge {
     String taskdbDirPath,
     String property,
     TaskFilter? filter,
-    TaskSort? sort,
+    List<TaskSort>? sort,
   ) async {
     return frb_api.getTaskPropertyValues(
       taskdbDirPath: taskdbDirPath,
       property: property,
       filterJson: filter?.toJson(),
-      sortJson: sort != null ? json.encode(sort.toJson()) : null,
+      sortJson: sort != null ? json.encode(sort.first.toJson()) : null,
     );
   }
 
@@ -213,14 +215,14 @@ class RustBridge {
     String property,
     PropertyReturnType returnType,
     TaskFilter? filter,
-    TaskSort? sort,
+    List<TaskSort>? sort,
   ) async {
     return frb_api.getTaskPropertyValuesTyped(
       taskdbDirPath: taskdbDirPath,
       property: property,
       returnType: returnType,
       filterJson: filter?.toJson(),
-      sortJson: sort != null ? json.encode(sort.toJson()) : null,
+      sortJson: sort != null ? json.encode(sort.first.toJson()) : null,
     );
   }
 

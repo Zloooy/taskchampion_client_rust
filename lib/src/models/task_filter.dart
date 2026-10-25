@@ -86,63 +86,49 @@ abstract class FilterExpression with _$FilterExpression {
   const factory FilterExpression.contains({
     @JsonKey(toJson: _propertyToJson) required TaskPropertyRef property,
     required String value,
-    @Default(false)
-    @JsonKey(name: 'case_sensitive')
-    bool caseSensitive,
+    @Default(false) @JsonKey(name: 'case_sensitive') bool caseSensitive,
   }) = _FilterExpressionContains;
 
   @FreezedUnionValue('NotContainsFilter')
   const factory FilterExpression.notContains({
     @JsonKey(toJson: _propertyToJson) required TaskPropertyRef property,
     required String value,
-    @Default(false)
-    @JsonKey(name: 'case_sensitive')
-    bool caseSensitive,
+    @Default(false) @JsonKey(name: 'case_sensitive') bool caseSensitive,
   }) = _FilterExpressionNotContains;
 
   @FreezedUnionValue('StartsWithFilter')
   const factory FilterExpression.startsWith({
     @JsonKey(toJson: _propertyToJson) required TaskPropertyRef property,
     required String value,
-    @Default(false)
-    @JsonKey(name: 'case_sensitive')
-    bool caseSensitive,
+    @Default(false) @JsonKey(name: 'case_sensitive') bool caseSensitive,
   }) = _FilterExpressionStartsWith;
 
   @FreezedUnionValue('EndsWithFilter')
   const factory FilterExpression.endsWith({
     @JsonKey(toJson: _propertyToJson) required TaskPropertyRef property,
     required String value,
-    @Default(false)
-    @JsonKey(name: 'case_sensitive')
-    bool caseSensitive,
+    @Default(false) @JsonKey(name: 'case_sensitive') bool caseSensitive,
   }) = _FilterExpressionEndsWith;
 
   @FreezedUnionValue('WordFilter')
   const factory FilterExpression.word({
     @JsonKey(toJson: _propertyToJson) required TaskPropertyRef property,
     required String value,
-    @Default(false)
-    @JsonKey(name: 'case_sensitive')
-    bool caseSensitive,
+    @Default(false) @JsonKey(name: 'case_sensitive') bool caseSensitive,
   }) = _FilterExpressionWord;
 
   @FreezedUnionValue('NoWordFilter')
   const factory FilterExpression.noWord({
     @JsonKey(toJson: _propertyToJson) required TaskPropertyRef property,
     required String value,
-    @Default(false)
-    @JsonKey(name: 'case_sensitive')
-    bool caseSensitive,
+    @Default(false) @JsonKey(name: 'case_sensitive') bool caseSensitive,
   }) = _FilterExpressionNoWord;
 
   @FreezedUnionValue('RegexFilter')
   const factory FilterExpression.regex({
     @JsonKey(toJson: _propertyToJson) required TaskPropertyRef property,
     required String pattern,
-    @Default(false)
-    @JsonKey(name: 'case_sensitive')
-    bool caseSensitive,
+    @Default(false) @JsonKey(name: 'case_sensitive') bool caseSensitive,
   }) = _FilterExpressionRegex;
 
   @FreezedUnionValue('NoneFilter')
@@ -237,11 +223,9 @@ abstract class TaskFilter with _$TaskFilter {
       TaskFilter(FilterExpression.tag(tag: tag, exclude: true));
 
   /// Create a filter for virtual tags (e.g., ACTIVE, PENDING, BLOCKED)
-  static TaskFilter virtualTag(String tag, {bool exclude = false}) => TaskFilter(
-        FilterExpression.virtualTag(
-          tag: tag.toUpperCase(),
-          exclude: exclude,
-        ),
+  static TaskFilter virtualTag(String tag, {bool exclude = false}) =>
+      TaskFilter(
+        FilterExpression.virtualTag(tag: tag.toUpperCase(), exclude: exclude),
       );
 
   /// Serialize filter to JSON string for passing to Rust

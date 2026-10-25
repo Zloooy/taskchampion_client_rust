@@ -11,7 +11,8 @@ use taskchampion::{Operations, ServerConfig, Status};
 use uuid::Uuid;
 
 use crate::filter::{
-    collect_base_tasks, compare_tasks, evaluate_filter_expression, FilterExpression, TaskSort,
+    collect_base_tasks, compare_tasks_multi, evaluate_filter_expression, FilterExpression,
+    TaskSortList,
 };
 use crate::global_repo_cache;
 use crate::models::SyncResultData;
@@ -64,7 +65,9 @@ pub fn get_all_tasks_json(taskdb_dir_path: String) -> Result<String, anyhow::Err
 ///
 /// # Arguments
 /// * `taskdb_dir_path` - Path to the directory containing the task database
-/// * `sort_json` - JSON string representing the sort specification
+/// * `sort_json` - JSON string representing an ordered list of sort
+///   specifications (SQL `ORDER BY` semantics). The legacy single-object
+///   form is still accepted and treated as a one-element list.
 ///
 /// # Returns
 /// JSON string containing an array of sorted task objects
@@ -79,14 +82,15 @@ pub fn get_all_tasks_with_sort_json(
             Box::pin(async move {
                 let tasks = replica.all_tasks().await?;
 
-                // Parse sort specification
-                let sort: TaskSort = serde_json::from_str(&sort_json)?;
+                // Parse sort specification (array form; legacy single-object
+                // form is accepted for backward compatibility).
+                let sort_list: TaskSortList = serde_json::from_str(&sort_json)?;
 
                 // Collect tasks into a vector for sorting
                 let mut task_vec: Vec<taskchampion::Task> = tasks.into_values().collect();
 
                 // Sort tasks
-                task_vec.sort_by(|a, b| compare_tasks(a, b, &sort));
+                task_vec.sort_by(|a, b| compare_tasks_multi(a, b, &sort_list));
 
                 // Convert to maps
                 let mut task_maps: Vec<HashMap<String, String>> = Vec::new();
@@ -214,7 +218,9 @@ pub fn get_task_by_uuid(
 /// # Arguments
 /// * `taskdb_dir_path` - Path to the directory containing the task database
 /// * `filter_json` - JSON string representing the filter expression
-/// * `sort_json` - JSON string representing the sort specification
+/// * `sort_json` - JSON string representing an ordered list of sort
+///   specifications (SQL `ORDER BY` semantics). The legacy single-object
+///   form is still accepted and treated as a one-element list.
 ///
 /// # Returns
 /// JSON string containing an array of filtered and sorted task objects
@@ -228,9 +234,10 @@ pub fn get_tasks_with_filter_and_sort_json(
     get_runtime().block_on(async move {
         repo.with_replica(|replica| {
             Box::pin(async move {
-                // Parse the filter and sort JSON
+                // Parse the filter and sort JSON (sort accepts the array form
+                // and the legacy single-object form).
                 let filter: FilterExpression = serde_json::from_str(&filter_json)?;
-                let sort: TaskSort = serde_json::from_str(&sort_json)?;
+                let sort_list: TaskSortList = serde_json::from_str(&sort_json)?;
 
                 // Optimization: Use pending_tasks() if filter constrains to
                 // pending status (ticket R3).
@@ -244,7 +251,7 @@ pub fn get_tasks_with_filter_and_sort_json(
                     .collect();
 
                 // Sort tasks
-                filtered_tasks.sort_by(|a, b| compare_tasks(a, b, &sort));
+                filtered_tasks.sort_by(|a, b| compare_tasks_multi(a, b, &sort_list));
 
                 // Convert to maps
                 let mut task_maps: Vec<HashMap<String, String>> = Vec::new();
@@ -635,7 +642,7 @@ pub fn import_tasks(
 /// * `taskdb_dir_path` - Path to the directory containing the task database
 /// * `property` - Name of the property to query (e.g. "description", "due")
 /// * `filter_json` - Optional JSON describing a TaskFilter to limit the tasks
-/// * `sort_json` - Optional JSON describing a TaskSort that may affect the order of the returned list
+/// * `sort_json` - Optional JSON describing a list of TaskSort specifications (SQL ORDER BY semantics) that may affect the order of the returned list
 ///
 /// # Returns
 /// JSON string containing an array of distinct property values
@@ -698,7 +705,7 @@ pub use crate::properties::PropertyReturnType;
 /// * `property` - Name of the property to query (e.g. "description", "due", "status")
 /// * `return_type` - The type of values expected
 /// * `filter_json` - Optional JSON describing a TaskFilter to limit the tasks
-/// * `sort_json` - Optional JSON describing a TaskSort that may affect the order
+/// * `sort_json` - Optional JSON describing a list of TaskSort specifications (SQL ORDER BY semantics) that may affect the order
 ///
 /// # Returns
 /// JSON string containing an array of typed property values
@@ -814,10 +821,9 @@ mod tests {
             "property": {"name": "status"},
             "value": "pending"
         }"#;
-        let sort_json = r#"{
-            "property": {"name": "description"},
-            "direction": "ascending"
-        }"#;
+        let sort_json = r#"[
+            { "property": {"name": "description"}, "direction": "ascending" }
+        ]"#;
 
         let result = get_tasks_with_filter_and_sort_json(
             path,
@@ -864,6 +870,46 @@ mod tests {
                 }
             ]
         }"#;
+        let sort_json = r#"[
+            { "property": {"name": "description"}, "direction": "ascending" }
+        ]"#;
+
+        let result = get_tasks_with_filter_and_sort_json(
+            path,
+            filter_json.to_string(),
+            sort_json.to_string(),
+        )
+        .unwrap();
+        let tasks: Vec<HashMap<String, String>> = serde_json::from_str(&result).unwrap();
+
+        assert_eq!(tasks.len(), 2);
+        for task in &tasks {
+            assert_eq!(task.get("project"), Some(&"ProjectA".to_string()));
+        }
+    }
+
+    #[test]
+    fn test_get_tasks_with_filter_and_sort_json_legacy_single_object_sort() {
+        // Backward compatibility: the legacy single-object sort form must
+        // still parse and sort correctly (treated as a one-element list).
+        let temp_dir = TempDir::new().unwrap();
+        let path = temp_dir.path().to_string_lossy().to_string();
+
+        get_runtime().block_on(async {
+            let storage = create_storage_async(path.clone()).await.unwrap();
+            let mut replica = Replica::new(storage);
+
+            create_test_task(&mut replica, "Pending task 2", Status::Pending, "").await;
+            create_test_task(&mut replica, "Pending task 1", Status::Pending, "").await;
+            create_test_task(&mut replica, "Completed task", Status::Completed, "").await;
+        });
+
+        let filter_json = r#"{
+            "type": "EqualsFilter",
+            "property": {"name": "status"},
+            "value": "pending"
+        }"#;
+        // Legacy single-object form (not wrapped in an array).
         let sort_json = r#"{
             "property": {"name": "description"},
             "direction": "ascending"
@@ -878,8 +924,13 @@ mod tests {
         let tasks: Vec<HashMap<String, String>> = serde_json::from_str(&result).unwrap();
 
         assert_eq!(tasks.len(), 2);
-        for task in &tasks {
-            assert_eq!(task.get("project"), Some(&"ProjectA".to_string()));
-        }
+        assert_eq!(
+            tasks[0].get("description"),
+            Some(&"Pending task 1".to_string())
+        );
+        assert_eq!(
+            tasks[1].get("description"),
+            Some(&"Pending task 2".to_string())
+        );
     }
 }

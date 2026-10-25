@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // coverage:ignore-file
-// ignore_for_file: type=lint
+// ignore_for_file: type=lint, type=warning, deprecated_member_use, deprecated_member_use_from_same_package
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'client_config.dart';
@@ -9,6 +9,7 @@ part of 'client_config.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 // dart format off
 T _$identity<T>(T value) => value;
 
@@ -33,16 +34,21 @@ $ClientConfigCopyWith<ClientConfig> get copyWith => _$ClientConfigCopyWithImpl<C
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ClientConfig&&(identical(other.taskdbPath, taskdbPath) || other.taskdbPath == taskdbPath)&&(identical(other.syncConfig, syncConfig) || other.syncConfig == syncConfig)&&(identical(other.authConfig, authConfig) || other.authConfig == authConfig)&&(identical(other.debugLogging, debugLogging) || other.debugLogging == debugLogging)&&(identical(other.autoSyncOnTaskChange, autoSyncOnTaskChange) || other.autoSyncOnTaskChange == autoSyncOnTaskChange));
+  final _this = this as ClientConfig;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ClientConfig&&(identical(other.taskdbPath, _this.taskdbPath) || other.taskdbPath == _this.taskdbPath)&&(identical(other.syncConfig, _this.syncConfig) || other.syncConfig == _this.syncConfig)&&(identical(other.authConfig, _this.authConfig) || other.authConfig == _this.authConfig)&&(identical(other.debugLogging, _this.debugLogging) || other.debugLogging == _this.debugLogging)&&(identical(other.autoSyncOnTaskChange, _this.autoSyncOnTaskChange) || other.autoSyncOnTaskChange == _this.autoSyncOnTaskChange));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,taskdbPath,syncConfig,authConfig,debugLogging,autoSyncOnTaskChange);
+int get hashCode {
+  final _this = this as ClientConfig;
+  return Object.hash(runtimeType,_this.taskdbPath,_this.syncConfig,_this.authConfig,_this.debugLogging,_this.autoSyncOnTaskChange);
+}
 
 @override
 String toString() {
-  return 'ClientConfig(taskdbPath: $taskdbPath, syncConfig: $syncConfig, authConfig: $authConfig, debugLogging: $debugLogging, autoSyncOnTaskChange: $autoSyncOnTaskChange)';
+  final _this = this as ClientConfig;
+  return 'ClientConfig(taskdbPath: ${_this.taskdbPath}, syncConfig: ${_this.syncConfig}, authConfig: ${_this.authConfig}, debugLogging: ${_this.debugLogging}, autoSyncOnTaskChange: ${_this.autoSyncOnTaskChange})';
 }
 
 
@@ -71,7 +77,7 @@ class _$ClientConfigCopyWithImpl<$Res>
 /// Create a copy of ClientConfig
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') @override $Res call({Object? taskdbPath = null,Object? syncConfig = null,Object? authConfig = null,Object? debugLogging = null,Object? autoSyncOnTaskChange = null,}) {
-  return _then(_self.copyWith(
+  return _then(ClientConfig(
 taskdbPath: null == taskdbPath ? _self.taskdbPath : taskdbPath // ignore: cast_nullable_to_non_nullable
 as String,syncConfig: null == syncConfig ? _self.syncConfig : syncConfig // ignore: cast_nullable_to_non_nullable
 as SyncConfig,authConfig: null == authConfig ? _self.authConfig : authConfig // ignore: cast_nullable_to_non_nullable
@@ -263,16 +269,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ClientConfig&&(identical(other.taskdbPath, taskdbPath) || other.taskdbPath == taskdbPath)&&(identical(other.syncConfig, syncConfig) || other.syncConfig == syncConfig)&&(identical(other.authConfig, authConfig) || other.authConfig == authConfig)&&(identical(other.debugLogging, debugLogging) || other.debugLogging == debugLogging)&&(identical(other.autoSyncOnTaskChange, autoSyncOnTaskChange) || other.autoSyncOnTaskChange == autoSyncOnTaskChange));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ClientConfig&&(identical(other.taskdbPath, taskdbPath) || other.taskdbPath == taskdbPath)&&(identical(other.syncConfig, syncConfig) || other.syncConfig == syncConfig)&&(identical(other.authConfig, authConfig) || other.authConfig == authConfig)&&(identical(other.debugLogging, debugLogging) || other.debugLogging == debugLogging)&&(identical(other.autoSyncOnTaskChange, autoSyncOnTaskChange) || other.autoSyncOnTaskChange == autoSyncOnTaskChange));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,taskdbPath,syncConfig,authConfig,debugLogging,autoSyncOnTaskChange);
+int get hashCode {
+    return Object.hash(runtimeType,taskdbPath,syncConfig,authConfig,debugLogging,autoSyncOnTaskChange);
+}
 
 @override
 String toString() {
-  return 'ClientConfig(taskdbPath: $taskdbPath, syncConfig: $syncConfig, authConfig: $authConfig, debugLogging: $debugLogging, autoSyncOnTaskChange: $autoSyncOnTaskChange)';
+    return 'ClientConfig(taskdbPath: $taskdbPath, syncConfig: $syncConfig, authConfig: $authConfig, debugLogging: $debugLogging, autoSyncOnTaskChange: $autoSyncOnTaskChange)';
 }
 
 

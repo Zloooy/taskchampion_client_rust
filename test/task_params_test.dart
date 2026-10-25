@@ -61,21 +61,24 @@ void main() {
       expect(TaskParams(description: 'a').toTaskDto().priority, isNull);
 
       expect(
-        TaskParams(description: 'a', priority: TaskPriority.medium)
-            .toTaskDto()
-            .priority,
+        TaskParams(
+          description: 'a',
+          priority: TaskPriority.medium,
+        ).toTaskDto().priority,
         'M',
       );
       expect(
-        TaskParams(description: 'a', priority: TaskPriority.low)
-            .toTaskDto()
-            .priority,
+        TaskParams(
+          description: 'a',
+          priority: TaskPriority.low,
+        ).toTaskDto().priority,
         'L',
       );
       expect(
-        TaskParams(description: 'a', status: TaskStatus.deleted)
-            .toTaskDto()
-            .status,
+        TaskParams(
+          description: 'a',
+          status: TaskStatus.deleted,
+        ).toTaskDto().status,
         frb.TaskStatusDto.deleted,
       );
     });
@@ -110,8 +113,7 @@ void main() {
     });
 
     test('project is routed through the conventional project UDA', () {
-      final dto = TaskParams(description: 'a', project: 'Work')
-          .toTaskDto();
+      final dto = TaskParams(description: 'a', project: 'Work').toTaskDto();
 
       expect(dto.udas, {'project': 'Work'});
     });
@@ -139,8 +141,10 @@ void main() {
     });
 
     test('an empty annotation list is an explicit (non-null) clear', () {
-      final dto = TaskParams(description: 'a', annotations: const [])
-          .toTaskDto();
+      final dto = TaskParams(
+        description: 'a',
+        annotations: const [],
+      ).toTaskDto();
 
       expect(dto.annotations, isNotNull);
       expect(dto.annotations, isEmpty);
@@ -151,33 +155,32 @@ void main() {
     Task buildTask({
       Map<String, String>? extraUdas,
       List<Annotation>? annotations,
-    }) =>
-        Task(
-          uuid: '12345678-1234-1234-1234-123456789012',
-          description: 'Round trip task',
-          status: TaskStatus.pending,
-          priority: TaskPriority.low,
-          project: 'Home',
-          tags: ['a', 'b'],
-          due: DateTime.utc(2026, 8, 1),
-          wait: DateTime.utc(2026, 7, 1),
-          scheduled: DateTime.utc(2026, 8, 2),
-          until: DateTime.utc(2026, 8, 30),
-          entry: DateTime.utc(2026, 7, 15),
-          modified: DateTime.utc(2026, 7, 20),
-          end: null,
-          parent: '99999999-9999-9999-9999-999999999999',
-          depends: ['dep-1'],
-          annotations: annotations ?? const [],
-          udas: {
-            'project': 'Home',
-            'parent': '99999999-9999-9999-9999-999999999999',
-            'urgency': '3.5',
-            'recur': 'daily',
-            'custom': 'kept',
-            ...?extraUdas,
-          },
-        );
+    }) => Task(
+      uuid: '12345678-1234-1234-1234-123456789012',
+      description: 'Round trip task',
+      status: TaskStatus.pending,
+      priority: TaskPriority.low,
+      project: 'Home',
+      tags: ['a', 'b'],
+      due: DateTime.utc(2026, 8, 1),
+      wait: DateTime.utc(2026, 7, 1),
+      scheduled: DateTime.utc(2026, 8, 2),
+      until: DateTime.utc(2026, 8, 30),
+      entry: DateTime.utc(2026, 7, 15),
+      modified: DateTime.utc(2026, 7, 20),
+      end: null,
+      parent: '99999999-9999-9999-9999-999999999999',
+      depends: ['dep-1'],
+      annotations: annotations ?? const [],
+      udas: {
+        'project': 'Home',
+        'parent': '99999999-9999-9999-9999-999999999999',
+        'urgency': '3.5',
+        'recur': 'daily',
+        'custom': 'kept',
+        ...?extraUdas,
+      },
+    );
 
     test('carries main fields into the DTO under the task uuid', () {
       final task = buildTask();
@@ -204,38 +207,32 @@ void main() {
       }
     });
 
-    test(
-      'saving a loaded task round-trips its annotations unchanged',
-      () {
-        final task = buildTask(
-          annotations: [
-            Annotation(
-              entry: DateTime.utc(2026, 7, 16, 10, 30),
-              description: 'started work',
-            ),
-            Annotation(
-              entry: DateTime.utc(2026, 7, 17),
-              description: 'blocked on review',
-            ),
-          ],
-        );
+    test('saving a loaded task round-trips its annotations unchanged', () {
+      final task = buildTask(
+        annotations: [
+          Annotation(
+            entry: DateTime.utc(2026, 7, 16, 10, 30),
+            description: 'started work',
+          ),
+          Annotation(
+            entry: DateTime.utc(2026, 7, 17),
+            description: 'blocked on review',
+          ),
+        ],
+      );
 
-        // Plain load → edit (description only) → save.
-        final edited = task.copyWith(description: 'Round trip task v2');
-        final dto = TaskParams.fromTask(edited).toTaskDto(uuid: edited.uuid);
+      // Plain load → edit (description only) → save.
+      final edited = task.copyWith(description: 'Round trip task v2');
+      final dto = TaskParams.fromTask(edited).toTaskDto(uuid: edited.uuid);
 
-        final annotations = dto.annotations;
-        expect(annotations, isNotNull);
-        expect(annotations, hasLength(2));
-        expect(
-          annotations![0].entry,
-          '2026-07-16T10:30:00.000Z',
-        );
-        expect(annotations[0].description, 'started work');
-        expect(annotations[1].entry, '2026-07-17T00:00:00.000Z');
-        expect(annotations[1].description, 'blocked on review');
-      },
-    );
+      final annotations = dto.annotations;
+      expect(annotations, isNotNull);
+      expect(annotations, hasLength(2));
+      expect(annotations![0].entry, '2026-07-16T10:30:00.000Z');
+      expect(annotations[0].description, 'started work');
+      expect(annotations[1].entry, '2026-07-17T00:00:00.000Z');
+      expect(annotations[1].description, 'blocked on review');
+    });
 
     test('copyWith-ed task keeps its identity and new state', () {
       final task = buildTask();

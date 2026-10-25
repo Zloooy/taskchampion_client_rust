@@ -24,7 +24,9 @@ Future<String> getAllTasksJson({required String taskdbDirPath}) =>
 ///
 /// # Arguments
 /// * `taskdb_dir_path` - Path to the directory containing the task database
-/// * `sort_json` - JSON string representing the sort specification
+/// * `sort_json` - JSON string representing an ordered list of sort
+///   specifications (SQL `ORDER BY` semantics). The legacy single-object
+///   form is still accepted and treated as a one-element list.
 ///
 /// # Returns
 /// JSON string containing an array of sorted task objects
@@ -104,7 +106,9 @@ Future<String?> getTaskByUuid({
 /// # Arguments
 /// * `taskdb_dir_path` - Path to the directory containing the task database
 /// * `filter_json` - JSON string representing the filter expression
-/// * `sort_json` - JSON string representing the sort specification
+/// * `sort_json` - JSON string representing an ordered list of sort
+///   specifications (SQL `ORDER BY` semantics). The legacy single-object
+///   form is still accepted and treated as a one-element list.
 ///
 /// # Returns
 /// JSON string containing an array of filtered and sorted task objects
@@ -262,7 +266,7 @@ Future<int> importTasks({
 /// * `taskdb_dir_path` - Path to the directory containing the task database
 /// * `property` - Name of the property to query (e.g. "description", "due")
 /// * `filter_json` - Optional JSON describing a TaskFilter to limit the tasks
-/// * `sort_json` - Optional JSON describing a TaskSort that may affect the order of the returned list
+/// * `sort_json` - Optional JSON describing a list of TaskSort specifications (SQL ORDER BY semantics) that may affect the order of the returned list
 ///
 /// # Returns
 /// JSON string containing an array of distinct property values
@@ -311,7 +315,7 @@ Future<List<String>> getTags({
 /// * `property` - Name of the property to query (e.g. "description", "due", "status")
 /// * `return_type` - The type of values expected
 /// * `filter_json` - Optional JSON describing a TaskFilter to limit the tasks
-/// * `sort_json` - Optional JSON describing a TaskSort that may affect the order
+/// * `sort_json` - Optional JSON describing a list of TaskSort specifications (SQL ORDER BY semantics) that may affect the order
 ///
 /// # Returns
 /// JSON string containing an array of typed property values
